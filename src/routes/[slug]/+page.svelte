@@ -4,17 +4,14 @@
 </script>
 
 <svelte:head>
-  <title>Home</title>
-  <meta name="description" content="Svelte demo app" />
+  <title>ブログ</title>
+  <meta name="description" content={data.description} />
 </svelte:head>
 
 <section>
-  <h1>ブログ</h1>
-  <ul>
-    {#each data.contents as content}
-      <li><a href={content.id}>{content.title}</a></li>
-    {/each}
-  </ul>
+  <h1>{data.title}</h1>
+  <img src={data.image.url} alt="" />
+  <div>{@html data.body}</div>
 </section>
 
 <style>
