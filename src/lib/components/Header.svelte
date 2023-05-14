@@ -1,7 +1,5 @@
 <script lang="ts">
   import { page } from "$app/stores";
-  import cat_x1 from "$lib/assets/images/cat_1x.webp";
-  import cat_x2 from "$lib/assets/images/cat_2x.webp";
   $: pathname = $page.url.pathname;
 
   export let url: string;
@@ -14,7 +12,7 @@
     <link
       rel="preload"
       as="image"
-      imagesrcset="{cat_x1} 600w, {cat_x2} 1200w"
+      imagesrcset="/cat_1x.webp 600w, /cat_2x.webp 1200w"
     />
   {:else}
     <link
@@ -27,7 +25,7 @@
 
 <header>
   {#if pathname === "/"}
-    <img alt="" srcset="{cat_x1} 600w, {cat_x2} 1200w" />
+    <img alt="" srcset="/cat_1x.webp 600w, /cat_2x.webp 1200w" />
   {:else}
     <img
       alt=""
