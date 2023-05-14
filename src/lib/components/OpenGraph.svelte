@@ -3,6 +3,7 @@
   const baseURL = "https://blog.nagutabby.uk";
   const homeDescription = "学んだことをまとめるブログ";
   import { page } from "$app/stores";
+  import cat_x2 from "$lib/assets/images/cat_2x.webp";
   $: pathname = $page.url.pathname;
 
   export let subTitle: string;
@@ -17,8 +18,8 @@
   <meta property="og:type" content="blog" />
   <meta name="description" content={homeDescription} />
   <meta property="og:description" content={homeDescription} />
-  <meta property="og:image" content="src/lib/assets/images/cat_2x.webp" />
-  <meta name="twitter:image" content="src/lib/assets/images/cat_2x.webp" />
+  <meta property="og:image" content={cat_x2} />
+  <meta name="twitter:image" content={cat_x2} />
 {:else}
   <title>{subTitle} - {baseTitle}</title>
   <meta property="og:title" content="{subTitle} - {baseTitle}" />
