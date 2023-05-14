@@ -17,7 +17,7 @@
       alt=""
       height="250"
       width="250"
-      srcset="{image}?fm=webp&?fit=clip&w=250&h=250 250w, {image}?fm=webp&?fit=clip&w=500&h=500 500w"
+      srcset="{image}?fm=webp&fit=clip&w=250&h=250 250w, {image}?fm=webp&fit=clip&w=500&h=500 500w"
       loading="lazy"
     />
     <div class="description">

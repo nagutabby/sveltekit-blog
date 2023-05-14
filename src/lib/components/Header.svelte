@@ -20,7 +20,7 @@
     <link
       rel="preload"
       as="image"
-      imagesrcset="{url}?fit=clip&w=600 600w, {url}?fit=clip&w=1200 1200w"
+      imagesrcset="{url}?fm=webp&fit=clip&w=600 600w, {url}?fm=webp&fit=clip&w=1200 1200w"
     />
   {/if}
 </svelte:head>
@@ -31,7 +31,7 @@
   {:else}
     <img
       alt=""
-      srcset="{url}?fit=clip&w=600 600w, {url}?fit=clip&w=1200 1200w"
+      srcset="{url}?fm=webp&fit=clip&w=600 600w, {url}?fm=webp&fit=clip&w=1200 1200w"
     />
   {/if}
   <div class="title container">
