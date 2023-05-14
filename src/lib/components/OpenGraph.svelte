@@ -17,8 +17,14 @@
   <meta property="og:type" content="blog" />
   <meta name="description" content={homeDescription} />
   <meta property="og:description" content={homeDescription} />
-  <meta property="og:image" content="/cat_2x.webp" />
-  <meta name="twitter:image" content="/cat_2x.webp" />
+  <meta
+    property="og:image"
+    content="https://images.microcms-assets.io/assets/20db8de3037b46c1bd258abf36bfeccc/d116d806d4e14b81b778e3b618b0a203/cat.jpg?fm=webp&fit=clip&w=1200"
+  />
+  <meta
+    name="twitter:image"
+    content="https://images.microcms-assets.io/assets/20db8de3037b46c1bd258abf36bfeccc/d116d806d4e14b81b778e3b618b0a203/cat.jpg?fm=webp&fit=clip&w=1200"
+  />
 {:else}
   <title>{subTitle} - {baseTitle}</title>
   <meta property="og:title" content="{subTitle} - {baseTitle}" />
@@ -26,8 +32,8 @@
   <meta property="og:type" content="article" />
   <meta name="description" content={description} />
   <meta property="og:description" content={description} />
-  <meta property="og:image" content="{url}?fit=clip&w=1200" />
-  <meta name="twitter:image" content="{url}?fit=clip&w=1200" />
+  <meta property="og:image" content="{url}?fm=webp&fit=clip&w=1200" />
+  <meta name="twitter:image" content="{url}?fm=webp&fit=clip&w=1200" />
 {/if}
 
 <meta property="og:url" content={baseURL + pathname} />
