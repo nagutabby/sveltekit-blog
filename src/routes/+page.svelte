@@ -1,27 +1,24 @@
 <script lang="ts">
   import type { PageData } from "./$types";
   export let data: PageData;
+  import Card from "../lib/components/Card.svelte";
 </script>
 
-<svelte:head>
-  <title>Home</title>
-  <meta name="description" content="Svelte demo app" />
-</svelte:head>
-
-<section>
-  <h1>ブログ</h1>
-  <ul>
-    {#each data.contents as content}
-      <li><a href={content.id}>{content.title}</a></li>
-    {/each}
-  </ul>
-</section>
-
-<style>
-  section {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-  }
-</style>
+{#each data.contents as content, i}
+  {#if i % 2 === 0}
+    <div class="grid">
+      <Card
+        url={data.contents[i].id}
+        image={data.contents[i].image.url}
+        title={data.contents[i].title}
+        date={data.contents[i].createdAt}
+      />
+      <Card
+        url={data.contents[i + 1].id}
+        image={data.contents[i + 1].image.url}
+        title={data.contents[i + 1].title}
+        date={data.contents[i + 1].createdAt}
+      />
+    </div>
+  {/if}
+{/each}
