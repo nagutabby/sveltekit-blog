@@ -21,7 +21,6 @@
   },
   "type": "module",
   "dependencies": {
-    "highlight.js": "^11.8.0",
     "microcms-js-sdk": "^2.3.3"
   }
 }
