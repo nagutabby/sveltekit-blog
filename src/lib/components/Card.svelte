@@ -62,10 +62,16 @@
     article:hover {
       filter: brightness(90%);
     }
+    p {
+      color: hsl(205, 20%, 32%);
+    }
   }
   @media (prefers-color-scheme: dark) {
     article:hover {
       filter: brightness(110%);
+    }
+    p {
+      color: hsl(205, 16%, 77%);
     }
   }
 </style>
