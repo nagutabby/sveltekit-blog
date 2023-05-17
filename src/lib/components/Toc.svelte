@@ -21,12 +21,6 @@
     margin-bottom: 0;
   }
 
-  details {
-    border: none;
-    padding-bottom: 0;
-    margin-bottom: 0;
-  }
-
   li::before {
     content: "•";
     position: relative;
