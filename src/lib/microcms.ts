@@ -17,6 +17,9 @@ export type Blog = {
   title: string;
   description: string;
   body: string;
+  attribs: {
+    id: string;
+  }
 };
 export type BlogResponse = {
   totalCount: number;
