@@ -42,7 +42,6 @@
       }
       previousTag = toc[i].name;
     }
-    console.log(toc);
     return rawToc;
   }
 </script>
