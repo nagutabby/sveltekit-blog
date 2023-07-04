@@ -19,4 +19,4 @@ export const load: PageServerLoad = async ({ url }) => {
   return await getList(pageQueries);
 };
 
-export const prerender = true;
+export const prerender = false;
