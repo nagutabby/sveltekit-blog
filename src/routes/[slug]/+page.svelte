@@ -3,7 +3,14 @@
   import Toc from "$lib/components/Toc.svelte";
   import type { PageData } from "./$types";
   import { load } from "cheerio";
+  import { onMount } from "svelte";
+  import hljs from "highlight.js";
 
+  onMount(async () => {
+    document.querySelectorAll("pre code").forEach((el) => {
+      hljs.highlightElement(el as HTMLElement);
+    });
+  });
   export let data: PageData;
 
   const loadedBody = load(data.body);
@@ -55,7 +62,24 @@
 </article>
 
 <style>
+  @import url("https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/a11y-light.min.css")
+    screen and (prefers-color-scheme: light);
+  @import url("https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/a11y-dark.min.css")
+    screen and (prefers-color-scheme: dark);
   article {
     margin-top: 0;
+  }
+  :global(.hljs) {
+    background: none;
+  }
+  @media (prefers-color-scheme: light) {
+    :global(code) {
+      color: #545454;
+    }
+  }
+  @media (prefers-color-scheme: dark) {
+    :global(code) {
+      color: #f8f8f2;
+    }
   }
 </style>
