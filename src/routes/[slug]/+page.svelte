@@ -69,6 +69,12 @@
   article {
     margin-top: 0;
   }
+  :global(pre > code) {
+    font-size: 0.85rem;
+  }
+  :global(code) {
+    padding: 0.15rem 0.4rem;
+  }
   :global(.hljs) {
     background: none;
   }
