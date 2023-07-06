@@ -31,4 +31,5 @@
 <main class="container">
   <slot />
 </main>
+
 <Footer />

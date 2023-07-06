@@ -73,4 +73,10 @@
       color: #f8f8f2;
     }
   }
+  :global(a) {
+    color: #1e88e5;
+    &:hover {
+      color: #039be5;
+    }
+  }
 </style>
