@@ -4,7 +4,6 @@
   import type { PageData } from "./$types";
   import { load } from "cheerio";
   import { onMount } from "svelte";
-  import hljs from "highlight.js";
   import TagList from "$lib/components/TagList.svelte";
 
   export let data: PageData;
@@ -12,9 +11,6 @@
   let rawToc: string = "";
 
   onMount(async () => {
-    document.querySelectorAll("pre code").forEach((el) => {
-      hljs.highlightElement(el as HTMLElement);
-    });
     const loadedBody = load(data.body);
     const headings = loadedBody("h1, h2, h3").toArray();
     const toc = headings.map((data: any) => ({
@@ -61,21 +57,11 @@
 </article>
 
 <style>
-  @import url("https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/a11y-light.min.css")
-    screen and (prefers-color-scheme: light);
-  @import url("https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/a11y-dark.min.css")
-    screen and (prefers-color-scheme: dark);
   article {
     margin-top: 0;
   }
   :global(pre > code) {
     font-size: 0.85rem;
-  }
-  :global(code) {
-    padding: 0.15rem 0.4rem;
-  }
-  :global(.hljs) {
-    background: none;
   }
   @media (prefers-color-scheme: light) {
     :global(code) {
