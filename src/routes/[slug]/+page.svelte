@@ -6,25 +6,22 @@
   import { onMount } from "svelte";
   import hljs from "highlight.js";
 
+  export let data: PageData;
+
+  let rawToc: string = "";
+
   onMount(async () => {
     document.querySelectorAll("pre code").forEach((el) => {
       hljs.highlightElement(el as HTMLElement);
     });
-  });
-  export let data: PageData;
-
-  const loadedBody = load(data.body);
-  const headings = loadedBody("h1, h2, h3").toArray();
-  const toc = headings.map((data: any) => ({
-    text: data.children[0].data,
-    id: data.attribs.id,
-    name: data.name,
-  }));
-
-  let rawToc: string = "";
-  let previousTag: string = "";
-
-  function getRawToc() {
+    const loadedBody = load(data.body);
+    const headings = loadedBody("h1, h2, h3").toArray();
+    const toc = headings.map((data: any) => ({
+      text: data.children[0].data,
+      id: data.attribs.id,
+      name: data.name,
+    }));
+    let previousTag: string = "";
     for (let i = 0; i < toc.length; i++) {
       if (previousTag === "") {
         rawToc += `<ul><li><a href="#${toc[i].id}">${toc[i].text}</a></li>`;
@@ -49,13 +46,12 @@
       }
       previousTag = toc[i].name;
     }
-    return rawToc;
-  }
+  });
 </script>
 
 <Breadcrumb title={data.title} />
 
-<Toc toc={getRawToc()} />
+<Toc toc={rawToc} />
 
 <article>
   {@html data.body}
