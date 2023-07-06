@@ -1,0 +1,33 @@
+{
+  "name": "nagutabbyの考え事",
+  "short_name": "ブログ",
+  "start_url": "/",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "https://images.microcms-assets.io/assets/99c53a99ae2b4682938f6c435d83e3d9/4a2fadaa79a944abb8895920573b9a79/cat_flat.png?w=192&h=192",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://images.microcms-assets.io/assets/99c53a99ae2b4682938f6c435d83e3d9/2db52a86a678456a84e4c3c13069d125/maskable_icon.png?w=192&h=192",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "https://images.microcms-assets.io/assets/99c53a99ae2b4682938f6c435d83e3d9/4a2fadaa79a944abb8895920573b9a79/cat_flat.png?w=512&h=512",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "https://images.microcms-assets.io/assets/99c53a99ae2b4682938f6c435d83e3d9/2db52a86a678456a84e4c3c13069d125/maskable_icon.png?w=512&h=512",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "theme_color": "#fff",
+  "background_color": "#fff",
+  "display": "standalone"
+}
