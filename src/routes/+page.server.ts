@@ -3,20 +3,34 @@ import { getList } from "../lib/microcms";
 import type { PageServerLoad } from "./$types";
 
 export const load: PageServerLoad = async ({ url }) => {
-  const numberOfArticlesPerPage: number = 4;
+  const numberOfArticlesPerPage = 2;
   let startIndex: number;
+  let limit: number;
   if (url.searchParams.get("page") !== null) {
+    limit = numberOfArticlesPerPage;
     startIndex =
       numberOfArticlesPerPage *
       (Number(url.searchParams.get("page")) - 1);
   } else {
+    limit = numberOfArticlesPerPage;
     startIndex = 0;
   }
-  const pageQueries: MicroCMSQueries = {
-    limit: numberOfArticlesPerPage,
-    offset: startIndex
+  let pageQueries: MicroCMSQueries;
+  if (url.searchParams.get("tag") !== null) {
+    pageQueries = {
+      limit: limit,
+      offset: startIndex,
+      filters: `tags[contains]${url.searchParams.get("tag")}`
+    }
+  } else {
+    pageQueries = {
+      limit: limit,
+      offset: startIndex
+    }
   }
-  return await getList(pageQueries);
+  let response = await getList(pageQueries)
+  response.numberOfArticlesPerPage = 2;
+  return response;
 };
 
 export const prerender = false;

@@ -5,6 +5,7 @@
   import { load } from "cheerio";
   import { onMount } from "svelte";
   import hljs from "highlight.js";
+  import TagList from "$lib/components/TagList.svelte";
 
   export let data: PageData;
 
@@ -50,6 +51,8 @@
 </script>
 
 <Breadcrumb title={data.title} />
+
+<TagList tags={data.tags} />
 
 <Toc toc={rawToc} />
 

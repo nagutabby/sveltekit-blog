@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { page } from "$app/stores";
   export let totalArticles: number;
   export let currentPage: number | null = 1;
   export let numberOfArticlesPerPage: number;
@@ -15,6 +16,12 @@
     <li>
       {#if i + 1 === currentPage}
         <button class="secondary outline" disabled>{i + 1}</button>
+      {:else if $page.url.searchParams.get("tag") !== null}
+        <a
+          href="?tag={$page.url.searchParams.get('tag')}&page={i + 1}"
+          role="button"
+          class="secondary">{i + 1}</a
+        >
       {:else}
         <a href="?page={i + 1}" role="button" class="secondary">{i + 1}</a>
       {/if}

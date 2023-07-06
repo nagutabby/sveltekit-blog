@@ -15,6 +15,7 @@ export type Blog = {
   revisedAt: string;
   image: MicroCMSImage;
   title: string;
+  tags: string;
   description: string;
   body: string;
   attribs: {
@@ -22,6 +23,7 @@ export type Blog = {
   }
 };
 export type BlogResponse = {
+  numberOfArticlesPerPage: number;
   totalCount: number;
   offset: number;
   limit: number;
