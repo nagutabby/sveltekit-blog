@@ -33,11 +33,8 @@
   ul {
     margin: 1rem 0;
     display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
     align-items: center;
     justify-content: center;
-    align-content: center;
     gap: 0 0.5rem;
   }
   li {
