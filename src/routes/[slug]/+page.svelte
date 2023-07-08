@@ -67,20 +67,22 @@
     :global(code) {
       color: #545454;
     }
-    :global(a:hover) {
-      color: #0d47a1;
+    :root {
+      --primary-hover: #0d47a1;
     }
   }
   @media (prefers-color-scheme: dark) {
     :global(code) {
       color: #f8f8f2;
     }
-    :global(a:hover) {
-      color: #29b6f6;
+    :root {
+      --primary-hover: #29b6f6;
     }
   }
   :global(a) {
-    color: #1e88e5;
     text-decoration: none;
+  }
+  :root {
+    --primary: #1e88e5 !important;
   }
 </style>

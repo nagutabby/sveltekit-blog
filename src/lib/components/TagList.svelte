@@ -12,7 +12,9 @@
 <ul>
   {#each tags as tag}
     <li>
-      <a href="/?tag={tag.id}">#{tag.name}</a>
+      <a href="/?tag={tag.id}" role="button" class="outline">
+        #{tag.name}
+      </a>
     </li>
   {/each}
 </ul>
@@ -20,9 +22,11 @@
 <style>
   li {
     list-style: none;
+    margin: 0;
   }
   ul {
     display: flex;
+    padding: 0;
     gap: 0 1rem;
   }
 </style>
