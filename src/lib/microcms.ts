@@ -27,7 +27,7 @@ export type Blog = {
     publishedAt: string;
     revisedAt: string;
     name: string;
-  }
+  }[]
 };
 export type BlogResponse = {
   numberOfArticlesPerPage: number;
