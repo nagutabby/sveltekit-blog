@@ -3,7 +3,7 @@ import { getList } from "../lib/microcms";
 import type { PageServerLoad } from "./$types";
 
 export const load: PageServerLoad = async ({ url }) => {
-  const numberOfArticlesPerPage = 2;
+  const numberOfArticlesPerPage = 4;
   let startIndex: number;
   let limit: number;
   if (url.searchParams.get("page") !== null) {
@@ -29,7 +29,7 @@ export const load: PageServerLoad = async ({ url }) => {
     }
   }
   let response = await getList(pageQueries)
-  response.numberOfArticlesPerPage = 2;
+  response.numberOfArticlesPerPage = numberOfArticlesPerPage;
   return response;
 };
 
