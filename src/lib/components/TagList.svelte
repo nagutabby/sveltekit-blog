@@ -1,12 +1,18 @@
 <script lang="ts">
-  export let tags: string;
-  const tagList: string[] = tags.split(", ");
+  export let tags: {
+    id: string;
+    createdAt: string;
+    updatedAt: string;
+    publishedAt: string;
+    revisedAt: string;
+    name: string;
+  }[];
 </script>
 
 <ul>
-  {#each tagList as tag}
+  {#each tags as tag}
     <li>
-      <a href="/?tag={tag}">#{tag}</a>
+      <a href="/?tag={tag.id}">#{tag.name}</a>
     </li>
   {/each}
 </ul>

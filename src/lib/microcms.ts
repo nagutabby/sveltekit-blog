@@ -15,11 +15,18 @@ export type Blog = {
   revisedAt: string;
   image: MicroCMSImage;
   title: string;
-  tags: string;
   description: string;
   body: string;
   attribs: {
     id: string;
+  }
+  tags: {
+    id: string;
+    createdAt: string;
+    updatedAt: string;
+    publishedAt: string;
+    revisedAt: string;
+    name: string;
   }
 };
 export type BlogResponse = {
