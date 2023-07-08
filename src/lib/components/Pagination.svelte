@@ -31,7 +31,7 @@
 
 <style>
   ul {
-    height: 10vh;
+    margin: 1rem 0;
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
@@ -42,6 +42,6 @@
   }
   li {
     list-style: none;
-    height: 10vh;
+    height: 1vh;
   }
 </style>
