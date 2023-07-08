@@ -15,7 +15,7 @@
   {#each { length: pages } as _, i}
     <li>
       {#if i + 1 === currentPage}
-        <button class="secondary outline" disabled>{i + 1}</button>
+        <a href="./" role="button" class="secondary outline">{i + 1}</a>
       {:else if $page.url.searchParams.get("tag") !== null}
         <a
           href="?tag={$page.url.searchParams.get('tag')}&page={i + 1}"
@@ -31,7 +31,6 @@
 
 <style>
   ul {
-    margin: 1rem 0;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -39,6 +38,12 @@
   }
   li {
     list-style: none;
-    height: 1vh;
+    margin: 1rem 0;
+  }
+  .secondary.outline {
+    pointer-events: none;
+  }
+  a:hover {
+    color: #fff;
   }
 </style>
