@@ -25,7 +25,8 @@ export const load: PageServerLoad = async ({ url }) => {
   } else {
     pageQueries = {
       limit: limit,
-      offset: startIndex
+      offset: startIndex,
+      filters: "id[not_equals]about-me"
     }
   }
   let response = await getList(pageQueries)

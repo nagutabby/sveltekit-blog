@@ -1,7 +1,7 @@
 <footer>
   <article>
     <div class="container">
-      <p class="username">@nagutabby</p>
+      <a href="/about-me">About me</a>
       <ul>
         <li>
           <a
@@ -84,10 +84,6 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      & .username {
-        display: flex;
-        margin-bottom: 0;
-      }
       & .icon {
         align-items: center;
         width: 1.5rem;
