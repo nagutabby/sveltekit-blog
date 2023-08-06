@@ -24,8 +24,8 @@ devDependencies:
     specifier: ^3.4.6
     version: 3.4.6(svelte@3.59.1)
   tslib:
-    specifier: ^2.4.1
-    version: 2.5.0
+    specifier: ^2.6.1
+    version: 2.6.1
   typescript:
     specifier: ^5.0.0
     version: 5.0.4
@@ -1380,8 +1380,8 @@ packages:
     resolution: {integrity: sha512-N3WMsuqV66lT30CrXNbEjx4GEwlow3v6rr4mCcv6prnfwhS01rkgyFdjPNBYd9br7LpXV1+Emh01fHnq2Gdgrw==}
     dev: true
 
-  /tslib@2.5.0:
-    resolution: {integrity: sha512-336iVw3rtn2BUK7ORdIAHTyxHGRIHVReokCR3XjbckJMK7ms8FysBfhLR8IXnAgy7T0PTPNBWKiH514FOW/WSg==}
+  /tslib@2.6.1:
+    resolution: {integrity: sha512-t0hLfiEKfMUoqhG+U1oid7Pva4bbDPHYfJNiB7BiIjRkj1pyC++4N3huJfqY6aRH6VTB0rvtzQwjM4K6qpfOig==}
     dev: true
 
   /typescript@5.0.4:
