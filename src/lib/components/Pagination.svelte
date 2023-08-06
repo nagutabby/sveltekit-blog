@@ -35,6 +35,7 @@
     align-items: center;
     justify-content: center;
     gap: 0 0.5rem;
+    padding: 0;
   }
   li {
     list-style: none;
