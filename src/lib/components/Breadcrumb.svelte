@@ -1,6 +1,6 @@
 <script lang="ts">
   import { page } from "$app/stores";
-  const baseURL = "https://blog.nagutabby.uk";
+  const baseURL = "/";
   const partsOfPathname = $page.url.pathname.substring(1).split("/");
   let tmpURL: string;
   export let title: string;
