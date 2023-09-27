@@ -27,27 +27,22 @@
     padding: 0;
     & a {
       text-decoration: none;
-      padding: var(--block-spacing-vertical) var(--block-spacing-horizontal);
+      border-radius: 5px;
       display: flex;
       flex-flow: column;
       & .description {
         text-align: center;
-        margin: 1rem 0 0 0;
         display: flex;
         flex-flow: column;
-        gap: 1rem;
-        & p {
-          margin: 0;
-        }
+        width: 90%;
+        margin: 1rem auto;
       }
     }
     & img {
-      margin: 0 auto;
-      min-height: 250px;
-      min-width: 250px;
-      aspect-ratio: 1 / 1;
+      width: 100%;
+      aspect-ratio: 3 / 2;
       object-fit: cover;
-      border-radius: 4%;
+      border-radius: 5px 5px 0px 0px;
       background-color: hsl(205, 20%, 94%);
     }
   }
