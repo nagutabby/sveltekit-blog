@@ -25,7 +25,9 @@
   article {
     transition: all 0.2s ease;
     padding: 0;
+
     & a {
+      height: 100%;
       text-decoration: none;
       border-radius: 5px;
       display: flex;
