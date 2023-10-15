@@ -19,11 +19,11 @@
   <meta property="og:description" content={homeDescription} />
   <meta
     property="og:image"
-    content="https://images.microcms-assets.io/assets/20db8de3037b46c1bd258abf36bfeccc/d116d806d4e14b81b778e3b618b0a203/cat.jpg?fm=webp&fit=clip&w=1200"
+    content="https://images.microcms-assets.io/assets/99c53a99ae2b4682938f6c435d83e3d9/ca63de19468e45b2833ebf325dbfd56c/Microsoft-Fluentui-Emoji-3d-Cat-3d.1024.png?fm=webp&fit=clip&w=1200"
   />
   <meta
     name="twitter:image"
-    content="https://images.microcms-assets.io/assets/20db8de3037b46c1bd258abf36bfeccc/d116d806d4e14b81b778e3b618b0a203/cat.jpg?fm=webp&fit=clip&w=1200"
+    content="https://images.microcms-assets.io/assets/99c53a99ae2b4682938f6c435d83e3d9/ca63de19468e45b2833ebf325dbfd56c/Microsoft-Fluentui-Emoji-3d-Cat-3d.1024.png?fm=webp&fit=clip&w=1200"
   />
 {:else}
   <title>{subTitle} - {baseTitle}</title>

@@ -12,7 +12,7 @@
     <link
       rel="preload"
       as="image"
-      imagesrcset="/cat_1x.webp 600w, /cat_2x.webp 1200w"
+      imagesrcset="https://images.microcms-assets.io/assets/99c53a99ae2b4682938f6c435d83e3d9/ca63de19468e45b2833ebf325dbfd56c/Microsoft-Fluentui-Emoji-3d-Cat-3d.1024.png?fm=webp&fit=clip&w=600 600w, https://images.microcms-assets.io/assets/99c53a99ae2b4682938f6c435d83e3d9/ca63de19468e45b2833ebf325dbfd56c/Microsoft-Fluentui-Emoji-3d-Cat-3d.1024.png?fm=webp&fit=clip&w=1200 1200w"
     />
   {:else}
     <link
@@ -25,7 +25,10 @@
 
 <header>
   {#if pathname === "/"}
-    <img alt="" srcset="/cat_1x.webp 600w, /cat_2x.webp 1200w" />
+    <img
+      alt=""
+      srcset="https://images.microcms-assets.io/assets/99c53a99ae2b4682938f6c435d83e3d9/ca63de19468e45b2833ebf325dbfd56c/Microsoft-Fluentui-Emoji-3d-Cat-3d.1024.png?fm=webp&fit=clip&w=600 600w, https://images.microcms-assets.io/assets/99c53a99ae2b4682938f6c435d83e3d9/ca63de19468e45b2833ebf325dbfd56c/Microsoft-Fluentui-Emoji-3d-Cat-3d.1024.png?fm=webp&fit=clip&w=1200 1200w"
+    />
   {:else}
     <img
       alt=""
