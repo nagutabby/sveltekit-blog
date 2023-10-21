@@ -50,15 +50,27 @@
 
 <TagList tags={data.tags} />
 
-<Toc toc={rawToc} />
-
-<article>
-  {@html data.body}
-</article>
+<div class="row article-group">
+  <div class="col-12 col-lg-4">
+    <div class="sticky-top">
+      <Toc toc={rawToc} />
+    </div>
+  </div>
+  <div class="col-12 col-lg-8">
+    <article>
+      {@html data.body}
+    </article>
+  </div>
+</div>
 
 <style>
-  article {
-    margin-top: 0;
+  .article-group {
+    display: flex;
+    flex-direction: row-reverse;
+  }
+  .sticky-top {
+    position: sticky;
+    top: 0;
   }
   :global(pre > code) {
     font-size: 0.85rem;

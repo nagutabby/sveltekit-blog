@@ -3,7 +3,7 @@
 </script>
 
 <article>
-  <details>
+  <details open>
     <summary>目次</summary>
     {@html toc}
   </details>
