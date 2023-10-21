@@ -63,18 +63,24 @@
       width: 100%;
       height: 50vh;
       object-fit: cover;
-      filter: brightness(70%);
       background-color: white;
     }
     & .title {
+      height: 100%;
+      max-width: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(3px);
       position: absolute;
       left: 50%;
       top: 50%;
       transform: translate(-50%, -50%);
+      display: flex;
       & hgroup {
         display: flex;
         flex-flow: column;
         gap: 1rem 0;
+        justify-content: center;
+        margin: 0 auto;
       }
       & hgroup > h1 {
         font-size: 2.3rem;
