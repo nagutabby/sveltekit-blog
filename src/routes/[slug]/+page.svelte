@@ -76,8 +76,8 @@
 <TagList tags={data.tags} />
 
 <div class="row article-group">
-  <div class="col-12 col-lg-4">
-    <div class="sticky-top toc">
+  <div class="col-12 col-lg-4 sticky-top">
+    <div class="toc">
       <Toc toc={rawToc} />
     </div>
   </div>
@@ -96,9 +96,27 @@
   .sticky-top {
     position: sticky;
     top: 0;
+    align-self: flex-start;
+  }
+  .toc {
+    & article {
+      margin: 0;
+    }
+    & details[open] > ul {
+      max-height: 20vh;
+      overflow-y: auto;
+    }
   }
   :global(pre > code) {
     font-size: 0.85rem;
+  }
+  @media screen and (min-width: 992px) {
+    :global(.toc > article) {
+      margin: var(--block-spacing-vertical) 0 !important;
+    }
+    :global(.toc > article > details[open] > ul) {
+      max-height: 40vh !important;
+    }
   }
   @media (prefers-color-scheme: light) {
     :global(code) {
@@ -108,7 +126,7 @@
       --primary-hover: #0d47a1;
     }
     :global(.active) {
-      background: linear-gradient(transparent 60%, #B2EBF2 60%);
+      background: linear-gradient(transparent 60%, #b2ebf2 60%);
     }
   }
   @media (prefers-color-scheme: dark) {
