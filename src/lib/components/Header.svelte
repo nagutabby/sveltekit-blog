@@ -35,8 +35,8 @@
       srcset="{url}?fm=webp&fit=clip&w=500 500w, {url}?fm=webp&fit=clip&w=1000 1000w"
     />
   {/if}
-  <div class="title container">
-    <hgroup>
+  <div class="title">
+    <hgroup class="container">
       <h1>
         {#if pathname === "/"}
           nagutabbyの考え事
@@ -67,7 +67,7 @@
     }
     & .title {
       height: 100%;
-      max-width: 100%;
+      width: 100%;
       background: rgba(0, 0, 0, 0.5);
       backdrop-filter: blur(3px);
       position: absolute;
@@ -80,7 +80,7 @@
         flex-flow: column;
         gap: 1rem 0;
         justify-content: center;
-        margin: 0 auto;
+        width: 100%;
       }
       & hgroup > h1 {
         font-size: 2.3rem;
