@@ -12,7 +12,7 @@
 
   onMount(async () => {
     const loadedBody = load(data.body);
-    const headings = loadedBody("h1, h2, h3").toArray();
+    let headings: any = loadedBody("h1, h2, h3").toArray();
     const toc = headings.map((data: any) => ({
       text: data.children[0].data,
       id: data.attribs.id,
@@ -43,6 +43,31 @@
       }
       previousTag = toc[i].name;
     }
+    let activeHeading: any;
+    const updateElements = (entries: any) => {
+      entries.forEach((entry: any) => {
+        if (entry.isIntersecting) {
+          if (activeHeading !== undefined && activeHeading !== null) {
+            activeHeading.classList.remove("active");
+          }
+          activeHeading = document.querySelector(
+            `a[href="#${entry.target.id}"]`
+          );
+
+          if (activeHeading !== null) {
+            activeHeading.classList.add("active");
+          }
+        }
+      });
+    };
+    headings = document.querySelectorAll("h1, h2, h3");
+    const options = {
+      threshold: 1,
+    };
+    const observer = new IntersectionObserver(updateElements, options);
+    headings.forEach((heading: any) => {
+      observer.observe(heading);
+    });
   });
 </script>
 
@@ -52,7 +77,7 @@
 
 <div class="row article-group">
   <div class="col-12 col-lg-4">
-    <div class="sticky-top">
+    <div class="sticky-top toc">
       <Toc toc={rawToc} />
     </div>
   </div>
@@ -82,6 +107,9 @@
     :root {
       --primary-hover: #0d47a1;
     }
+    :global(.active) {
+      background: linear-gradient(transparent 60%, #B2EBF2 60%);
+    }
   }
   @media (prefers-color-scheme: dark) {
     :global(code) {
@@ -89,6 +117,9 @@
     }
     :root {
       --primary-hover: #29b6f6;
+    }
+    :global(.active) {
+      background: linear-gradient(transparent 60%, #455a64 60%);
     }
   }
   :global(a) {
