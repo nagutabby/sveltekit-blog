@@ -10,7 +10,7 @@
   export let url: string;
 </script>
 
-{#if pathname === "/"}
+{#if pathname === "/" || pathname.split("/")[1] === "pages" || pathname.split("/")[1] === "tags"}
   <title>{baseTitle}</title>
   <meta property="og:title" content={baseTitle} />
   <meta name="twitter:title" content={baseTitle} />
