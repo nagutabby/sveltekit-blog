@@ -4,7 +4,9 @@ import type { PageServerLoad } from "./$types";
 
 export const load: PageServerLoad = async ({ url }) => {
   const limit = 9;
-  const startIndex = 0;
+  const startIndex =
+    limit *
+    (Number(url.pathname.split("/")[2]) - 1);
   let pageQueries: MicroCMSQueries;
   pageQueries = {
     limit: limit,

@@ -3,7 +3,7 @@ import { getList } from "$lib/microcms";
 import type { PageServerLoad } from "./$types";
 
 export const load: PageServerLoad = async ({ url }) => {
-  const limit = 9;
+  const limit = 1;
   const startIndex = 0;
   let pageQueries: MicroCMSQueries;
   pageQueries = {

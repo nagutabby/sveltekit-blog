@@ -2,6 +2,7 @@
   import type { PageData } from "./$types";
   import Card from "$lib/components/Card.svelte";
   import Pagination from "$lib/components/Pagination.svelte";
+  import { page } from "$app/stores";
 
   function parseDate(date: string | Date) {
     date = new Date(date);
@@ -117,4 +118,5 @@
 
 <Pagination
   totalArticles={data.totalCount}
+  currentPage={Number($page.url.pathname.split("/")[2])}
 />

@@ -7,7 +7,7 @@
 </script>
 
 <svelte:head>
-  {#if pathname === "/"}
+  {#if pathname === "/" || pathname.split("/")[1] === "pages" || pathname.split("/")[1] === "tags"}
     <OpenGraph url="" subTitle="" description="" />
   {:else}
     <OpenGraph
@@ -18,7 +18,7 @@
   {/if}
 </svelte:head>
 
-{#if pathname === "/"}
+{#if pathname === "/" || pathname.split("/")[1] === "pages" || pathname.split("/")[1] === "tags"}
   <Header url="" title="" description="" />
 {:else}
   <Header

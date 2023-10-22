@@ -2,7 +2,7 @@
   import { page } from "$app/stores";
   export let totalArticles: number;
   export let currentPage: number | null = 1;
-  export let numberOfArticlesPerPage: number;
+  const numberOfArticlesPerPage = 9;
   let pages: number;
   if (totalArticles % numberOfArticlesPerPage !== 0) {
     pages = Math.floor(totalArticles / numberOfArticlesPerPage) + 1;
@@ -16,14 +16,14 @@
     <li>
       {#if i + 1 === currentPage}
         <a href="./" role="button" class="secondary outline">{i + 1}</a>
-      {:else if $page.url.searchParams.get("tag") !== null}
+      {:else if $page.url.pathname.split("/")[1] === "tags"}
         <a
-          href="?tag={$page.url.searchParams.get('tag')}&page={i + 1}"
+          href="/tags/{$page.url.pathname.split('/')[2]}/pages/{i + 1}"
           role="button"
           class="secondary">{i + 1}</a
         >
-      {:else}
-        <a href="?page={i + 1}" role="button" class="secondary">{i + 1}</a>
+      {:else if $page.url.pathname.split("/")[1] === "pages" || $page.url.pathname.split("/")[1] === ""}
+        <a href="/pages/{i + 1}" role="button" class="secondary">{i + 1}</a>
       {/if}
     </li>
   {/each}

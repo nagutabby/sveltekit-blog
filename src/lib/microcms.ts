@@ -6,7 +6,6 @@ const client = createClient({
   apiKey: MICROCMS_API_KEY,
 });
 
-//型定義
 export type Blog = {
   id: string;
   createdAt: string;
@@ -20,24 +19,15 @@ export type Blog = {
   attribs: {
     id: string;
   }
-  tags: {
-    id: string;
-    createdAt: string;
-    updatedAt: string;
-    publishedAt: string;
-    revisedAt: string;
-    name: string;
-  }[]
+  tags: string;
 };
 export type BlogResponse = {
-  numberOfArticlesPerPage: number;
   totalCount: number;
   offset: number;
   limit: number;
   contents: Blog[];
 };
 
-//APIの呼び出し
 export const getList = async (queries?: MicroCMSQueries) => {
   return await client.get<BlogResponse>({ endpoint: "blog", queries });
 };
@@ -51,3 +41,14 @@ export const getDetail = async (
     queries,
   });
 };
+
+export const getAllContents = async (limit = 10, offset = 0) => {
+  const data = await client.get<BlogResponse>({ endpoint: "blog", queries: { limit, offset } });
+  let tmpOffset = 0;
+  while (tmpOffset < data.totalCount) {
+    tmpOffset += limit;
+    const tmpData: BlogResponse = await getList({ limit: limit, offset: tmpOffset });
+    data.contents = data.contents.concat(tmpData.contents);
+  }
+  return data;
+}

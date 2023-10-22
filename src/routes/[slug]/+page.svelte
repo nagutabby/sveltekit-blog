@@ -10,7 +10,9 @@
   let rawToc: string = "";
 
   onMount(async () => {
-    let headings: any = Array.from(document.getElementById("content")!.querySelectorAll("h1, h2, h3"));
+    let headings: any = Array.from(
+      document.getElementById("content")!.querySelectorAll("h1, h2, h3")
+    );
     const toc = headings.map((heading: Element) => ({
       text: heading.textContent,
       id: heading.getAttribute("id"),
@@ -72,7 +74,9 @@
 
 <Breadcrumb title={data.title} />
 
-<TagList tags={data.tags} />
+{#if data.tags !== undefined}
+  <TagList tags={data.tags.split(",")} />
+{/if}
 
 <div class="row article-group">
   <div class="col-12 col-lg-4 sticky-top">

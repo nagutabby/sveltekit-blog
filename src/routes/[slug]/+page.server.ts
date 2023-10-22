@@ -1,4 +1,4 @@
-import { getDetail } from "../../lib/microcms";
+import { getDetail } from "$lib/microcms";
 import type { PageServerLoad } from "./$types";
 
 export const load: PageServerLoad = async ({ params }) => {
@@ -7,4 +7,4 @@ export const load: PageServerLoad = async ({ params }) => {
   );
 };
 
-export const prerender = false;
+export const prerender = true;

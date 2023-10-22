@@ -6,7 +6,7 @@
 </script>
 
 <article>
-  <a href={url}>
+  <a href=/{url}>
     <img
       alt=""
       height="250"
