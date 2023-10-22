@@ -62,7 +62,8 @@
     };
     headings = document.querySelectorAll("h1, h2, h3");
     const options = {
-      threshold: 1,
+      rootMargin: "0% 0% -100% 0%",
+      threshold: 0,
     };
     const observer = new IntersectionObserver(updateElements, options);
     headings.forEach((heading: any) => {
