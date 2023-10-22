@@ -2,7 +2,6 @@
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import Toc from "$lib/components/Toc.svelte";
   import type { PageData } from "./$types";
-  import { load } from "cheerio";
   import { onMount } from "svelte";
   import TagList from "$lib/components/TagList.svelte";
 
@@ -11,12 +10,11 @@
   let rawToc: string = "";
 
   onMount(async () => {
-    const loadedBody = load(data.body);
-    let headings: any = loadedBody("h1, h2, h3").toArray();
-    const toc = headings.map((data: any) => ({
-      text: data.children[0].data,
-      id: data.attribs.id,
-      name: data.name,
+    let headings: any = Array.from(document.getElementById("content")!.querySelectorAll("h1, h2, h3"));
+    const toc = headings.map((heading: Element) => ({
+      text: heading.textContent,
+      id: heading.getAttribute("id"),
+      name: heading.tagName,
     }));
     let previousTag: string = "";
     for (let i = 0; i < toc.length; i++) {
@@ -24,20 +22,20 @@
         rawToc += `<ul><li><a href="#${toc[i].id}">${toc[i].text}</a></li>`;
       } else if (toc[i].name === previousTag) {
         rawToc += `<li><a href="#${toc[i].id}">${toc[i].text}</a></li>`;
-      } else if (previousTag === "h1") {
-        if (toc[i].name === "h2" || "h3") {
+      } else if (previousTag === "H1") {
+        if (toc[i].name === "H2" || "H3") {
           rawToc += `<ul><li><a href="#${toc[i].id}">${toc[i].text}</a></li>`;
         }
-      } else if (previousTag === "h2") {
-        if (toc[i].name === "h3") {
+      } else if (previousTag === "H2") {
+        if (toc[i].name === "H3") {
           rawToc += `<ul><li><a href="#${toc[i].id}">${toc[i].text}</a></li>`;
-        } else if (toc[i].name === "h1") {
+        } else if (toc[i].name === "H1") {
           rawToc += `</ul><li><a href="#${toc[i].id}">${toc[i].text}</a></li>`;
         }
-      } else if (previousTag === "h3") {
-        if (toc[i].name === "h2") {
+      } else if (previousTag === "H3") {
+        if (toc[i].name === "H2") {
           rawToc += `</ul><li><a href="#${toc[i].id}">${toc[i].text}</a></li>`;
-        } else if (toc[i].name === "h1") {
+        } else if (toc[i].name === "H1") {
           rawToc += `</ul></ul><li><a href="#${toc[i].id}">${toc[i].text}</a></li>`;
         }
       }
@@ -82,7 +80,7 @@
       <Toc toc={rawToc} />
     </div>
   </div>
-  <div class="col-12 col-lg-8">
+  <div class="col-12 col-lg-8" id="content">
     <article>
       {@html data.body}
     </article>
