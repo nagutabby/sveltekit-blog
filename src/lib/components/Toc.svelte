@@ -8,3 +8,9 @@
     {@html toc}
   </details>
 </article>
+
+<style>
+  :global(article > details > ul) {
+    margin-bottom: 0;
+  }
+</style>
