@@ -5,7 +5,11 @@
 <ul>
   {#each tags as tag}
     <li>
-      <a href="/tags/{tag}" role="button" class="outline">
+      <a
+        href="/tags/{tag.replaceAll(' ', '-').toLowerCase()}"
+        role="button"
+        class="outline"
+      >
         #{tag}
       </a>
     </li>

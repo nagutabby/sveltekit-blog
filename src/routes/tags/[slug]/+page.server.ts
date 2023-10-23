@@ -8,7 +8,7 @@ export const load: PageServerLoad = async ({ url }) => {
     if (content.tags !== undefined) {
       const tags = content.tags.split(",")
       for (let i = 0; i < tags.length; i++) {
-        if (url.pathname.split("/")[2] === tags[i]) {
+        if (url.pathname.split("/")[2] === tags[i].replaceAll(" ", "-").toLowerCase()) {
           matchedContents.push(content);
           break;
         }
