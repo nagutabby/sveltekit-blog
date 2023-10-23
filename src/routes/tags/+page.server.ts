@@ -12,7 +12,7 @@ export const load: PageServerLoad = async ({ url }) => {
       }
     }
   })
-  return {tagSet};
+  return { tagSet };
 };
 
 export const prerender = true;
