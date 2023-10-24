@@ -1,10 +1,10 @@
 <script lang="ts">
-  import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import Toc from "$lib/components/Toc.svelte";
   import type { PageData } from "./$types";
   import { onMount } from "svelte";
-  import TagList from "$lib/components/TagList.svelte";
-
+  import Breadcrumb from "$lib/components/Breadcrumb.svelte";
+  import TagDropdown from "$lib/components/TagDropdown.svelte";
+  import ShareButton from "$lib/components/ShareButton.svelte";
   export let data: PageData;
 
   let rawToc: string = "";
@@ -74,14 +74,22 @@
 
 <Breadcrumb title={data.title} />
 
-{#if data.tags !== undefined}
-  <TagList tags={data.tags.split(",")} />
-{/if}
-
 <div class="row article-group">
-  <div class="col-12 col-lg-4 sticky-top">
-    <div class="toc">
-      <Toc toc={rawToc} />
+  <div class="col-12 col-lg-4 right-group">
+    {#if data.tags !== undefined}
+      <div class="col-12">
+        <TagDropdown tags={data.tags.split(",")} />
+      </div>
+    {/if}
+    <div class="sticky-top">
+      <div class="col-12">
+        <div class="toc">
+          <Toc toc={rawToc} />
+        </div>
+      </div>
+      <div class="col-12">
+        <ShareButton />
+      </div>
     </div>
   </div>
   <div class="col-12 col-lg-8" id="content">
@@ -96,15 +104,7 @@
     display: flex;
     flex-direction: row-reverse;
   }
-  .sticky-top {
-    position: sticky;
-    top: 0;
-    align-self: flex-start;
-  }
   .toc {
-    & article {
-      margin: 0;
-    }
     & details[open] > ul {
       max-height: 20vh;
       overflow-y: auto;
@@ -119,6 +119,10 @@
     }
     :global(.toc > article > details[open] > ul) {
       max-height: 40vh !important;
+    }
+    .sticky-top {
+      position: sticky;
+      top: 0;
     }
   }
   @media (prefers-color-scheme: light) {
