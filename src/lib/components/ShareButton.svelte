@@ -2,7 +2,11 @@
   import { onMount } from "svelte";
 
   onMount(() => {
-    if (navigator.share !== undefined) {
+    if (
+      "share" in navigator &&
+      "userAgentData" in navigator &&
+      navigator.userAgentData.mobile
+    ) {
       const shareButton = document.getElementById("share-button");
       shareButton!.addEventListener("click", async () => {
         await navigator.share({ title: document.title, url: location.href });
