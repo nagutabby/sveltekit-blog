@@ -2,29 +2,29 @@
   import { onMount } from "svelte";
 
   onMount(() => {
-    let hasTouchScreen = false;
+    let isMobileDevice = false;
     if ("userAgentData" in navigator && navigator.userAgentData.mobile) {
-      hasTouchScreen = navigator.maxTouchPoints > 0;
+      isMobileDevice = navigator.maxTouchPoints > 0;
     } else if ("maxTouchPoints" in navigator) {
-      hasTouchScreen = navigator.maxTouchPoints > 0;
+      isMobileDevice = navigator.maxTouchPoints > 0;
     } else if ("msMaxTouchPoints" in navigator) {
-      hasTouchScreen = (navigator as Navigator).msMaxTouchPoints > 0;
+      isMobileDevice = (navigator as Navigator).msMaxTouchPoints > 0;
     } else {
       const mQ = matchMedia?.("(pointer:coarse)");
       if (mQ?.media === "(pointer:coarse)") {
-        hasTouchScreen = !!mQ.matches;
+        isMobileDevice = !!mQ.matches;
       } else if ("orientation" in window) {
-        hasTouchScreen = true; // deprecated, but good fallback
+        isMobileDevice = true; // deprecated, but good fallback
       } else {
         // Only as a last resort, fall back to user agent sniffing
         const UA = (navigator as Navigator).userAgent;
-        hasTouchScreen =
+        isMobileDevice =
           /\b(BlackBerry|webOS|iPhone|IEMobile)\b/i.test(UA) ||
           /\b(Android|Windows Phone|iPad|iPod)\b/i.test(UA);
       }
     }
 
-    if ("share" in navigator && hasTouchScreen) {
+    if ("share" in navigator && isMobileDevice) {
       const shareButton = document.getElementById("share-button");
       shareButton!.addEventListener("click", async () => {
         await navigator.share({ title: document.title, url: location.href });
