@@ -3,8 +3,8 @@
 
   onMount(() => {
     let isMobileDevice = false;
-    if ("userAgentData" in navigator && navigator.userAgentData.mobile) {
-      isMobileDevice = navigator.maxTouchPoints > 0;
+    if ("userAgentData" in navigator) {
+      isMobileDevice = navigator.userAgentData.mobile;
     } else if ("maxTouchPoints" in navigator) {
       isMobileDevice = navigator.maxTouchPoints > 0;
     } else if ("msMaxTouchPoints" in navigator) {
