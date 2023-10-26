@@ -6,7 +6,7 @@
     if ("userAgentData" in navigator) {
       isMobileDevice = navigator.userAgentData.mobile;
     } else if ("maxTouchPoints" in navigator) {
-      isMobileDevice = navigator.maxTouchPoints > 0;
+      isMobileDevice = (navigator as Navigator).maxTouchPoints > 0;
     } else if ("msMaxTouchPoints" in navigator) {
       isMobileDevice = (navigator as Navigator).msMaxTouchPoints > 0;
     } else {
