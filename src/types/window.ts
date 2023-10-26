@@ -12,5 +12,4 @@ type NavigatorUAData = {
 interface Navigator {
   userAgentData: NavigatorUAData;
   msMaxTouchPoints: number;
-  userAgent: string;
 }
