@@ -143,8 +143,7 @@
 
 <dialog id="mastodon-modal">
   <article>
-    <a
-      href="#close"
+    <button
       aria-label="Close"
       class="close mastodon-share-close-button"
       data-target="mastodon-modal"
@@ -161,22 +160,24 @@
       />
     </label>
     <footer>
-      <a
-        href="#cancel"
-        role="button"
-        class="secondary mastodon-share-close-button"
-        data-target="mastodon-modal"
-      >
-        Cancel
-      </a>
-      <a
-        href="#confirm"
-        role="button"
-        data-target="mastodon-modal"
-        id="mastodon-share-confirm-button"
-      >
-        Confirm
-      </a>
+      <div class="row">
+        <div class="col-6">
+          <button
+            class="secondary mastodon-share-close-button"
+            data-target="mastodon-modal"
+          >
+            キャンセル
+          </button>
+        </div>
+        <div class="col-6">
+          <button
+            data-target="mastodon-modal"
+            id="mastodon-share-confirm-button"
+          >
+            シェア
+          </button>
+        </div>
+      </div>
     </footer>
   </article>
 </dialog>
@@ -192,5 +193,12 @@
   }
   :global(.none) {
     display: none !important;
+  }
+  .close {
+    background-color: transparent;
+    border-color: transparent;
+    &:focus {
+      box-shadow: none;
+    }
   }
 </style>
