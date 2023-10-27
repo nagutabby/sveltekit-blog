@@ -3,30 +3,25 @@
   import { page } from "$app/stores";
   import Footer from "$lib/components/Footer.svelte";
   import OpenGraph from "$lib/components/OpenGraph.svelte";
-  $: pathname = $page.url.pathname;
 </script>
 
 <svelte:head>
-  {#if pathname === "/" || pathname.split("/")[1] === "pages" || pathname.split("/")[1] === "tags"}
-    <OpenGraph url="" subTitle="" description="" />
-  {:else}
-    <OpenGraph
-      url={$page.data.image.url}
-      subTitle={$page.data.title}
-      description={$page.data.description}
-    />
-  {/if}
+  <OpenGraph
+    url={$page.data.image === undefined ? "" : $page.data.image.url}
+    subTitle={$page.data.title === undefined ? "" : $page.data.title}
+    description={$page.data.description === undefined
+      ? ""
+      : $page.data.description}
+  />
 </svelte:head>
 
-{#if pathname === "/" || pathname.split("/")[1] === "pages" || pathname.split("/")[1] === "tags"}
-  <Header url="" title="" description="" />
-{:else}
-  <Header
-    url={$page.data.image.url}
-    title={$page.data.title}
-    description={$page.data.description}
-  />
-{/if}
+<Header
+  url={$page.data.image === undefined ? "" : $page.data.image.url}
+  title={$page.data.title === undefined ? "" : $page.data.title}
+  description={$page.data.description === undefined
+    ? ""
+    : $page.data.description}
+/>
 
 <main class="container">
   <slot />

@@ -1,14 +1,11 @@
 <script lang="ts">
-  import { page } from "$app/stores";
-  $: pathname = $page.url.pathname;
-
   export let url: string;
   export let title: string;
   export let description: string;
 </script>
 
 <svelte:head>
-  {#if pathname === "/" || pathname.split("/")[1] === "pages" || pathname.split("/")[1] === "tags"}
+  {#if url === ""}
     <link
       rel="preload"
       as="image"
@@ -24,7 +21,7 @@
 </svelte:head>
 
 <header>
-  {#if pathname === "/" || pathname.split("/")[1] === "pages" || pathname.split("/")[1] === "tags"}
+  {#if url === ""}
     <img
       alt=""
       srcset="https://images.microcms-assets.io/assets/99c53a99ae2b4682938f6c435d83e3d9/ca63de19468e45b2833ebf325dbfd56c/Microsoft-Fluentui-Emoji-3d-Cat-3d.1024.png?fm=webp&fit=clip&w=500 500w, https://images.microcms-assets.io/assets/99c53a99ae2b4682938f6c435d83e3d9/ca63de19468e45b2833ebf325dbfd56c/Microsoft-Fluentui-Emoji-3d-Cat-3d.1024.png?fm=webp&fit=clip&w=1000 1000w"
@@ -38,14 +35,14 @@
   <div class="title">
     <hgroup class="container">
       <h1>
-        {#if pathname === "/" || pathname.split("/")[1] === "pages" || pathname.split("/")[1] === "tags"}
+        {#if title === ""}
           nagutabbyの考え事
         {:else}
           {title}
         {/if}
       </h1>
       <h2>
-        {#if pathname === "/" || pathname.split("/")[1] === "pages" || pathname.split("/")[1] === "tags"}
+        {#if description === ""}
           学んだことをまとめるブログ
         {:else}
           {description}
