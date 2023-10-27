@@ -1,8 +1,9 @@
 {
+  "lang": "ja",
   "name": "nagutabbyの考え事",
   "short_name": "ブログ",
+  "description": "学んだことをまとめるブログ",
   "start_url": "/",
-  "scope": "/",
   "theme_color": "black",
   "background_color": "black",
   "display": "standalone",
