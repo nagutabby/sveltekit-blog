@@ -11,7 +11,6 @@ type NavigatorUAData = {
 
 interface Navigator {
   userAgentData: NavigatorUAData;
-  msMaxTouchPoints: number;
 }
 
 interface CSSStyleDeclaration {

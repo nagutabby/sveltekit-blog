@@ -12,29 +12,7 @@
   };
 
   onMount(() => {
-    let isMobileDevice = false;
-    if ("userAgentData" in navigator) {
-      isMobileDevice = navigator.userAgentData.mobile;
-    } else if ("maxTouchPoints" in navigator) {
-      isMobileDevice = (navigator as Navigator).maxTouchPoints > 0;
-    } else if ("msMaxTouchPoints" in navigator) {
-      isMobileDevice = (navigator as Navigator).msMaxTouchPoints > 0;
-    } else {
-      const mQ = matchMedia?.("(pointer:coarse)");
-      if (mQ?.media === "(pointer:coarse)") {
-        isMobileDevice = !!mQ.matches;
-      } else if ("orientation" in window) {
-        isMobileDevice = true; // deprecated, but good fallback
-      } else {
-        // Only as a last resort, fall back to user agent sniffing
-        const UA = (navigator as Navigator).userAgent;
-        isMobileDevice =
-          /\b(BlackBerry|webOS|iPhone|IEMobile)\b/i.test(UA) ||
-          /\b(Android|Windows Phone|iPad|iPod)\b/i.test(UA);
-      }
-    }
-
-    if ("share" in navigator && isMobileDevice) {
+    if ("share" in navigator) {
       const shareButton = document.getElementById("share-button");
       shareButton!.addEventListener("click", async () => {
         history.pushState(
@@ -42,7 +20,11 @@
           document.title,
           location.pathname + location.search
         );
-        await navigator.share({ title: document.title, url: location.href });
+        await navigator.share({
+          url: location.href,
+          title: document.title,
+          text: document.title,
+        });
       });
       shareButton!.classList.remove("none");
     }
