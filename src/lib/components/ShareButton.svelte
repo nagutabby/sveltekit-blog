@@ -45,65 +45,63 @@
         await navigator.share({ title: document.title, url: location.href });
       });
       shareButton!.classList.remove("none");
-    } else {
-      const mastodonInstanceNameField = document.getElementById(
-        "mastodon-instance-name"
-      ) as HTMLInputElement;
+    }
+    const mastodonInstanceNameField = document.getElementById(
+      "mastodon-instance-name"
+    ) as HTMLInputElement;
 
-      const mastodonShareButton = document.getElementById(
-        "mastodon-share-button"
-      );
-      mastodonShareButton?.addEventListener("click", async (event) => {
-        if (localStorage.getItem("mastodon-instance-name")) {
-          mastodonInstanceNameField.value = localStorage.getItem(
-            "mastodon-instance-name"
-          )!;
-        }
+    const mastodonShareButton = document.getElementById(
+      "mastodon-share-button"
+    );
+    mastodonShareButton?.addEventListener("click", async (event) => {
+      if (localStorage.getItem("mastodon-instance-name")) {
+        mastodonInstanceNameField.value = localStorage.getItem(
+          "mastodon-instance-name"
+        )!;
+      }
+      toggleModal(event);
+    });
+
+    const mastodonShareCloseButtons = Array.from(
+      document.querySelectorAll(".mastodon-share-close-button")
+    );
+    mastodonShareCloseButtons.forEach((mastodonShareCloseButton) => {
+      mastodonShareCloseButton.addEventListener("click", async (event) => {
         toggleModal(event);
       });
+    });
 
-      const mastodonShareCloseButtons = Array.from(
-        document.querySelectorAll(".mastodon-share-close-button")
-      );
-      mastodonShareCloseButtons.forEach((mastodonShareCloseButton) => {
-        mastodonShareCloseButton.addEventListener("click", async (event) => {
-          toggleModal(event);
-        });
-      });
-
-      const mastodonShareConfirmButton = document.getElementById(
-        "mastodon-share-confirm-button"
-      );
-      mastodonShareConfirmButton?.addEventListener("click", async (event) => {
-        if (
-          mastodonInstanceNameField.value === "" ||
-          !isValidDomain(mastodonInstanceNameField.value)
-        ) {
-          mastodonInstanceNameField.focus();
-        } else {
-          localStorage.setItem(
-            "mastodon-instance-name",
+    const mastodonShareConfirmButton = document.getElementById(
+      "mastodon-share-confirm-button"
+    );
+    mastodonShareConfirmButton?.addEventListener("click", async (event) => {
+      if (
+        mastodonInstanceNameField.value === "" ||
+        !isValidDomain(mastodonInstanceNameField.value)
+      ) {
+        mastodonInstanceNameField.focus();
+      } else {
+        localStorage.setItem(
+          "mastodon-instance-name",
+          mastodonInstanceNameField.value
+        );
+        history.pushState(
+          null,
+          document.title,
+          location.pathname + location.search
+        );
+        window.open(
+          `https://${
             mastodonInstanceNameField.value
-          );
-          history.pushState(
-            null,
-            document.title,
-            location.pathname + location.search
-          );
-          window.open(
-            `https://${
-              mastodonInstanceNameField.value
-            }/share?text=${encodeURIComponent(
-              document.title
-            )}${encodeURIComponent("\n")}${encodeURIComponent(location.href)}`
-          );
-          toggleModal(event);
-        }
-      });
-      closeWithClickOutside();
-      closeWithEscapeKey();
-      mastodonShareButton!.classList.remove("none");
-    }
+          }/share?text=${encodeURIComponent(
+            document.title
+          )}${encodeURIComponent("\n")}${encodeURIComponent(location.href)}`
+        );
+        toggleModal(event);
+      }
+    });
+    closeWithClickOutside();
+    closeWithEscapeKey();
   });
 </script>
 
@@ -120,11 +118,11 @@
       d="M13.5 1a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zM11 2.5a2.5 2.5 0 1 1 .603 1.628l-6.718 3.12a2.499 2.499 0 0 1 0 1.504l6.718 3.12a2.5 2.5 0 1 1-.488.876l-6.718-3.12a2.5 2.5 0 1 1 0-3.256l6.718-3.12A2.5 2.5 0 0 1 11 2.5zm-8.5 4a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zm11 5.5a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3z"
     />
   </svg>
-  シェア
+  アプリでシェア
 </button>
 <button
   type="button"
-  class="outline none"
+  class="outline"
   data-target="mastodon-modal"
   id="mastodon-share-button"
 >
