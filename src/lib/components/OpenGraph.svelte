@@ -36,9 +36,13 @@
   <meta name="twitter:image" content="{url}?fm=webp&fit=clip&w=1000" />
 {/if}
 
+<meta name="viewport" content="width=device-width">
 <meta property="og:url" content={baseURL + pathname} />
 <meta property="og:site_name" content={baseTitle} />
 <meta property="og:locale" content="ja_JP" />
 <meta name="twitter:card" content="summary" />
-<meta name="twitter:site" content="@nagutabby" />
 <link rel="canonical" href={baseURL + pathname} />
+<meta name="theme-color" content="black" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
