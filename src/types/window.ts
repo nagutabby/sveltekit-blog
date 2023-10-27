@@ -13,3 +13,7 @@ interface Navigator {
   userAgentData: NavigatorUAData;
   msMaxTouchPoints: number;
 }
+
+interface CSSStyleDeclaration {
+  msOverflowStyle: string;
+}
