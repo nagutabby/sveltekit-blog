@@ -56,30 +56,31 @@
     const mastodonShareConfirmButton = document.getElementById(
       "mastodon-share-confirm-button"
     );
+    const form = document.getElementById("form") as HTMLFormElement;
+
     mastodonShareConfirmButton?.addEventListener("click", async (event) => {
-      if (
-        mastodonInstanceNameField.value === "" ||
-        !isValidDomain(mastodonInstanceNameField.value)
-      ) {
-        mastodonInstanceNameField.focus();
-      } else {
-        localStorage.setItem(
-          "mastodon-instance-name",
-          mastodonInstanceNameField.value
-        );
-        history.pushState(
-          null,
-          document.title,
-          location.pathname + location.search
-        );
-        window.open(
-          `https://${
+      if (form.checkValidity()) {
+        if (!isValidDomain(mastodonInstanceNameField.value)) {
+          mastodonInstanceNameField.focus();
+        } else {
+          localStorage.setItem(
+            "mastodon-instance-name",
             mastodonInstanceNameField.value
-          }/share?text=${encodeURIComponent(
-            document.title
-          )}${encodeURIComponent("\n")}${encodeURIComponent(location.href)}`
-        );
-        toggleModal(event);
+          );
+          history.pushState(
+            null,
+            document.title,
+            location.pathname + location.search
+          );
+          window.open(
+            `https://${
+              mastodonInstanceNameField.value
+            }/share?text=${encodeURIComponent(
+              document.title
+            )}${encodeURIComponent("\n")}${encodeURIComponent(location.href)}`
+          );
+          toggleModal(event);
+        }
       }
     });
     closeWithClickOutside();
@@ -131,17 +132,17 @@
       data-target="mastodon-modal"
     />
     <h3>インスタンスを入力🐘</h3>
-    <label for="mastodon-instance-name">
-      インスタンス名
-      <input
-        type="text"
-        id="mastodon-instance-name"
-        name="mastodon-instance-name"
-        placeholder="mastodon.social"
-        required
-      />
-    </label>
-    <footer>
+    <form id="form" on:submit|preventDefault>
+      <label for="mastodon-instance-name">
+        インスタンス名
+        <input
+          type="text"
+          id="mastodon-instance-name"
+          name="mastodon-instance-name"
+          placeholder="mastodon.social"
+          required
+        />
+      </label>
       <div class="row">
         <div class="col-6">
           <button
@@ -153,6 +154,7 @@
         </div>
         <div class="col-6">
           <button
+            type="submit"
             data-target="mastodon-modal"
             id="mastodon-share-confirm-button"
           >
@@ -160,7 +162,7 @@
           </button>
         </div>
       </div>
-    </footer>
+    </form>
   </article>
 </dialog>
 
