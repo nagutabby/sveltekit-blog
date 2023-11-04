@@ -20,6 +20,7 @@
         </li>
         <li>
           <a
+            rel="me"
             href="https://mastodon.social/@nagutabby"
             target="_blank"
             aria-label="Mastodon"
