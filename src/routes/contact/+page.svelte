@@ -1,30 +1,30 @@
 <script lang="ts">
-  import { onMount } from "svelte";
-  import type { ActionData } from "./$types";
   import { enhance } from "$app/forms";
   import Breadcrumb from "$lib/components/Breadcrumb.svelte";
+  import type { ActionData } from "./$types";
 
   export let form: ActionData;
 
-  onMount(async () => {
-    const form = document.getElementById("form") as HTMLFormElement;
-    const submitButtonField = document.getElementById(
-      "submit-button"
-    ) as HTMLInputElement;
-    submitButtonField?.addEventListener("click", async (event) => {
-      if (form.checkValidity()) {
-        submitButtonField.disabled = true;
-        submitButtonField.innerHTML = "送信中…";
-        submitButtonField.setAttribute("aria-busy", "true");
-        form.submit();
-      }
-    });
-  });
+  let isLoading = false;
+  let hasError = false;
 </script>
 
 <Breadcrumb title="お問い合わせ" />
 
-<form method="POST" id="form" use:enhance>
+<form
+  method="POST"
+  id="form"
+  use:enhance={() => {
+    isLoading = true;
+    return async ({ result, update }) => {
+      if (result.type === "failure") {
+        hasError = true;
+      }
+      await update();
+      isLoading = false;
+    };
+  }}
+>
   <div class="grid">
     <label for="name">
       お名前
@@ -57,12 +57,18 @@
       required
     />
   </label>
-  <button type="submit" id="submit-button">送信</button>
+  {#if isLoading}
+    <button type="submit" aria-busy="true" disabled>送信中…</button>
+  {:else}
+    <button type="submit">送信</button>
+  {/if}
   {#if form}
-    {#if form.isFailed}
-      <p>メールを送信できませんでした…😥</p>
-    {:else}
-      <p>メールを送信しました！✅</p>
-    {/if}
+    <p>以下の内容でメールを送信しました！✅</p>
+    <p>氏名: {form.name}</p>
+    <p>メールアドレス: {form.email}</p>
+    <p>本文: {form.text}</p>
+  {/if}
+  {#if hasError}
+    <p>メールを送信できませんでした…😥</p>
   {/if}
 </form>
