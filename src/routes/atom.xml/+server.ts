@@ -31,7 +31,7 @@ export async function GET({ setHeaders }) {
   const posts = response.contents.map((post) => create_entry(post.title, post.description, post.id, post.createdAt, post.revisedAt));
 
   const atom = `<?xml version="1.0" encoding="UTF-8"?>
-<feed xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="ja">
 <title>nagutabbyの考え事</title>
 <link href="https://blog.nagutabby.uk" />
 <updated>${latestDate.toISOString()}</updated>
