@@ -32,7 +32,7 @@ export async function GET({ setHeaders }) {
 
   const atom = `<?xml version="1.0" encoding="UTF-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
-<link href="/atom.xml" rel="self" type="application/rss+xml" />
+<link rel="self" href="https://blog.nagutabby.uk/atom.xml" type="application/rss+xml" />
 <title>nagutabbyの考え事</title>
 <link href="https://blog.nagutabby.uk" />
 <updated>${latestDate.toISOString()}</updated>
