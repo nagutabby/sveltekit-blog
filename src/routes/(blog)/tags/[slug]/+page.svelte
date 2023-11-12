@@ -1,7 +1,6 @@
 <script lang="ts">
   import type { PageData } from "./$types";
   import Card from "$lib/components/Card.svelte";
-  import Pagination from "$lib/components/Pagination.svelte";
 
   function parseDate(date: string | Date) {
     date = new Date(date);
@@ -114,7 +113,3 @@
     {/if}
   {/each}
 {/if}
-
-<Pagination
-  totalArticles={data.totalCount}
-/>
