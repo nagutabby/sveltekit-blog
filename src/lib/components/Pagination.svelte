@@ -44,8 +44,9 @@
   button {
     margin-bottom: 0;
   }
-  a,button {
-    border-radius: 5px;
+  a,
+  button {
+    border-radius: 10px;
     padding: 0.8rem 1.2rem;
     font-size: 1.2rem;
   }
