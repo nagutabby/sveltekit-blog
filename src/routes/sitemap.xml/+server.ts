@@ -1,4 +1,4 @@
-import { getList } from "../../lib/microcms";
+import { getAllContents } from "../../lib/microcms";
 
 function create_entry(path: string, lastmod: string) {
   return `<url>
@@ -12,7 +12,7 @@ export async function GET({ setHeaders }) {
     'Content-Type': 'application/xml'
   });
 
-  const response = await getList();
+  const response = await getAllContents();
 
   const posts = response.contents.map((post) => create_entry(post.id, post.revisedAt));
 
