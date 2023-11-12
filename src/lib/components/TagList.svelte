@@ -10,7 +10,7 @@
         role="button"
         class="outline"
       >
-        #{tag}
+        {tag}
       </a>
     </li>
   {/each}
@@ -25,6 +25,10 @@
     & li {
       list-style: none;
       margin: 0;
+      & a {
+        border-radius: 10px;
+        padding: 0.8rem 1.2rem;
+      }
     }
   }
 </style>
