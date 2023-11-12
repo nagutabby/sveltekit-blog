@@ -21,7 +21,7 @@ export type Blog = {
   }
   tags: string;
 };
-export type BlogResponse = {
+export type ArticleResponse = {
   totalCount: number;
   offset: number;
   limit: number;
@@ -29,7 +29,7 @@ export type BlogResponse = {
 };
 
 export const getList = async (queries?: MicroCMSQueries) => {
-  return await client.get<BlogResponse>({ endpoint: "blog", queries });
+  return await client.get<ArticleResponse>({ endpoint: "blog", queries });
 };
 export const getDetail = async (
   contentId: string,
@@ -43,11 +43,11 @@ export const getDetail = async (
 };
 
 export const getAllContents = async (limit = 10, offset = 0) => {
-  const data = await client.get<BlogResponse>({ endpoint: "blog", queries: { limit, offset } });
+  const data = await client.get<ArticleResponse>({ endpoint: "blog", queries: { limit, offset } });
   let tmpOffset = 0;
   while (tmpOffset < data.totalCount) {
     tmpOffset += limit;
-    const tmpData: BlogResponse = await getList({ limit: limit, offset: tmpOffset });
+    const tmpData: ArticleResponse = await getList({ limit: limit, offset: tmpOffset });
     data.contents = data.contents.concat(tmpData.contents);
   }
   return data;

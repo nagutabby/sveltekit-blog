@@ -1,13 +1,10 @@
 <script lang="ts">
   import Toc from "$lib/components/Toc.svelte";
   import type { PageData } from "./$types";
-  import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import TagDropdown from "$lib/components/TagDropdown.svelte";
   import ShareButton from "$lib/components/ShareButton.svelte";
   export let data: PageData;
 </script>
-
-<Breadcrumb title={data.title} />
 
 <div class="row article-group">
   <div class="col-12 col-lg-4 right-group">

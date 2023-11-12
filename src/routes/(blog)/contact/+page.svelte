@@ -1,6 +1,5 @@
 <script lang="ts">
   import { enhance } from "$app/forms";
-  import Breadcrumb from "$lib/components/Breadcrumb.svelte";
   import type { ActionData } from "./$types";
 
   export let form: ActionData;
@@ -8,8 +7,6 @@
   let isLoading = false;
   let hasError = false;
 </script>
-
-<Breadcrumb title="お問い合わせ" />
 
 <form
   method="POST"

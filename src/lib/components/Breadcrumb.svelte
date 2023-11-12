@@ -1,37 +1,28 @@
 <script lang="ts">
   import { page } from "$app/stores";
-  const baseURL = "/";
-  const partsOfPathname = $page.url.pathname.substring(1).split("/");
+  export let titles: string[];
+  const partsOfPathname = $page.url.pathname.substring(0).split("/");
   let tmpURL: string;
-  export let title: string;
 
-  function clearTmpURL() {
-    tmpURL = baseURL;
-  }
-  function addPathToTmpURL(partOfPathname: string) {
-    tmpURL = tmpURL + "/" + partOfPathname;
-  }
+  let rawBreadcrumbElements: string[] = [];
+
+  partsOfPathname.forEach((_, i) => {
+    if (i === partsOfPathname.length - 1) {
+      rawBreadcrumbElements.push(`<li>${titles[i]}</li>`);
+    } else {
+      tmpURL = "";
+      partsOfPathname.slice(0, i + 1).forEach((partOfPathname) => {
+        tmpURL = `${tmpURL}${partOfPathname}/`;
+      });
+      rawBreadcrumbElements.push(`<li><a href=${tmpURL}>${titles[i]}</a></li>`);
+    }
+  });
 </script>
 
 <nav aria-label="breadcrumb">
   <ul>
-    <li>
-      <a href={baseURL}>Home</a>
-    </li>
-    {#each partsOfPathname as partOfPathname, i}
-      {#if i === partsOfPathname.length - 1}
-        <li>
-          {title}
-        </li>
-      {:else}
-        {clearTmpURL()}
-        <li>
-          {#each partsOfPathname.slice(0, i) as partOfPathname}
-            {addPathToTmpURL(partOfPathname)}
-          {/each}
-          <a href={tmpURL}>{partOfPathname}</a>
-        </li>
-      {/if}
+    {#each rawBreadcrumbElements as rawBreadcrumbElement}
+      {@html rawBreadcrumbElement}
     {/each}
   </ul>
 </nav>

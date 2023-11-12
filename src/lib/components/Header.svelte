@@ -5,48 +5,25 @@
 </script>
 
 <svelte:head>
-  {#if url === ""}
-    <link
-      rel="preload"
-      as="image"
-      imagesrcset="https://images.microcms-assets.io/assets/99c53a99ae2b4682938f6c435d83e3d9/ca63de19468e45b2833ebf325dbfd56c/Microsoft-Fluentui-Emoji-3d-Cat-3d.1024.png?fm=webp&fit=clip&w=500 500w, https://images.microcms-assets.io/assets/99c53a99ae2b4682938f6c435d83e3d9/ca63de19468e45b2833ebf325dbfd56c/Microsoft-Fluentui-Emoji-3d-Cat-3d.1024.png?fm=webp&fit=clip&w=1000 1000w"
-    />
-  {:else}
-    <link
-      rel="preload"
-      as="image"
-      imagesrcset="{url}?fm=webp&fit=clip&w=500 500w, {url}?fm=webp&fit=clip&w=1000 1000w"
-    />
-  {/if}
+  <link
+    rel="preload"
+    as="image"
+    imagesrcset="{url}?fm=webp&fit=clip&w=500 500w, {url}?fm=webp&fit=clip&w=1000 1000w"
+  />
 </svelte:head>
 
 <header>
-  {#if url === ""}
-    <img
-      alt=""
-      srcset="https://images.microcms-assets.io/assets/99c53a99ae2b4682938f6c435d83e3d9/ca63de19468e45b2833ebf325dbfd56c/Microsoft-Fluentui-Emoji-3d-Cat-3d.1024.png?fm=webp&fit=clip&w=500 500w, https://images.microcms-assets.io/assets/99c53a99ae2b4682938f6c435d83e3d9/ca63de19468e45b2833ebf325dbfd56c/Microsoft-Fluentui-Emoji-3d-Cat-3d.1024.png?fm=webp&fit=clip&w=1000 1000w"
-    />
-  {:else}
-    <img
-      alt=""
-      srcset="{url}?fm=webp&fit=clip&w=500 500w, {url}?fm=webp&fit=clip&w=1000 1000w"
-    />
-  {/if}
+  <img
+    alt=""
+    srcset="{url}?fm=webp&fit=clip&w=500 500w, {url}?fm=webp&fit=clip&w=1000 1000w"
+  />
   <div class="title">
     <hgroup class="container">
       <h1>
-        {#if title === ""}
-          nagutabbyの考え事
-        {:else}
-          {title}
-        {/if}
+        {title}
       </h1>
       <h2>
-        {#if description === ""}
-          学んだことをまとめるブログ
-        {:else}
-          {description}
-        {/if}
+        {description}
       </h2>
     </hgroup>
   </div>

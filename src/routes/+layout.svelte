@@ -7,20 +7,16 @@
 
 <svelte:head>
   <OpenGraph
-    url={$page.data.image === undefined ? "" : $page.data.image.url}
-    subTitle={$page.data.title === undefined ? "" : $page.data.title}
-    description={$page.data.description === undefined
-      ? ""
-      : $page.data.description}
+    url={$page.data.image.url}
+    title={$page.data.title}
+    description={$page.data.description}
   />
 </svelte:head>
 
 <Header
-  url={$page.data.image === undefined ? "" : $page.data.image.url}
-  title={$page.data.title === undefined ? "" : $page.data.title}
-  description={$page.data.description === undefined
-    ? ""
-    : $page.data.description}
+  url={$page.data.image.url}
+  title={$page.data.title}
+  description={$page.data.description}
 />
 
 <main class="container">
