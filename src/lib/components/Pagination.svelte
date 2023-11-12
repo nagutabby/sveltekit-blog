@@ -15,15 +15,15 @@
   {#each { length: pages } as _, i}
     <li>
       {#if i + 1 === currentPage}
-        <a href="./" role="button" class="secondary outline">{i + 1}</a>
+        <button class="outline" aria-disabled="true" disabled>{i + 1}</button>
       {:else if $page.url.pathname.split("/")[1] === "tags"}
         <a
           href="/tags/{$page.url.pathname.split('/')[2]}/pages/{i + 1}"
           role="button"
-          class="secondary">{i + 1}</a
+          class="outline">{i + 1}</a
         >
       {:else if $page.url.pathname.split("/")[1] === "pages" || $page.url.pathname.split("/")[1] === ""}
-        <a href="/pages/{i + 1}" role="button" class="secondary">{i + 1}</a>
+        <a href="/pages/{i + 1}" role="button" class="outline">{i + 1}</a>
       {/if}
     </li>
   {/each}
@@ -41,10 +41,12 @@
     list-style: none;
     margin: 1rem 0;
   }
-  .secondary.outline {
-    pointer-events: none;
+  button {
+    margin-bottom: 0;
   }
-  a:hover {
-    color: #fff;
+  a,button {
+    border-radius: 5px;
+    padding: 0.8rem 1.2rem;
+    font-size: 1.2rem;
   }
 </style>
