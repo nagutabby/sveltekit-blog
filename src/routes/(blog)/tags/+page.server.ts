@@ -24,4 +24,4 @@ export const load: PageServerLoad = async ({ parent }) => {
   return blogData;
 };
 
-export const prerender = true;
+export const prerender = false;

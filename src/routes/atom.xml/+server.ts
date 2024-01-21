@@ -46,4 +46,4 @@ ${posts.join('\n')}
 
 }
 
-export const prerender = true;
+export const prerender = false;

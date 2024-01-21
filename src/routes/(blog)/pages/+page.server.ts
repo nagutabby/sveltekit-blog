@@ -27,4 +27,4 @@ export const load: PageServerLoad = async ({ parent }) => {
   return data;
 }
 
-export const prerender = true;
+export const prerender = false;

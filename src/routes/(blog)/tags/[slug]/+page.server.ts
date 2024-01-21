@@ -6,11 +6,11 @@ import { getAllContents } from "$lib/microcms";
 export const load: PageServerLoad = async ({ url, parent }) => {
   const articleData = await getAllContents();
   let matchedTagName = "";
-  let matchedContents: any = []
+  let matchedContents: any = [];
 
   articleData.contents.forEach(content => {
     if (content.tags !== undefined) {
-      const tags = content.tags.split(",")
+      const tags = content.tags.split(",");
       for (let i = 0; i < tags.length; i++) {
         if (url.pathname.split("/")[2] === tags[i].replaceAll(" ", "-").toLowerCase()) {
           if (matchedTagName === "") {
@@ -21,7 +21,7 @@ export const load: PageServerLoad = async ({ url, parent }) => {
         }
       }
     }
-  })
+  });
   articleData.contents = matchedContents;
   const { titles } = await parent();
   const blogData: Blog = {
@@ -31,12 +31,12 @@ export const load: PageServerLoad = async ({ url, parent }) => {
     title: `${matchedTagName}タグが付けられた記事`,
     titles: titles!.concat(`${matchedTagName}タグが付けられた記事`),
     description: ""
-  }
+  };
   const data = {
     ...articleData,
     ...blogData
-  }
+  };
   return data;
 };
 
-export const prerender = true;
+export const prerender = false;

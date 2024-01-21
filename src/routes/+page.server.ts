@@ -10,7 +10,7 @@ export const load: PageServerLoad = async ({ url }) => {
     limit: limit,
     offset: startIndex,
     filters: "id[not_equals]about-me"
-  }
+  };
   const articleData = await getList(pageQueries);
   const blogData: Blog = {
     image: {
@@ -18,12 +18,12 @@ export const load: PageServerLoad = async ({ url }) => {
     },
     title: "nagutabbyの考え事",
     description: "学んだことをまとめるブログ"
-  }
+  };
   const data = {
     ...articleData,
     ...blogData
-  }
+  };
   return data;
 };
 
-export const prerender = true;
+export const prerender = false;
