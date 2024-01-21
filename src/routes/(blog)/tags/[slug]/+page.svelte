@@ -3,11 +3,7 @@
   import Card from "$lib/components/Card.svelte";
 
   function parseDate(date: string | Date) {
-    date = new Date(date);
-    const year = date.getFullYear();
-    const month = ("00" + (date.getMonth() + 1)).slice(-2);
-    const day = ("00" + date.getDate()).slice(-2);
-    date = year + "-" + month + "-" + day;
+    date = new Date(date).toLocaleDateString("sv-SE");
     return date;
   }
   export let data: PageData;
