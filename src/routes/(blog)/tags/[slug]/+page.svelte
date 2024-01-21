@@ -17,13 +17,13 @@
           url={data.contents[i - 2].id}
           image={data.contents[i - 2].image.url}
           title={data.contents[i - 2].title}
-          date={parseDate(data.contents[i - 1].createdAt)}
+          date={parseDate(data.contents[i - 2].createdAt)}
         />
         <Card
           url={data.contents[i - 1].id}
           image={data.contents[i - 1].image.url}
           title={data.contents[i - 1].title}
-          date={parseDate(data.contents[i].createdAt)}
+          date={parseDate(data.contents[i - 1].createdAt)}
         />
         <Card
           url={data.contents[i].id}
@@ -42,13 +42,13 @@
           url={data.contents[i - 2].id}
           image={data.contents[i - 2].image.url}
           title={data.contents[i - 2].title}
-          date={parseDate(data.contents[i - 1].createdAt)}
+          date={parseDate(data.contents[i - 2].createdAt)}
         />
         <Card
           url={data.contents[i - 1].id}
           image={data.contents[i - 1].image.url}
           title={data.contents[i - 1].title}
-          date={parseDate(data.contents[i].createdAt)}
+          date={parseDate(data.contents[i - 1].createdAt)}
         />
         <Card
           url={data.contents[i].id}
@@ -63,7 +63,7 @@
           url={data.contents[i - 1].id}
           image={data.contents[i - 1].image.url}
           title={data.contents[i - 1].title}
-          date={parseDate(data.contents[i].createdAt)}
+          date={parseDate(data.contents[i - 1].createdAt)}
         />
         <Card
           url={data.contents[i].id}
@@ -82,13 +82,13 @@
           url={data.contents[i - 2].id}
           image={data.contents[i - 2].image.url}
           title={data.contents[i - 2].title}
-          date={parseDate(data.contents[i - 1].createdAt)}
+          date={parseDate(data.contents[i - 2].createdAt)}
         />
         <Card
           url={data.contents[i - 1].id}
           image={data.contents[i - 1].image.url}
           title={data.contents[i - 1].title}
-          date={parseDate(data.contents[i].createdAt)}
+          date={parseDate(data.contents[i - 1].createdAt)}
         />
         <Card
           url={data.contents[i].id}
