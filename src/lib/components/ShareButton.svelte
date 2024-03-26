@@ -18,7 +18,7 @@
         history.pushState(
           null,
           document.title,
-          location.pathname + location.search
+          location.pathname + location.search,
         );
         await navigator.share({
           url: location.href,
@@ -29,23 +29,23 @@
       shareButton!.classList.remove("none");
     }
     const mastodonInstanceNameField = document.getElementById(
-      "mastodon-instance-name"
+      "mastodon-instance-name",
     ) as HTMLInputElement;
 
     const mastodonShareButton = document.getElementById(
-      "mastodon-share-button"
+      "mastodon-share-button",
     );
     mastodonShareButton?.addEventListener("click", async (event) => {
       if (localStorage.getItem("mastodon-instance-name")) {
         mastodonInstanceNameField.value = localStorage.getItem(
-          "mastodon-instance-name"
+          "mastodon-instance-name",
         )!;
       }
       toggleModal(event);
     });
 
     const mastodonShareCloseButtons = Array.from(
-      document.querySelectorAll(".mastodon-share-close-button")
+      document.querySelectorAll(".mastodon-share-close-button"),
     );
     mastodonShareCloseButtons.forEach((mastodonShareCloseButton) => {
       mastodonShareCloseButton.addEventListener("click", async (event) => {
@@ -54,7 +54,7 @@
     });
 
     const mastodonShareConfirmButton = document.getElementById(
-      "mastodon-share-confirm-button"
+      "mastodon-share-confirm-button",
     );
     const form = document.getElementById("form") as HTMLFormElement;
 
@@ -65,19 +65,19 @@
         } else {
           localStorage.setItem(
             "mastodon-instance-name",
-            mastodonInstanceNameField.value
+            mastodonInstanceNameField.value,
           );
           history.pushState(
             null,
             document.title,
-            location.pathname + location.search
+            location.pathname + location.search,
           );
           window.open(
             `https://${
               mastodonInstanceNameField.value
             }/share?text=${encodeURIComponent(
-              document.title
-            )}${encodeURIComponent("\n")}${encodeURIComponent(location.href)}`
+              document.title,
+            )}${encodeURIComponent("\n")}${encodeURIComponent(location.href)}`,
           );
           toggleModal(event);
         }
@@ -143,37 +143,34 @@
           required
         />
       </label>
-      <div class="row">
-        <div class="col-6">
-          <button
-            class="secondary mastodon-share-close-button"
-            data-target="mastodon-modal"
-          >
-            キャンセル
-          </button>
-        </div>
-        <div class="col-6">
-          <button
-            type="submit"
-            data-target="mastodon-modal"
-            id="mastodon-share-confirm-button"
-          >
-            シェア
-          </button>
-        </div>
+      <div class="cancel-and-share-buttons">
+        <button
+          class="secondary outline mastodon-share-close-button"
+          data-target="mastodon-modal"
+        >
+          キャンセル
+        </button>
+        <button
+          type="submit"
+          data-target="mastodon-modal"
+          id="mastodon-share-confirm-button"
+        >
+          シェア
+        </button>
       </div>
     </form>
   </article>
 </dialog>
 
 <style>
+  article {
+    padding: calc(var(--pico-block-spacing-vertical) * 2.5)
+      calc(var(--pico-block-spacing-horizontal) * 2);
+  }
   button {
     display: flex;
-    gap: 0 1rem;
     align-items: center;
     justify-content: center;
-    padding: var(--form-element-spacing-vertical)
-      var(--form-element-spacing-horizontal);
   }
   :global(.none) {
     display: none !important;

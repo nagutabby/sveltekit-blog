@@ -6,7 +6,7 @@
 </script>
 
 <article>
-  <a href=/{url}>
+  <a href="/{url}">
     <img
       alt=""
       height="250"
@@ -28,7 +28,6 @@
 
     & a {
       height: 100%;
-      text-decoration: none;
       border-radius: 5px;
       display: flex;
       flex-flow: column;
@@ -46,23 +45,6 @@
       object-fit: cover;
       border-radius: 5px 5px 0px 0px;
       background-color: hsl(205, 20%, 94%);
-    }
-  }
-
-  @media (prefers-color-scheme: light) {
-    article:hover {
-      filter: brightness(90%);
-    }
-    p {
-      color: hsl(205, 20%, 32%);
-    }
-  }
-  @media (prefers-color-scheme: dark) {
-    article:hover {
-      filter: brightness(110%);
-    }
-    p {
-      color: hsl(205, 16%, 77%);
     }
   }
 </style>

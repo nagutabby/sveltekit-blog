@@ -18,14 +18,14 @@
     srcset="{url}?fm=webp&fit=clip&w=500 500w, {url}?fm=webp&fit=clip&w=1000 1000w"
   />
   <div class="title">
-    <hgroup class="container">
+    <div class="container header-group">
       <h1>
         {title}
       </h1>
       <h2>
         {description}
       </h2>
-    </hgroup>
+    </div>
   </div>
 </header>
 
@@ -49,30 +49,20 @@
       top: 50%;
       transform: translate(-50%, -50%);
       display: flex;
-      & hgroup {
+      & .header-group {
         display: flex;
         flex-flow: column;
         gap: 1rem 0;
         justify-content: center;
         width: 100%;
+
+        & h1 {
+          font-size: 2.2rem;
+        }
+        & h2 {
+          font-size: 1.4rem;
+        }
       }
-      & hgroup > h1 {
-        font-size: 2.3rem;
-      }
-      & hgroup > h2 {
-        font-size: 1.3rem;
-      }
-    }
-  }
-  @media (prefers-color-scheme: light) {
-    h1,
-    h2 {
-      color: hsl(205, 20%, 94%);
-    }
-  }
-  @media (prefers-color-scheme: dark) {
-    h2 {
-      color: var(--h1-color);
     }
   }
 </style>

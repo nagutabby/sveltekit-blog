@@ -1,0 +1,97 @@
+/* Write your global styles here, in SCSS syntax. Variables and mixins from the src/variables.scss file are available here without importing */
+@use "@picocss/pico/scss/pico" with ($theme-color: "indigo");
+@use "@picocss/pico/scss/colors" as *;
+@use "@picocss/pico/scss/_settings" as *;
+
+body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+main {
+  flex-grow: 1;
+}
+
+a {
+  text-decoration: none;
+}
+
+.toc {
+  & details[open] > ul {
+    max-height: 20vh;
+    overflow-y: auto;
+  }
+}
+
+pre>code {
+  font-size: 0.85rem;
+}
+
+.toc > article {
+  margin: var(--block-spacing-vertical) 0 !important;
+}
+
+.toc > article > details[open] > ul {
+  max-height: 40vh !important;
+}
+
+.sticky-top {
+  position: sticky;
+  top: 0;
+}
+
+#mastodon-share-button {
+  margin-top: 2rem;
+  width: 100%;
+}
+
+.cancel-and-share-buttons {
+  display: flex;
+  flex-flow: column;
+  row-gap: 2rem;
+
+  & .mastodon-share-close-button {
+    width: 100%;
+  }
+}
+
+@media (map-get($breakpoints, md, breakpoint) <= width) {
+  .grid {
+    article {
+      max-width: 40vw;
+    }
+  }
+
+  .cancel-and-share-buttons {
+    display: flex;
+    flex-flow: row wrap;
+    row-gap: 0;
+    column-gap: 4%;
+
+    & .mastodon-share-close-button {
+      width: 48%;
+    }
+
+    & #mastodon-share-confirm-button {
+      width: 48%;
+      margin-bottom: 0;
+    }
+  }
+}
+
+@media (map-get($breakpoints, lg, breakpoint) <= width) {
+  .article-group {
+    display: flex;
+    flex-direction: row-reverse;
+    column-gap: 5%;
+  }
+
+  .tag-dropdown-and-toc {
+    width: 35%;
+  }
+
+  .article-content {
+    width: 60%;
+  }
+}
