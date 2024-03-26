@@ -14,7 +14,7 @@
     "@sveltejs/kit": "^2.0.0",
     "@sveltejs/vite-plugin-svelte": "^3.0.0",
     "@types/nodemailer": "^6.4.14",
-    "microcms-js-sdk": "^2.7.0",
+    "microcms-js-sdk": "^3.0.0",
     "nodemailer": "^6.9.13",
     "svelte": "^4.2.12",
     "svelte-check": "^3.6.8",
