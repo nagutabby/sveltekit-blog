@@ -47,7 +47,7 @@
       copyButton.setAttribute("data-tooltip", "コピー");
       copyButton.setAttribute("data-placement", "left");
       copyButton.addEventListener("click", async (event) => {
-        const code = copyButton.nextElementSibling?.textContent!;
+        const code = copyButton.previousElementSibling?.textContent!;
 
         navigator.clipboard.writeText(code).then(() => {
           copyButton.innerHTML = `
