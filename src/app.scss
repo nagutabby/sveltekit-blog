@@ -122,3 +122,11 @@ pre {
     }
   }
 }
+
+ul {
+  li {
+    .active {
+      background: linear-gradient(transparent 65%, $indigo-700 65%);
+    }
+  }
+}
