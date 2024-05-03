@@ -3,6 +3,8 @@
   import type { PageData } from "./$types";
   import TagDropdown from "$lib/components/TagDropdown.svelte";
   import ShareButton from "$lib/components/ShareButton.svelte";
+  import Date from "$lib/components/Date.svelte";
+
   export let data: PageData;
 </script>
 
@@ -20,6 +22,7 @@
   </div>
   <div id="content" class="article-content">
     <article>
+      <Date createdAt={data.createdAt} revisedAt={data.revisedAt} />
       {@html data.body}
     </article>
   </div>

@@ -2,7 +2,6 @@
   export let url: string;
   export let image: string;
   export let title: string;
-  export let date: string;
 </script>
 
 <article>
@@ -16,7 +15,6 @@
     />
     <div class="description">
       <p>{title}</p>
-      <p>{date}</p>
     </div>
   </a>
 </article>
@@ -41,7 +39,7 @@
     }
     & img {
       width: 100%;
-      aspect-ratio: 3 / 2;
+      aspect-ratio: 1;
       object-fit: cover;
       border-radius: 5px 5px 0px 0px;
       background-color: hsl(205, 20%, 94%);
