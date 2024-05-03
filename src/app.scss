@@ -105,3 +105,21 @@ pre>code {
     width: 60%;
   }
 }
+
+pre {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  button {
+    all: unset;
+    height: 3rem;
+    width: 3rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    svg {
+      transform: scale(1.7);
+    }
+  }
+}
