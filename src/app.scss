@@ -2,6 +2,16 @@
 @use "@picocss/pico/scss/pico" with ($theme-color: "indigo");
 @use "@picocss/pico/scss/colors" as *;
 @use "@picocss/pico/scss/_settings" as *;
+@use "highlight.js/styles/github-dark.min";
+
+pre {
+  code {
+    padding: var(--pico-spacing) !important;
+    background: var(--pico-code-background-color) !important;
+    font-size: inherit !important;
+    min-width: max-content;
+  }
+}
 
 body {
   display: flex;
