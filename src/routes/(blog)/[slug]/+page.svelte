@@ -46,6 +46,7 @@
       </svg>`;
       copyButton.setAttribute("data-tooltip", "コピー");
       copyButton.setAttribute("data-placement", "left");
+      copyButton.setAttribute("aria-label", "コピー")
       copyButton.addEventListener("click", async (event) => {
         const code = copyButton.previousElementSibling?.textContent!;
 
