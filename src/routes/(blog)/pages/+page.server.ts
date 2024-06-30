@@ -8,8 +8,7 @@ export const load: PageServerLoad = async ({ parent }) => {
   let pageQueries: MicroCMSQueries;
   pageQueries = {
     limit: limit,
-    offset: startIndex,
-    filters: "id[not_equals]about-me"
+    offset: startIndex
   }
   const articleData = await getList(pageQueries);
   const { titles } = await parent();

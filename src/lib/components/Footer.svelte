@@ -1,7 +1,6 @@
 <footer>
   <article>
     <div class="container">
-      <a href="/about-me">About me</a>
       <ul>
         <li>
           <a href="/contact" aria-label="Email">
@@ -70,18 +69,18 @@
       padding: 1rem 1rem;
     }
     & .container {
-      margin: 0 auto;
       display: flex;
       align-items: center;
       justify-content: space-between;
       & ul {
+        margin: 0 auto;
         display: flex;
+        column-gap: 2rem;
         margin-bottom: 0;
         padding-left: 0;
         & li {
           display: flex;
           list-style: none;
-          margin: 0 0.5rem;
         }
       }
     }
