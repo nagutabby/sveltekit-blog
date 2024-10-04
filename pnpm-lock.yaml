@@ -30,8 +30,8 @@ importers:
         specifier: ^11.9.0
         version: 11.9.0
       microcms-js-sdk:
-        specifier: ^3.0.0
-        version: 3.1.1
+        specifier: ^3.1.2
+        version: 3.1.2
       nodemailer:
         specifier: ^6.9.13
         version: 6.9.13
@@ -630,8 +630,8 @@ packages:
     resolution: {integrity: sha512-8q7VEgMJW4J8tcfVPy8g09NcQwZdbwFEqhe/WZkoIzjn/3TGDwtOCYtXGxA3O8tPzpczCCDgv+P2P5y00ZJOOg==}
     engines: {node: '>= 8'}
 
-  microcms-js-sdk@3.1.1:
-    resolution: {integrity: sha512-Lh234f+r4dje/1XxWNu4sMrjCrqkMkRoc9wr/WN5wsEngTa0ZLMXLNgZm3e74vw/HHj3ipYSJeCA2HyyguN37w==}
+  microcms-js-sdk@3.1.2:
+    resolution: {integrity: sha512-uPR9OpldgXxyvtdUuYKdctn+FBCvALnW4SGL7qvfq+mQfqI1Wq+QQax9zxtxOEb/wWWTh82cED0ZeZjl5TP0jA==}
     engines: {node: '>=18.0.0'}
 
   micromatch@4.0.5:
@@ -1404,7 +1404,7 @@ snapshots:
 
   merge2@1.4.1: {}
 
-  microcms-js-sdk@3.1.1:
+  microcms-js-sdk@3.1.2:
     dependencies:
       async-retry: 1.3.3
 

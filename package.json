@@ -17,7 +17,7 @@
     "@types/highlightjs": "^9.12.6",
     "@types/nodemailer": "^6.4.16",
     "highlight.js": "^11.9.0",
-    "microcms-js-sdk": "^3.0.0",
+    "microcms-js-sdk": "^3.1.2",
     "nodemailer": "^6.9.13",
     "sass": "^1.69.5",
     "svelte": "^4.2.19",
