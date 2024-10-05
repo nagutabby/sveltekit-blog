@@ -48,8 +48,8 @@ importers:
         specifier: ^2.7.0
         version: 2.7.0
       typescript:
-        specifier: ^5.4.3
-        version: 5.4.5
+        specifier: ^5.6.2
+        version: 5.6.2
       vite:
         specifier: ^5.2.14
         version: 5.2.14(@types/node@22.7.4)(sass@1.79.4)
@@ -864,8 +864,8 @@ packages:
   tslib@2.7.0:
     resolution: {integrity: sha512-gLXCKdN1/j47AiHiOkJN69hJmcbGTHI0ImLmbYLHykhgeN0jVGola9yVjFgzCUklsZQMW55o+dW7IXv3RCXDzA==}
 
-  typescript@5.4.5:
-    resolution: {integrity: sha512-vcI4UpRgg81oIRUFwR0WSIHKt11nJ7SAVlYNIu+QpqeyXP+gpQJy/Z4+F0aGxSE4MqwjyXvW/TzgkLAx2AGHwQ==}
+  typescript@5.6.2:
+    resolution: {integrity: sha512-NW8ByodCSNCwZeghjN3o+JX5OFH0Ojg6sadjEKY4huZ52TqbJTJnDo5+Tw98lSy63NZvi4n+ez5m2u5d4PkZyw==}
     engines: {node: '>=14.17'}
     hasBin: true
 
@@ -1592,8 +1592,8 @@ snapshots:
       picocolors: 1.0.0
       sade: 1.8.1
       svelte: 4.2.19
-      svelte-preprocess: 5.1.4(postcss@8.4.47)(sass@1.79.4)(svelte@4.2.19)(typescript@5.4.5)
-      typescript: 5.4.5
+      svelte-preprocess: 5.1.4(postcss@8.4.47)(sass@1.79.4)(svelte@4.2.19)(typescript@5.6.2)
+      typescript: 5.6.2
     transitivePeerDependencies:
       - '@babel/core'
       - coffeescript
@@ -1609,7 +1609,7 @@ snapshots:
     dependencies:
       svelte: 4.2.19
 
-  svelte-preprocess@5.1.4(postcss@8.4.47)(sass@1.79.4)(svelte@4.2.19)(typescript@5.4.5):
+  svelte-preprocess@5.1.4(postcss@8.4.47)(sass@1.79.4)(svelte@4.2.19)(typescript@5.6.2):
     dependencies:
       '@types/pug': 2.0.10
       detect-indent: 6.1.0
@@ -1620,7 +1620,7 @@ snapshots:
     optionalDependencies:
       postcss: 8.4.47
       sass: 1.79.4
-      typescript: 5.4.5
+      typescript: 5.6.2
 
   svelte@4.2.19:
     dependencies:
@@ -1652,7 +1652,7 @@ snapshots:
 
   tslib@2.7.0: {}
 
-  typescript@5.4.5: {}
+  typescript@5.6.2: {}
 
   undici-types@6.19.8: {}
 
