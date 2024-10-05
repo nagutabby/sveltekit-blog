@@ -1,5 +1,4 @@
 type Blog = {
-  tagSet?: Set<string>;
   image?: {
     url: string;
   }

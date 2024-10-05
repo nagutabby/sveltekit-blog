@@ -1,4 +1,6 @@
 <script lang="ts">
+  import SearchBar from "./SearchBar.svelte";
+
   export let url: string;
   export let title: string;
   export let description: string;
@@ -19,6 +21,7 @@
   />
   <div class="title">
     <div class="container header-group">
+      <SearchBar />
       <h1>
         {title}
       </h1>
@@ -40,10 +43,13 @@
       background-color: white;
     }
     & .title {
+      flex-flow: column;
       height: 100%;
       width: 100%;
       background: rgba(0, 0, 0, 0.5);
       backdrop-filter: blur(3px);
+      justify-content: center;
+      align-items: center;
       position: absolute;
       left: 50%;
       top: 50%;
@@ -55,6 +61,8 @@
         gap: 1rem 0;
         justify-content: center;
         width: 100%;
+        position: relative;
+
 
         & h1 {
           font-size: 2.2rem;

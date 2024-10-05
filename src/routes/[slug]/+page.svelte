@@ -3,7 +3,7 @@
   import python from "highlight.js/lib/languages/python";
   import ruby from "highlight.js/lib/languages/ruby";
   import erb from "highlight.js/lib/languages/erb";
-  import bash from "highlight.js/lib/languages/bash"
+  import bash from "highlight.js/lib/languages/bash";
   import css from "highlight.js/lib/languages/css";
   import scss from "highlight.js/lib/languages/scss";
   import javascript from "highlight.js/lib/languages/javascript";
@@ -13,24 +13,23 @@
   import dockerfile from "highlight.js/lib/languages/dockerfile";
   import Toc from "$lib/components/Toc.svelte";
   import type { PageData } from "./$types";
-  import TagDropdown from "$lib/components/TagDropdown.svelte";
   import ShareButton from "$lib/components/ShareButton.svelte";
   import Date from "$lib/components/Date.svelte";
   import { onMount } from "svelte";
 
   export let data: PageData;
 
-  hljs.registerLanguage("python", python)
-  hljs.registerLanguage("ruby", ruby)
-  hljs.registerLanguage("erb", erb)
-  hljs.registerLanguage("bash", bash)
-  hljs.registerLanguage("css", css)
-  hljs.registerLanguage("scss", scss)
-  hljs.registerLanguage("javascript", javascript)
-  hljs.registerLanguage("typescript", typescript)
-  hljs.registerLanguage("json", json)
-  hljs.registerLanguage("dockerfile", dockerfile)
-  hljs.registerLanguage("yaml", yaml)
+  hljs.registerLanguage("python", python);
+  hljs.registerLanguage("ruby", ruby);
+  hljs.registerLanguage("erb", erb);
+  hljs.registerLanguage("bash", bash);
+  hljs.registerLanguage("css", css);
+  hljs.registerLanguage("scss", scss);
+  hljs.registerLanguage("javascript", javascript);
+  hljs.registerLanguage("typescript", typescript);
+  hljs.registerLanguage("json", json);
+  hljs.registerLanguage("dockerfile", dockerfile);
+  hljs.registerLanguage("yaml", yaml);
 
   onMount(async () => {
     document.querySelectorAll("pre code").forEach((element) => {
@@ -38,7 +37,7 @@
     });
     document.querySelectorAll("pre").forEach((element) => {
       const copyButton = document.createElement("button");
-      element.insertAdjacentElement("beforeend", copyButton)
+      element.insertAdjacentElement("beforeend", copyButton);
       copyButton.innerHTML = `
       <svg xmlns="http://www.w3.org/2000/svg" width="16px" height="16px" fill="currentColor" class="bi bi-clipboard" viewBox="0 0 16 16">
         <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z"/>
@@ -46,7 +45,7 @@
       </svg>`;
       copyButton.setAttribute("data-tooltip", "コピー");
       copyButton.setAttribute("data-placement", "left");
-      copyButton.setAttribute("aria-label", "コピー")
+      copyButton.setAttribute("aria-label", "コピー");
       copyButton.addEventListener("click", async (event) => {
         const code = copyButton.previousElementSibling?.textContent!;
 
@@ -55,7 +54,7 @@
           <svg xmlns="http://www.w3.org/2000/svg" width="16px" height="16px" fill="currentColor" class="bi bi-check-lg" viewBox="0 0 16 16">
             <path d="M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425a.247.247 0 0 1 .02-.022Z"/>
           </svg>`;
-          copyButton.setAttribute("data-tooltip", "コピーしました！")
+          copyButton.setAttribute("data-tooltip", "コピーしました！");
           setTimeout(() => {
             copyButton.innerHTML = `
             <svg xmlns="http://www.w3.org/2000/svg" width="16px" height="16px" fill="currentColor" class="bi bi-clipboard" viewBox="0 0 16 16">
@@ -64,17 +63,14 @@
             </svg>`;
             copyButton.setAttribute("data-tooltip", "コピー");
           }, 3000);
-        })
-      })
-    })
-  })
+        });
+      });
+    });
+  });
 </script>
 
 <div class="article-group">
-  <div class="tag-dropdown-and-toc">
-    {#if data.tags !== undefined}
-        <TagDropdown tags={data.tags.split(",")} />
-    {/if}
+  <div class="sidebar">
     <div class="sticky-top">
       <div class="toc">
         <Toc />

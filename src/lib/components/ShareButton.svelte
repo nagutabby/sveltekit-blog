@@ -131,7 +131,7 @@
       class="close mastodon-share-close-button"
       data-target="mastodon-modal"
     />
-    <h3>インスタンスを入力🐘</h3>
+    <h3>Mastodonでシェア</h3>
     <form id="form" on:submit|preventDefault>
       <label for="mastodon-instance-name">
         インスタンス名

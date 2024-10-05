@@ -5,7 +5,7 @@
 
   onMount(async () => {
     let headings: any = Array.from(
-      document.getElementById("content")!.querySelectorAll("h1, h2, h3")
+      document.getElementById("content")!.querySelectorAll("h1, h2, h3"),
     );
     const toc = headings.map((heading: Element) => ({
       text: heading.textContent,
@@ -45,7 +45,7 @@
             activeHeading.classList.remove("active");
           }
           activeHeading = document.querySelector(
-            `a[href="#${entry.target.id}"]`
+            `a[href="#${entry.target.id}"]`,
           );
 
           if (activeHeading !== null) {
@@ -67,14 +67,5 @@
 </script>
 
 <article>
-  <details open>
-    <summary>目次</summary>
-    {@html rawToc}
-  </details>
+  {@html rawToc}
 </article>
-
-<style>
-  :global(article > details > ul) {
-    margin-bottom: 0;
-  }
-</style>

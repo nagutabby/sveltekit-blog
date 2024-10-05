@@ -27,10 +27,24 @@ a {
   text-decoration: none;
 }
 
+.sticky-top {
+  position: sticky;
+  top: 0;
+  padding-top: 5vh;
+}
+
 .toc {
-  & details[open] > ul {
-    max-height: 20vh;
+  & ul {
+    margin-bottom: 0;
     overflow-y: auto;
+    max-height: 30vh;
+    padding: 0;
+    & ul {
+      padding: revert;
+    }
+    & li {
+      list-style: none;
+    }
   }
 }
 
@@ -38,20 +52,16 @@ pre>code {
   font-size: 0.85rem;
 }
 
-.toc > article {
+.toc>article {
   margin: var(--block-spacing-vertical) 0 !important;
 }
 
-.toc > article > details[open] > ul {
+.toc>article>details[open]>ul {
   max-height: 40vh !important;
 }
 
-.sticky-top {
-  position: sticky;
-  top: 0;
-}
-
-#mastodon-share-button, #share-button {
+#mastodon-share-button,
+#share-button {
   margin-top: 2rem;
   width: 100%;
 }
@@ -66,7 +76,7 @@ pre>code {
   }
 }
 
-@media (map-get($breakpoints, md, breakpoint) <= width) {
+@media (map-get($breakpoints, md, breakpoint) <=width) {
   .grid {
     article {
       max-width: 40vw;
@@ -90,19 +100,18 @@ pre>code {
   }
 }
 
-@media (map-get($breakpoints, lg, breakpoint) <= width) {
+@media (map-get($breakpoints, lg, breakpoint) <=width) {
   .article-group {
     display: flex;
     flex-direction: row-reverse;
-    column-gap: 5%;
-  }
-
-  .tag-dropdown-and-toc {
-    width: 35%;
+    column-gap: 3%;
   }
 
   .article-content {
-    width: 60%;
+    width: 65%;
+  }
+  .sidebar {
+    width: 35%;
   }
 }
 
@@ -110,6 +119,7 @@ pre {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
+
   button {
     all: unset;
     padding: 1rem;
@@ -117,6 +127,7 @@ pre {
     justify-content: center;
     align-items: center;
     cursor: pointer;
+
     svg {
       transform: scale(1.7);
     }

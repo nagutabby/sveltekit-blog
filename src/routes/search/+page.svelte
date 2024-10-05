@@ -1,8 +1,10 @@
 <script lang="ts">
   import type { PageData } from "./$types";
   import Card from "$lib/components/Card.svelte";
+  import Pagination from "$lib/components/Pagination.svelte";
 
   export let data: PageData;
+
 </script>
 
 {#if data.contents.length % 3 == 0}
@@ -93,3 +95,5 @@
     {/if}
   {/each}
 {/if}
+
+<Pagination totalArticles={data.totalCount} />

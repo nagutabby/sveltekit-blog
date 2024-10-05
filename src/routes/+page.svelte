@@ -2,8 +2,11 @@
   import type { PageData } from "./$types";
   import Card from "$lib/components/Card.svelte";
   import Pagination from "$lib/components/Pagination.svelte";
+  import { page } from "$app/stores";
 
   export let data: PageData;
+
+  let currentPage = Number($page.url.searchParams.get("page")) || 1
 </script>
 
 {#if data.contents.length % 3 == 0}
