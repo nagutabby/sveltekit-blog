@@ -12,7 +12,7 @@
   "devDependencies": {
     "@picocss/pico": "^2.0.6",
     "@sveltejs/adapter-node": "^5.0.1",
-    "@sveltejs/kit": "^2.0.0",
+    "@sveltejs/kit": "^2.6.1",
     "@sveltejs/vite-plugin-svelte": "^3.1.2",
     "@types/highlightjs": "^9.12.6",
     "@types/nodemailer": "^6.4.16",
