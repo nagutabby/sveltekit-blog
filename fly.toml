@@ -1,0 +1,19 @@
+app = "sveltekit-blog"
+primary_region = "nrt"
+
+[build]
+dockerfile = "Dockerfile"
+
+[env]
+PORT = "3000"
+
+[http_service]
+auto_start_machines = true
+auto_stop_machines = "off"
+force_https = true
+internal_port = 3000
+
+[[vm]]
+cpu_kind = "shared"
+cpus = 1
+memory_mb = 256
