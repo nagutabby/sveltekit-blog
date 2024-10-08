@@ -23,10 +23,6 @@ main {
   flex-grow: 1;
 }
 
-a {
-  text-decoration: none;
-}
-
 .sticky-top {
   position: sticky;
   top: 0;
@@ -39,11 +35,17 @@ a {
     overflow-y: auto;
     max-height: 30vh;
     padding: 0;
+
     & ul {
       padding: revert;
     }
+
     & li {
       list-style: none;
+
+      & a {
+        text-decoration: none;
+      }
     }
   }
 }
@@ -110,6 +112,7 @@ pre>code {
   .article-content {
     width: 65%;
   }
+
   .sidebar {
     width: 35%;
   }

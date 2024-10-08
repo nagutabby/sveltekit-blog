@@ -25,6 +25,7 @@
     padding: 0;
 
     & a {
+      text-decoration: none;
       height: 100%;
       border-radius: 5px;
       display: flex;
