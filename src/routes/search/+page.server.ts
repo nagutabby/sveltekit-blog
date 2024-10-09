@@ -18,14 +18,11 @@ export const load: PageServerLoad = async ({ url, parent }) => {
   };
 
   const articleData = await getList(pageQueries);
-
-  const { titles } = await parent();
   const blogData: Blog = {
     image: {
       url: "https://images.microcms-assets.io/assets/99c53a99ae2b4682938f6c435d83e3d9/ca63de19468e45b2833ebf325dbfd56c/Microsoft-Fluentui-Emoji-3d-Cat-3d.1024.png"
     },
     title: `「${query}」を含む記事`,
-    titles: titles!.concat(`「${query}」を含む記事`),
     description: ""
   };
   const data = {
