@@ -26,26 +26,25 @@ main {
 .sticky-top {
   position: sticky;
   top: 0;
-  padding-top: 5vh;
 }
 
 .toc {
-  & ul {
+  >article>ul {
     margin-bottom: 0;
     overflow-y: auto;
-    max-height: 30vh;
-    padding: 0;
+    max-height: 50vh;
+  }
 
-    & ul {
-      padding: revert;
-    }
+  & ul {
+    padding: revert;
+    padding: 0 0.5rem;
+  }
 
-    & li {
-      list-style: none;
+  & li {
+    list-style: none;
 
-      & a {
-        text-decoration: none;
-      }
+    & a {
+      text-decoration: none;
     }
   }
 }
