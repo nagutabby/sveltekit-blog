@@ -1,12 +1,11 @@
 <script lang="ts">
   import { onMount } from "svelte";
 
+  export let headings: any;
+
   let rawToc: string = "";
 
   onMount(async () => {
-    let headings: any = Array.from(
-      document.getElementById("content")!.querySelectorAll("h1, h2, h3"),
-    );
     const toc = headings.map((heading: Element) => ({
       text: heading.textContent,
       id: heading.getAttribute("id"),

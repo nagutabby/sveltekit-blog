@@ -16,6 +16,10 @@
   import ShareButton from "$lib/components/ShareButton.svelte";
   import Date from "$lib/components/Date.svelte";
   import { onMount } from "svelte";
+  import "../../app.scss";
+  import Header from "$lib/components/Header.svelte";
+  import Footer from "$lib/components/Footer.svelte";
+  import OpenGraph from "$lib/components/OpenGraph.svelte";
 
   export let data: PageData;
 
@@ -31,7 +35,17 @@
   hljs.registerLanguage("dockerfile", dockerfile);
   hljs.registerLanguage("yaml", yaml);
 
+  let headings: any;
+  let isLoading = true;
+
   onMount(async () => {
+    await data.streamed.article;
+    
+    headings = Array.from(
+      document.getElementById("content")!.querySelectorAll("h1, h2, h3"),
+    );
+    isLoading = false;
+
     document.querySelectorAll("pre code").forEach((element) => {
       hljs.highlightElement(element as HTMLElement);
     });
@@ -69,19 +83,58 @@
   });
 </script>
 
-<div class="article-group">
-  <div class="sidebar">
-    <div class="sticky-top">
-      <div class="toc">
-        <Toc />
+<svelte:head>
+  {#await data.streamed.article then data}
+    <OpenGraph
+      url={data.image.url}
+      title={data.title}
+      description={data.description}
+    ></OpenGraph>
+  {/await}
+</svelte:head>
+
+{#await data.streamed.article}
+  <Header
+    url={"https://images.microcms-assets.io/assets/99c53a99ae2b4682938f6c435d83e3d9/ca63de19468e45b2833ebf325dbfd56c/Microsoft-Fluentui-Emoji-3d-Cat-3d.1024.png"}
+    title="読み込み中…"
+    description=""
+  ></Header>
+{:then data}
+  <Header url={data.image.url} title={data.title} description={data.description}
+  ></Header>
+{/await}
+
+<main class="container">
+  <div class="article-group">
+    <div class="sidebar">
+      <div class="sticky-top">
+        <div class="toc">
+          {#if isLoading}
+            <article aria-busy="true"></article>
+          {:else}
+            <Toc {headings} />
+          {/if}
+        </div>
+        <ShareButton />
       </div>
-      <ShareButton />
+    </div>
+    <div id="content" class="article-content">
+      {#await data.streamed.article}
+        <article aria-busy="true"></article>
+      {:then data}
+        <article>
+          <Date createdAt={data.createdAt} revisedAt={data.revisedAt} />
+          {@html data.body}
+        </article>
+      {/await}
     </div>
   </div>
-  <div id="content" class="article-content">
-    <article>
-      <Date createdAt={data.createdAt} revisedAt={data.revisedAt} />
-      {@html data.body}
-    </article>
-  </div>
-</div>
+</main>
+
+<Footer></Footer>
+
+<style>
+  .container {
+    margin-top: 2rem;
+  }
+</style>
