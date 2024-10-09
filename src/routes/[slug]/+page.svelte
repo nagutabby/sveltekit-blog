@@ -40,7 +40,7 @@
 
   onMount(async () => {
     await data.streamed.article;
-    
+
     headings = Array.from(
       document.getElementById("content")!.querySelectorAll("h1, h2, h3"),
     );
@@ -83,15 +83,13 @@
   });
 </script>
 
-<svelte:head>
-  {#await data.streamed.article then data}
-    <OpenGraph
-      url={data.image.url}
-      title={data.title}
-      description={data.description}
-    ></OpenGraph>
-  {/await}
-</svelte:head>
+{#await data.streamed.article then data}
+  <OpenGraph
+    url={data.image.url}
+    title={data.title}
+    description={data.description}
+  ></OpenGraph>
+{/await}
 
 {#await data.streamed.article}
   <Header

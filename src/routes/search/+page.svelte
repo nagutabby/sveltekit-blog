@@ -2,29 +2,10 @@
   import type { PageData } from "./$types";
   import Card from "$lib/components/Card.svelte";
   import Pagination from "$lib/components/Pagination.svelte";
-  import { page } from "$app/stores";
-  import Header from "$lib/components/Header.svelte";
-  import Footer from "$lib/components/Footer.svelte";
-  import OpenGraph from "$lib/components/OpenGraph.svelte";
 
   export let data: PageData;
 </script>
 
-<svelte:head>
-  <OpenGraph
-    url={$page.data.image.url}
-    title={$page.data.title}
-    description={$page.data.description}
-  ></OpenGraph>
-</svelte:head>
-
-<Header
-  url={$page.data.image.url}
-  title={$page.data.title}
-  description={$page.data.description}
-></Header>
-
-<main class="container">
   {#if data.contents.length % 3 == 0}
     {#each data.contents as { }, i}
       {#if (i + 1) % 3 == 0}
@@ -114,6 +95,4 @@
     {/each}
   {/if}
   <Pagination totalArticles={data.totalCount} />
-</main>
 
-<Footer></Footer>

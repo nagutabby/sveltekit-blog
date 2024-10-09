@@ -2,7 +2,7 @@ import type { MicroCMSQueries } from "microcms-js-sdk";
 import type { PageServerLoad } from "./$types";
 import { getList } from "$lib/microcms";
 
-export const load: PageServerLoad = async ({ url, parent }) => {
+export const load: PageServerLoad = async ({ url }) => {
   const query = url.searchParams.get("q") || "";
   const page = Number(url.searchParams.get("page")) || 1;
 
