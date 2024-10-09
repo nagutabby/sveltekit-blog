@@ -22,7 +22,7 @@
     position: absolute;
     padding-left: inherit;
     padding-right: inherit;
-    top: -10vh;
+    top: -5vh;
     left: 0;
     width: 100%;
   }
@@ -32,6 +32,7 @@
       display: flex;
       flex-flow: row;
       column-gap: 3%;
+      top: -10vh;
     }
   }
 </style>
