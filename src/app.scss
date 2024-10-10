@@ -32,7 +32,7 @@ main {
   >article>ul {
     margin-bottom: 0;
     overflow-y: auto;
-    max-height: 50vh;
+    height: 30vh;
   }
 
   & ul {
@@ -55,10 +55,6 @@ pre>code {
 
 .toc>article {
   margin: var(--block-spacing-vertical) 0 !important;
-}
-
-.toc>article>details[open]>ul {
-  max-height: 40vh !important;
 }
 
 #mastodon-share-button,

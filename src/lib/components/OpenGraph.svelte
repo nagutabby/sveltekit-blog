@@ -10,7 +10,6 @@
 </script>
 
 <svelte:head>
-  <meta name="viewport" content="width=device-width" />
   <meta property="og:url" content={baseURL + $page.url.pathname} />
   <meta property="og:site_name" content={defaultTitle} />
   <meta property="og:locale" content="ja_JP" />

@@ -108,7 +108,7 @@
       <div class="sticky-top">
         <div class="toc">
           {#if isLoading}
-            <article aria-busy="true"></article>
+            <article aria-busy="true" class="loading-toc"></article>
           {:else}
             <Toc {headings} />
           {/if}
@@ -118,7 +118,7 @@
     </div>
     <div id="content" class="article-content">
       {#await data.streamed.article}
-        <article aria-busy="true"></article>
+        <article aria-busy="true" class="loading-article"></article>
       {:then data}
         <article>
           <Date createdAt={data.createdAt} revisedAt={data.revisedAt} />
@@ -132,7 +132,27 @@
 <Footer></Footer>
 
 <style>
-  .container {
+  main.container {
     margin-top: 2rem;
+  }
+  .loading-toc {
+    height: 30vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .loading-article {
+    height: 80vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  [aria-busy="true"]:not(input, select, textarea, html)::before {
+    content: "";
+    width: 15%;
+    height: 15%;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
   }
 </style>
