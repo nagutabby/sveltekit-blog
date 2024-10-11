@@ -14,8 +14,6 @@
 </form>
 
 <style lang="scss">
-  @use "@picocss/pico/scss/_settings" as *;
-
   form {
     display: flex;
     flex-flow: column;
@@ -25,14 +23,5 @@
     top: -5vh;
     left: 0;
     width: 100%;
-  }
-
-  @media (map-get($breakpoints, md, breakpoint) <=width) {
-    form {
-      display: flex;
-      flex-flow: row;
-      column-gap: 3%;
-      top: -10vh;
-    }
   }
 </style>
