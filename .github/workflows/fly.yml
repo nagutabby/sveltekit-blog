@@ -11,14 +11,23 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: superfly/flyctl-actions/setup-flyctl@master
+      - run: echo "FLY_API_TOKEN=$FLY_API_TOKEN" >> .env
+      - run: echo "MICROCMS_API_KEY=$MICROCMS_API_KEY" >> .env
+      - run: echo "MICROCMS_SERVICE_DOMAIN=$MICROCMS_SERVICE_DOMAIN" >> .env
+      - run: echo "MY_BCC_EMAIL_ADDRESS=$MY_BCC_EMAIL_ADDRESS" >> .env
+      - run: echo "MY_EMAIL_ADDRESS=$MY_EMAIL_ADDRESS" >> .env
+      - run: echo "SMTP_PORT=$SMTP_PORT" >> .env
+      - run: echo "SMTP_SERVER=$SMTP_SERVER" >> .env
+      - run: echo "SMTP_TOKEN=$SMTP_TOKEN" >> .env
+      - run: echo "SMTP_USERNAME=$SMTP_USERNAME" >> .env
       - run: flyctl deploy --remote-only
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
-          MICROCMS_API_KEY: ${{ env.MICROCMS_API_KEY }}
-          MICROCMS_SERVICE_DOMAIN: ${{ env.MICROCMS_SERVICE_DOMAIN }}
-          MY_BCC_EMAIL_ADDRESS: ${{ env.MY_BCC_EMAIL_ADDRESS }}
-          MY_EMAIL_ADDRESS: ${{ env.MY_EMAIL_ADDRESS }}
-          SMTP_PORT: ${{ env.SMTP_PORT }}
-          SMTP_SERVER: ${{ env.SMTP_SERVER }}
-          SMTP_TOKEN: ${{ env.SMTP_TOKEN }}
-          SMTP_USERNAME: ${{ env.SMTP_USERNAME }}
+          MICROCMS_API_KEY: ${{ vars.MICROCMS_API_KEY }}
+          MICROCMS_SERVICE_DOMAIN: ${{ vars.MICROCMS_SERVICE_DOMAIN }}
+          MY_BCC_EMAIL_ADDRESS: ${{ vars.MY_BCC_EMAIL_ADDRESS }}
+          MY_EMAIL_ADDRESS: ${{ vars.MY_EMAIL_ADDRESS }}
+          SMTP_PORT: ${{ vars.SMTP_PORT }}
+          SMTP_SERVER: ${{ vars.SMTP_SERVER }}
+          SMTP_TOKEN: ${{ vars.SMTP_TOKEN }}
+          SMTP_USERNAME: ${{ vars.SMTP_USERNAME }}
