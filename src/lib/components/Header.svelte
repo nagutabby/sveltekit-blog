@@ -1,5 +1,5 @@
 <script lang="ts">
-  import SearchBar from "./SearchBar.svelte";
+  import HeaderIcons from "./HeaderIcons.svelte";
 
   export let url: string;
   export let title: string;
@@ -20,8 +20,10 @@
     srcset="{url}?fm=webp&fit=clip&w=500 500w, {url}?fm=webp&fit=clip&w=1000 1000w"
   />
   <div class="title">
+    <div class="container header-icons-container">
+      <HeaderIcons />
+    </div>
     <div class="container header-group">
-      <SearchBar />
       <h1>
         {title}
       </h1>
@@ -63,7 +65,6 @@
         width: 100%;
         position: relative;
 
-
         & h1 {
           font-size: 2.2rem;
         }
@@ -72,5 +73,10 @@
         }
       }
     }
+    & .header-icons-container {
+      position: fixed;
+      top: 2rem;
+      z-index: 1;
+    };
   }
 </style>

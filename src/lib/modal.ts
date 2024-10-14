@@ -16,7 +16,7 @@ export const toggleModal = (event: Event) => {
   event.preventDefault();
 
   const modal = document.getElementById(
-    (event.currentTarget as HTMLInputElement).getAttribute(
+    (event.currentTarget as any).getAttribute(
       "data-target"
     )!
   );
