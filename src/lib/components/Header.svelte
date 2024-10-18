@@ -40,7 +40,7 @@
     padding: 0 !important;
     & img {
       width: 100%;
-      height: 50vh;
+      height: 60vh;
       object-fit: cover;
       background-color: white;
     }
@@ -64,10 +64,6 @@
         justify-content: center;
         width: 100%;
         position: relative;
-
-        & h1 {
-          font-size: 2.2rem;
-        }
         & h2 {
           font-size: 1.4rem;
         }

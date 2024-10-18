@@ -98,7 +98,7 @@
     & a,
     button {
       border-radius: 50%;
-      min-width: 65px;
+      min-width: 60px;
       width: 3vw;
       aspect-ratio: 1 / 1;
       display: flex;

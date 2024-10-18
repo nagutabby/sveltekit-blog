@@ -34,7 +34,7 @@
       border-radius: 5px;
       display: flex;
       flex-flow: column;
-      &:hover {
+      &:hover, &:active, &:focus {
         --pico-color: #c2c7d0;
       }
       & .description {
