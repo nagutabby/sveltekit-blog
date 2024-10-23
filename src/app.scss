@@ -4,6 +4,13 @@
 @use "@picocss/pico/scss/_settings" as *;
 @use "highlight.js/styles/github-dark.min";
 
+.mt-post-header-user,
+.mt-post-header-date,
+.mt-post-counter-bar,
+.mt-post-preview-description {
+  --mt-color-contrast-gray: var(--pico-color);
+}
+
 pre {
   code {
     padding: var(--pico-spacing) !important;
@@ -32,6 +39,7 @@ main {
   >article>ul {
     margin-bottom: 0;
     overflow-y: auto;
+    scrollbar-color: var(--pico-muted-color) var(--pico-card-background-color);
     height: 30vh;
   }
 
@@ -98,6 +106,43 @@ pre>code {
 }
 
 @media (map-get($breakpoints, lg, breakpoint) <=width) {
+  .main-content {
+    flex-flow: row !important;
+  }
+
+  .timeline {
+    width: 30%;
+    position: relative;
+
+    a {
+      --pico-color: #c2c7d0;
+
+      &:hover,
+      &:active,
+      &:focus {
+        --pico-color: #c2c7d0;
+      }
+    }
+  }
+
+  .mt-container {
+    position: absolute;
+    height: 100%;
+    width: 100%;
+  }
+
+  .article-card {
+    width: 65%;
+
+    .grid {
+      &:last-child {
+        article {
+          margin: 0;
+        }
+      }
+    }
+  }
+
   .article-group {
     display: flex;
     flex-direction: row-reverse;
@@ -146,4 +191,12 @@ figure {
 
 main.container {
   margin-top: 2rem;
+}
+
+.mt-post {
+  width: 100%;
+}
+
+.mt-footer {
+  margin: 0;
 }

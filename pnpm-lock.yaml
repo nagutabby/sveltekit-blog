@@ -12,6 +12,9 @@ importers:
         specifier: ^4.24.0
         version: 4.24.0
     devDependencies:
+      '@idotj/mastodon-embed-timeline':
+        specifier: ^4.4.2
+        version: 4.4.2
       '@picocss/pico':
         specifier: ^2.0.6
         version: 2.0.6
@@ -201,6 +204,9 @@ packages:
     engines: {node: '>=12'}
     cpu: [x64]
     os: [win32]
+
+  '@idotj/mastodon-embed-timeline@4.4.2':
+    resolution: {integrity: sha512-vRCxwBpV41SmmPt2YFYQB8w5ZV0brdEGyfPRCeJ0gRjON7KNsZhVRVeBXri0p8+d+CwiPWEoucZ9rt2+qLTNQg==}
 
   '@jridgewell/gen-mapping@0.3.5':
     resolution: {integrity: sha512-IzL8ZoEDIBRWEzlCcRhOaCupYyN5gdIK+Q6fbFdPDg6HqX6jpkItn7DFIpW9LQzXG6Df9sA7+OKnq0qlz/GaQg==}
@@ -866,6 +872,8 @@ snapshots:
 
   '@esbuild/win32-x64@0.21.5':
     optional: true
+
+  '@idotj/mastodon-embed-timeline@4.4.2': {}
 
   '@jridgewell/gen-mapping@0.3.5':
     dependencies:
