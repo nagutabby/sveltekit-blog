@@ -1,7 +1,7 @@
 import { getDetail } from "$lib/microcms";
-import type { PageServerLoad } from "./$types";
+import type { PageLoad } from "./$types";
 
-export const load: PageServerLoad = async ({ params }) => {
+export const load: PageLoad = async ({ params }) => {
   const articleData = await getDetail(params.slug);
   const data = {
     ...articleData,
@@ -9,4 +9,4 @@ export const load: PageServerLoad = async ({ params }) => {
   return data;
 };
 
-export const prerender = true;
+export const prerender = false;

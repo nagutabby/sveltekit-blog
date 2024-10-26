@@ -12,8 +12,8 @@ jobs:
       - uses: actions/checkout@v4
       - uses: superfly/flyctl-actions/setup-flyctl@master
       - run: |
-          echo "MICROCMS_API_KEY=${{ vars.MICROCMS_API_KEY }}" >> .env
-          echo "MICROCMS_SERVICE_DOMAIN=${{ vars.MICROCMS_SERVICE_DOMAIN }}" >> .env
+          echo "PUBLIC_MICROCMS_API_KEY=${{ vars.PUBLIC_MICROCMS_API_KEY }}" >> .env
+          echo "PUBLIC_MICROCMS_SERVICE_DOMAIN=${{ vars.PUBLIC_MICROCMS_SERVICE_DOMAIN }}" >> .env
           echo "MY_BCC_EMAIL_ADDRESS=${{ vars.MY_BCC_EMAIL_ADDRESS }}" >> .env
           echo "MY_EMAIL_ADDRESS=${{ vars.MY_EMAIL_ADDRESS }}" >> .env
           echo "SMTP_PORT=${{ vars.SMTP_PORT }}" >> .env

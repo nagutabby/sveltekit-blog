@@ -1,9 +1,9 @@
 import { createClient, type MicroCMSQueries, type MicroCMSImage } from "microcms-js-sdk";
-import { MICROCMS_SERVICE_DOMAIN, MICROCMS_API_KEY } from '$env/static/private';
+import { PUBLIC_MICROCMS_SERVICE_DOMAIN, PUBLIC_MICROCMS_API_KEY } from '$env/static/public';
 
 const client = createClient({
-  serviceDomain: MICROCMS_SERVICE_DOMAIN,
-  apiKey: MICROCMS_API_KEY,
+  serviceDomain: PUBLIC_MICROCMS_SERVICE_DOMAIN,
+  apiKey: PUBLIC_MICROCMS_API_KEY,
 });
 
 export type Blog = {
