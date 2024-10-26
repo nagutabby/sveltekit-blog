@@ -39,8 +39,6 @@
   let isLoading = true;
 
   onMount(async () => {
-    await data.streamed.article;
-
     headings = Array.from(
       document.getElementById("content")!.querySelectorAll("h1, h2, h3"),
     );
@@ -83,24 +81,14 @@
   });
 </script>
 
-{#await data.streamed.article then data}
-  <OpenGraph
-    url={data.image.url}
-    title={data.title}
-    description={data.description}
-  ></OpenGraph>
-{/await}
+<OpenGraph
+  url={data.image.url}
+  title={data.title}
+  description={data.description}
+></OpenGraph>
 
-{#await data.streamed.article}
-  <Header
-    url={"https://images.microcms-assets.io/assets/99c53a99ae2b4682938f6c435d83e3d9/ca63de19468e45b2833ebf325dbfd56c/Microsoft-Fluentui-Emoji-3d-Cat-3d.1024.png"}
-    title="読み込み中…"
-    description=""
-  ></Header>
-{:then data}
-  <Header url={data.image.url} title={data.title} description={data.description}
-  ></Header>
-{/await}
+<Header url={data.image.url} title={data.title} description={data.description}
+></Header>
 
 <main class="container">
   <div class="article-group">
@@ -117,14 +105,10 @@
       </div>
     </div>
     <div id="content" class="article-content">
-      {#await data.streamed.article}
-        <article aria-busy="true" class="loading-article"></article>
-      {:then data}
-        <article>
-          <Date createdAt={data.createdAt} revisedAt={data.revisedAt} />
-          {@html data.body}
-        </article>
-      {/await}
+      <article>
+        <Date createdAt={data.createdAt} revisedAt={data.revisedAt} />
+        {@html data.body}
+      </article>
     </div>
   </div>
 </main>
@@ -134,25 +118,5 @@
 <style>
   main.container {
     margin-top: 2rem;
-  }
-  .loading-toc {
-    height: 30vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-  .loading-article {
-    height: 80vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-  [aria-busy="true"]:not(input, select, textarea, html)::before {
-    content: "";
-    width: 15%;
-    height: 15%;
-    background-repeat: no-repeat;
-    background-position: center;
-    background-size: contain;
   }
 </style>
