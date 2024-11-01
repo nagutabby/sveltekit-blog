@@ -76,6 +76,5 @@
   });
 </script>
 
-<article>
-  {@html rawToc}
-</article>
+{@html rawToc}
+

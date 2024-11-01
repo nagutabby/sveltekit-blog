@@ -32,21 +32,26 @@ main {
 
 .sticky-top {
   position: sticky;
-  top: 0;
+  top: 2rem;
 }
 
 .toc {
-  >article>ul {
-    margin-bottom: 0;
-    overflow-y: auto;
-    scrollbar-color: var(--pico-muted-color) var(--pico-card-background-color);
-    height: 30vh;
+  & ul {
+    &:first-child {
+      padding: 0;
+      margin-bottom: 0;
+      overflow-y: auto;
+      scrollbar-color: var(--pico-muted-color) var(--pico-card-background-color);
+      height: 30vh;
+    }
+
+    & ul {
+      padding: revert;
+      padding: 0 0.75rem;
+    }
   }
 
-  & ul {
-    padding: revert;
-    padding: 0 0.5rem;
-  }
+
 
   & li {
     list-style: none;
@@ -108,6 +113,7 @@ pre>code {
 @media (map-get($breakpoints, lg, breakpoint) <=width) {
   .main-content {
     flex-flow: row !important;
+    column-gap: 5%;
   }
 
   .timeline {
@@ -146,7 +152,7 @@ pre>code {
   .article-group {
     display: flex;
     flex-direction: row-reverse;
-    column-gap: 3%;
+    column-gap: 5%;
   }
 
   .article-content {
@@ -154,7 +160,7 @@ pre>code {
   }
 
   .sidebar {
-    width: 35%;
+    width: 30%;
   }
 }
 

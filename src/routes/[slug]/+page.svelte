@@ -96,7 +96,7 @@
       <div class="sticky-top">
         <div class="toc">
           {#if isLoading}
-            <article aria-busy="true" class="loading-toc"></article>
+            <div aria-busy="true" class="loading-toc"></div>
           {:else}
             <Toc {headings} />
           {/if}
