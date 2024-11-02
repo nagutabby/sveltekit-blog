@@ -4,6 +4,10 @@
 @use "@picocss/pico/scss/_settings" as *;
 @use "highlight.js/styles/github-dark.min";
 
+:root {
+  --pico-typography-spacing-vertical: 1.3rem;
+}
+
 .mt-post-header-user,
 .mt-post-header-date,
 .mt-post-counter-bar,
@@ -39,20 +43,15 @@ pre>code {
   font-size: 0.85rem;
 }
 
-.toc>article {
-  margin: var(--block-spacing-vertical) 0 !important;
-}
-
-#mastodon-share-button,
-#share-button {
-  margin-top: 2rem;
-  width: 100%;
+.toc {
+  & article {
+    margin: var(--block-spacing-vertical) 0 !important;
+  }
 }
 
 .cancel-and-share-buttons {
   display: flex;
   flex-flow: column;
-  row-gap: 2rem;
 
   & .mastodon-share-close-button {
     width: 100%;
@@ -63,6 +62,14 @@ pre>code {
   .grid {
     article {
       max-width: 40vw;
+    }
+  }
+
+  .button-group {
+
+    button,
+    a {
+      width: 4vh !important
     }
   }
 
@@ -84,6 +91,17 @@ pre>code {
 }
 
 @media (map-get($breakpoints, lg, breakpoint) <=width) {
+  .loading-toc {
+    height: 30vh !important;
+  }
+  .toc {
+    & ul {
+      &:first-child {
+        height: 30vh !important;
+      }
+    }
+  }
+
   .main-content {
     flex-flow: row !important;
     column-gap: 5%;

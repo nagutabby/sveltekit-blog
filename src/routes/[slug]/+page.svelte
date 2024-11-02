@@ -101,6 +101,7 @@
             <Toc {headings} />
           {/if}
         </div>
+        <hr />
         <ShareButton />
       </div>
     </div>
@@ -120,7 +121,7 @@
     margin-top: 2rem;
   }
   .loading-toc {
-    height: 30vh;
+    height: 20vh;
   }
   .toc {
   & ul {
@@ -129,7 +130,7 @@
       margin-bottom: 0;
       overflow-y: auto;
       scrollbar-color: var(--pico-muted-color) var(--pico-card-background-color);
-      height: 30vh;
+      height: 20vh;
     }
 
     & ul {
