@@ -18,39 +18,3 @@
     </div>
   </a>
 </article>
-
-<style>
-  article {
-    padding: 0;
-    &:hover {
-      filter: brightness(110%);
-      transition: all 0.3s ease;
-    }
-
-    & a {
-      --pico-color: #c2c7d0;
-      text-decoration: none;
-      height: 100%;
-      border-radius: 5px;
-      display: flex;
-      flex-flow: column;
-      &:hover, &:active, &:focus {
-        --pico-color: #c2c7d0;
-      }
-      & .description {
-        text-align: center;
-        display: flex;
-        flex-flow: column;
-        width: 90%;
-        margin: 1rem auto;
-      }
-    }
-    & img {
-      width: 100%;
-      aspect-ratio: 1;
-      object-fit: cover;
-      border-radius: 5px 5px 0px 0px;
-      background-color: hsl(205, 20%, 90%);
-    }
-  }
-</style>

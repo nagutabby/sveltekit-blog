@@ -124,27 +124,28 @@
     height: 20vh;
   }
   .toc {
-  & ul {
-    &:first-child {
-      padding: 0;
-      margin-bottom: 0;
-      overflow-y: auto;
-      scrollbar-color: var(--pico-muted-color) var(--pico-card-background-color);
-      height: 20vh;
-    }
-
     & ul {
-      padding: revert;
-      padding: 0 0.75rem;
+      &:first-child {
+        padding: 0;
+        margin-bottom: 0;
+        overflow-y: auto;
+        scrollbar-color: var(--pico-muted-color)
+          var(--pico-card-background-color);
+        height: 20vh;
+      }
+
+      & ul {
+        padding: revert;
+        padding: 0 0.75rem;
+      }
+    }
+
+    & li {
+      list-style: none;
+
+      & a {
+        text-decoration: none;
+      }
     }
   }
-
-  & li {
-    list-style: none;
-
-    & a {
-      text-decoration: none;
-    }
-  }
-}
 </style>

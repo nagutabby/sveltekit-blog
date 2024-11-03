@@ -89,37 +89,3 @@
     </form>
   </article>
 </dialog>
-
-<style lang="scss">
-  .header-icons {
-    display: flex;
-    justify-content: space-between;
-
-    & a,
-    button {
-      border-radius: 50%;
-      min-width: 60px;
-      width: 3vw;
-      aspect-ratio: 1 / 1;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      opacity: 0.9;
-      & svg {
-        width: 100%;
-        aspect-ratio: 1 / 1;
-      }
-    }
-  }
-  article {
-    padding: calc(var(--pico-block-spacing-vertical) * 2.5)
-      calc(var(--pico-block-spacing-horizontal) * 2);
-  }
-  .close {
-    background-color: transparent;
-    border-color: transparent;
-    &:focus {
-      box-shadow: none;
-    }
-  }
-</style>

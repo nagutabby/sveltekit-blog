@@ -80,7 +80,11 @@
 
 <p class="share-header">記事をシェア</p>
 <div class="button-group">
-  <button data-target="mastodon-modal" id="mastodon-share-button" aria-label="Mastodon">
+  <button
+    data-target="mastodon-modal"
+    id="mastodon-share-button"
+    aria-label="Mastodon"
+  >
     <svg
       xmlns="http://www.w3.org/2000/svg"
       width="1em"
@@ -94,7 +98,11 @@
       />
     </svg>
   </button>
-  <a role="button" href="https://b.hatena.ne.jp/entry/panel/?url={currentUrl}" aria-label="はてなブックマーク">
+  <a
+    role="button"
+    href="https://b.hatena.ne.jp/entry/panel/?url={currentUrl}"
+    aria-label="はてなブックマーク"
+  >
     <svg
       xmlns="http://www.w3.org/2000/svg"
       width="1em"
@@ -150,55 +158,3 @@
     </form>
   </article>
 </dialog>
-
-<style>
-  .button-group {
-    margin-bottom: 2rem;
-    display: flex;
-    justify-content: space-evenly;
-    align-items: center;
-    & a,
-    button {
-      display: flex;
-      align-items: center;
-      min-width: 50px;
-      width: 12%;
-      color: var(--pico-primary);
-      background-color: transparent;
-      border: transparent;
-      padding: 0;
-      margin: 0;
-      display: block;
-      &:hover {
-        color: var(--pico-primary-hover);
-      }
-      &:focus {
-        box-shadow: none !important;
-      }
-      & svg {
-        width: 100%;
-        height: 100%;
-      }
-    }
-  }
-  .close {
-    padding: 0 !important;
-    margin: 0 0 0 auto;
-    height: 1.5rem;
-    width: 1.5rem;
-    background-size: 100%;
-    &:focus {
-      box-shadow: none;
-    }
-    & svg {
-      width: 100%;
-    }
-  }
-  #mastodon-share-button {
-    column-gap: 0.3rem;
-  }
-  .share-header {
-    text-align: center;
-    font-size: 20px;
-  }
-</style>

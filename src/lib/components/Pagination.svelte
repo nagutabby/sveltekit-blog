@@ -33,26 +33,3 @@
     </li>
   {/each}
 </ul>
-
-<style>
-  ul {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0 0.5rem;
-    padding: 0;
-  }
-  li {
-    list-style: none;
-    margin: 1rem 0;
-  }
-  button {
-    margin-bottom: 0;
-  }
-  a,
-  button {
-    border-radius: 10px;
-    padding: 0.8rem 1.2rem;
-    font-size: 1.2rem;
-  }
-</style>

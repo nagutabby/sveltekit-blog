@@ -28,25 +28,3 @@
     <span>最終更新日: {parseDate(revisedAt)}</span>
   </p>
 </div>
-
-<style lang="scss">
-  @use "@picocss/pico/scss/_settings" as *;
-
-  .date-wrapper {
-    display: flex;
-    flex-flow: column;
-  }
-
-  .date-item {
-    display: flex;
-    align-items: center;
-    column-gap: 0.3rem;
-  }
-
-  @media (map-get($breakpoints, sm, breakpoint) <= width) {
-    .date-wrapper {
-      flex-flow: row nowrap;
-      column-gap: 1rem;
-    }
-  }
-</style>

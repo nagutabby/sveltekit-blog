@@ -60,29 +60,3 @@
     </div>
   </article>
 </footer>
-
-<style>
-  footer {
-    padding: 0 !important;
-    & article {
-      margin: 0;
-      padding: 1rem 1rem;
-    }
-    & .container {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      & ul {
-        margin: 0 auto;
-        display: flex;
-        column-gap: 2rem;
-        margin-bottom: 0;
-        padding-left: 0;
-        & li {
-          display: flex;
-          list-style: none;
-        }
-      }
-    }
-  }
-</style>

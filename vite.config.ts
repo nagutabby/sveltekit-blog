@@ -7,12 +7,4 @@ export default defineConfig({
   build: {
     target: "ES2020",
   },
-
-  css: {
-    preprocessorOptions: {
-      scss: {
-        additionalData: '@use "src/variables.scss" as *;',
-      },
-    },
-  },
 });
