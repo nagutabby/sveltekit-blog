@@ -106,12 +106,3 @@
   </div>
 </div>
 <Pagination totalArticles={data.totalCount} />
-
-<style lang="scss">
-  .main-content {
-    display: flex;
-    flex-flow: column;
-    justify-content: space-between;
-    margin: 1rem 0;
-  }
-</style>
