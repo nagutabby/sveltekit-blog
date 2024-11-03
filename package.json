@@ -12,14 +12,12 @@
   "devDependencies": {
     "@idotj/mastodon-embed-timeline": "^4.4.2",
     "@picocss/pico": "^2.0.6",
-    "@sveltejs/adapter-node": "^5.2.7",
+    "@sveltejs/adapter-cloudflare": "^4.7.4",
     "@sveltejs/kit": "^2.6.1",
     "@sveltejs/vite-plugin-svelte": "^3.1.2",
     "@types/highlightjs": "^9.12.6",
-    "@types/nodemailer": "^6.4.16",
     "highlight.js": "^11.10.0",
     "microcms-js-sdk": "^3.1.2",
-    "nodemailer": "^6.9.15",
     "sass": "^1.79.4",
     "svelte": "^4.2.19",
     "svelte-check": "^4.0.4",
@@ -28,11 +26,5 @@
     "vite": "^5.4.8"
   },
   "type": "module",
-  "packageManager": "pnpm@9.12.0+sha512.4abf725084d7bcbafbd728bfc7bee61f2f791f977fd87542b3579dcb23504d170d46337945e4c66485cd12d588a0c0e570ed9c477e7ccdd8507cf05f3f92eaca",
-  "optionalDependencies": {
-    "@rollup/rollup-linux-x64-gnu": "^4.24.0"
-  },
-  "engines": {
-    "node": "20.x"
-  }
+  "packageManager": "pnpm@9.12.3+sha256.24235772cc4ac82a62627cd47f834c72667a2ce87799a846ec4e8e555e2d4b8b"
 }
