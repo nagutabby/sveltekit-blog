@@ -58,5 +58,3 @@ export const actions: Actions = {
     }
   }
 };
-
-export const prerender = false;

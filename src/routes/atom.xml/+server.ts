@@ -45,5 +45,3 @@ ${posts.join('\n')}
   return new Response(atom);
 
 }
-
-export const prerender = false;

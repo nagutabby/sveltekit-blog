@@ -31,5 +31,3 @@ export const load: PageLoad = async ({ url }) => {
   };
   return data;
 };
-
-export const prerender = false;

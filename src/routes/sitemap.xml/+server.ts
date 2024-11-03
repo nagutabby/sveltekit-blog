@@ -25,5 +25,3 @@ ${posts.join('\n')}
   return new Response(sitemap);
 
 }
-
-export const prerender = false;
