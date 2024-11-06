@@ -183,7 +183,7 @@
   }
   .close {
     padding: 0 !important;
-    margin: 0 0 0 auto;
+    margin: 0 0 1rem auto;
     height: 1.5rem;
     width: 1.5rem;
     background-size: 100%;

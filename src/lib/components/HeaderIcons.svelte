@@ -111,15 +111,17 @@
       }
     }
   }
-  article {
-    padding: calc(var(--pico-block-spacing-vertical) * 2.5)
-      calc(var(--pico-block-spacing-horizontal) * 2);
-  }
   .close {
-    background-color: transparent;
-    border-color: transparent;
+    padding: 0 !important;
+    margin: 0 0 1rem auto;
+    height: 1.5rem;
+    width: 1.5rem;
+    background-size: 100%;
     &:focus {
       box-shadow: none;
+    }
+    & svg {
+      width: 100%;
     }
   }
 </style>
