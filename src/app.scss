@@ -52,6 +52,7 @@ pre>code {
 .cancel-and-share-buttons {
   display: flex;
   flex-flow: column;
+  row-gap: 1.5rem;
 
   & .mastodon-share-close-button {
     width: 100%;
