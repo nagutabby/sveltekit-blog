@@ -120,8 +120,5 @@
     &:focus {
       box-shadow: none;
     }
-    & svg {
-      width: 100%;
-    }
   }
 </style>

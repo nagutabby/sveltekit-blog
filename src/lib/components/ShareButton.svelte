@@ -190,9 +190,6 @@
     &:focus {
       box-shadow: none;
     }
-    & svg {
-      width: 100%;
-    }
   }
   #mastodon-share-button {
     column-gap: 0.3rem;
