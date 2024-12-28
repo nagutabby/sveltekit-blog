@@ -1,7 +1,10 @@
 <script lang="ts">
-  export let url: string;
-  export let image: string;
-  export let title: string;
+  type Props = {
+    url: string;
+    image: string;
+    title: string;
+  }
+  const { url, image, title }: Props = $props()
 </script>
 
 <article>
@@ -19,7 +22,7 @@
   </a>
 </article>
 
-<style>
+<style lang="scss">
   article {
     padding: 0;
     &:hover {

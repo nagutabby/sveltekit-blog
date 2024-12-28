@@ -21,7 +21,7 @@
   import Footer from "$lib/components/Footer.svelte";
   import OpenGraph from "$lib/components/OpenGraph.svelte";
 
-  export let data: PageData;
+  const { data }: { data: PageData } = $props();
 
   hljs.registerLanguage("python", python);
   hljs.registerLanguage("ruby", ruby);
@@ -35,11 +35,11 @@
   hljs.registerLanguage("dockerfile", dockerfile);
   hljs.registerLanguage("yaml", yaml);
 
-  let headings: any;
-  let isLoading = true;
+  let headingList = $state();
+  let isLoading = $state(true);
 
   onMount(async () => {
-    headings = Array.from(
+    headingList = Array.from(
       document.getElementById("content")!.querySelectorAll("h1, h2, h3"),
     );
     isLoading = false;
@@ -98,7 +98,7 @@
           {#if isLoading}
             <div aria-busy="true" class="loading-toc"></div>
           {:else}
-            <Toc {headings} />
+            <Toc { headingList } />
           {/if}
         </div>
         <hr />
@@ -116,35 +116,11 @@
 
 <Footer></Footer>
 
-<style>
+<style lang="scss">
   main.container {
     margin-top: 2rem;
   }
   .loading-toc {
     height: 20vh;
   }
-  .toc {
-  & ul {
-    &:first-child {
-      padding: 0;
-      margin-bottom: 0;
-      overflow-y: auto;
-      scrollbar-color: var(--pico-muted-color) var(--pico-card-background-color);
-      height: 20vh;
-    }
-
-    & ul {
-      padding: revert;
-      padding: 0 0.75rem;
-    }
-  }
-
-  & li {
-    list-style: none;
-
-    & a {
-      text-decoration: none;
-    }
-  }
-}
 </style>

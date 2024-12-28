@@ -1,6 +1,9 @@
 <script lang="ts">
-  export let createdAt: string;
-  export let revisedAt: string
+  type Props = {
+    createdAt: string;
+    revisedAt: string;
+  }
+  const { createdAt, revisedAt }: Props = $props();
 
   function parseDate(date: string | Date) {
     const options: Intl.DateTimeFormatOptions = {

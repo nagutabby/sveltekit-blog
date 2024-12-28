@@ -1,12 +1,11 @@
 <script lang="ts">
   import { onMount } from "svelte";
 
-  export let headings: any;
-
-  let rawToc: string = "";
+  const { headingList } = $props();
+  let rawToc = $state("");
 
   onMount(async () => {
-    const toc = headings.map((heading: Element) => ({
+    const toc = headingList.map((heading: Element) => ({
       text: heading.textContent,
       id: heading.getAttribute("id"),
       name: heading.tagName,
@@ -64,7 +63,7 @@
         }
       });
     };
-    headings = document.querySelectorAll("h1, h2, h3");
+    const headings = document.querySelectorAll("h1, h2, h3");
     const options = {
       rootMargin: "0% 0% -100% 0%",
       threshold: 0,

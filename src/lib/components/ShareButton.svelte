@@ -11,7 +11,7 @@
     const regexp = /^[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,6}$/i;
     return regexp.test(domain);
   };
-  let currentUrl = "";
+  let currentUrl = $state("");
 
   onMount(() => {
     if (browser) {
@@ -119,9 +119,9 @@
       aria-label="Close"
       class="close mastodon-share-close-button"
       data-target="mastodon-modal"
-    />
+    ></button>
     <h3>Mastodonでシェア</h3>
-    <form id="form" on:submit|preventDefault>
+    <form id="form" onsubmit={(event) => event.preventDefault()}>
       <label for="mastodon-instance-name">
         インスタンス名
         <input
@@ -151,7 +151,7 @@
   </article>
 </dialog>
 
-<style>
+<style lang="scss">
   .button-group {
     margin-bottom: 2rem;
     display: flex;

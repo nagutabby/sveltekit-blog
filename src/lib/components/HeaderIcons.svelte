@@ -77,8 +77,8 @@
       class="close"
       id="search-close-button"
       data-target="search-modal"
-    />
-    <form data-target="search-modal" on:submit={handleSubmit}>
+    ></button>
+    <form data-target="search-modal" onsubmit={handleSubmit}>
       <input
         type="search"
         name="search"

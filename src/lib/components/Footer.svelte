@@ -61,7 +61,7 @@
   </article>
 </footer>
 
-<style>
+<style lang="scss">
   footer {
     padding: 0 !important;
     & article {

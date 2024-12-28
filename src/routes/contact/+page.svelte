@@ -2,10 +2,10 @@
   import { enhance } from "$app/forms";
   import type { ActionData } from "./$types";
 
-  export let form: ActionData;
+  const { form }: { form: ActionData } = $props();
 
-  let isLoading = false;
-  let hasError = false;
+  let isLoading  = $state(false);
+  let hasError = $state(false);
 </script>
 
 <form
@@ -52,7 +52,7 @@
       placeholder="ご要件をご記入ください"
       rows="5"
       required
-    />
+    ></textarea>
   </label>
   {#if isLoading}
     <button type="submit" aria-busy="true" disabled>送信中…</button>

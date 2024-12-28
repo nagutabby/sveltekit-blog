@@ -3,7 +3,7 @@
   import Card from "$lib/components/Card.svelte";
   import Pagination from "$lib/components/Pagination.svelte";
 
-  export let data: PageData;
+  const { data }: { data: PageData } = $props();
 </script>
 
   {#if data.contents.length % 3 == 0}

@@ -1,21 +1,19 @@
 <script lang="ts">
-  import { page } from "$app/stores";
+  import { page } from "$app/state";
 
-  export let totalArticles: number;
+  const { totalArticles }: { totalArticles: number } = $props();
 
-  $: currentPage = Number($page.url.searchParams.get("page")) || 1;
+  let currentPage = $derived(Number(page.url.searchParams.get("page")) || 1);
 
   const numberOfArticlesPerPage = 9;
-  let pages: number;
-  $: {
-    if (totalArticles % numberOfArticlesPerPage !== 0) {
-      pages = Math.floor(totalArticles / numberOfArticlesPerPage) + 1;
-    } else {
-      pages = Math.floor(totalArticles / numberOfArticlesPerPage);
-    }
-  }
+  const pages = $derived(
+    totalArticles % numberOfArticlesPerPage !== 0
+    ? Math.floor(totalArticles / numberOfArticlesPerPage) + 1
+    : Math.floor(totalArticles / numberOfArticlesPerPage)
+  )
 
-  const query = $page.url.searchParams.get("q");
+  const query = page.url.searchParams.get("q");
+
 </script>
 
 <ul>
@@ -34,7 +32,7 @@
   {/each}
 </ul>
 
-<style>
+<style lang="scss">
   ul {
     display: flex;
     align-items: center;

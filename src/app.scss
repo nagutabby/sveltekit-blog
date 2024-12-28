@@ -47,6 +47,24 @@ pre>code {
   & article {
     margin: var(--block-spacing-vertical) 0 !important;
   }
+  & ul {
+    &:first-child {
+      padding: 0;
+      margin-bottom: 0;
+      overflow-y: auto;
+      height: 20vh;
+    }
+    & ul {
+      padding: revert;
+      padding: 0 0.75rem;
+    }
+  }
+  & li {
+    list-style: none;
+    & a {
+      text-decoration: none;
+    }
+  }
 }
 
 .cancel-and-share-buttons {

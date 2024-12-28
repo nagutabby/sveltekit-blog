@@ -2,12 +2,9 @@
   import type { PageData } from "./$types";
   import Card from "$lib/components/Card.svelte";
   import Pagination from "$lib/components/Pagination.svelte";
-  import { page } from "$app/stores";
   import Timeline from "$lib/components/Timeline.svelte";
 
-  export let data: PageData;
-
-  let currentPage = Number($page.url.searchParams.get("page")) || 1;
+  const { data }: {data: PageData} = $props();
 </script>
 
 <div class="main-content">

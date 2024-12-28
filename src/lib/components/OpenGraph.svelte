@@ -4,9 +4,12 @@
   const defaultDescription = "学んだことをまとめるブログ";
   import { page } from "$app/stores";
 
-  export let title: string;
-  export let description: string;
-  export let url: string;
+  type Props = {
+    title: string;
+    description: string;
+    url: string;
+  }
+  const { title, description, url }: Props = $props()
 </script>
 
 <svelte:head>

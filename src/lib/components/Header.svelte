@@ -1,9 +1,12 @@
 <script lang="ts">
   import HeaderIcons from "./HeaderIcons.svelte";
 
-  export let url: string;
-  export let title: string;
-  export let description: string;
+  type Props = {
+    url: string;
+    title: string;
+    description: string;
+  }
+  const { url, title, description }: Props = $props()
 </script>
 
 <svelte:head>
@@ -34,7 +37,7 @@
   </div>
 </header>
 
-<style>
+<style lang="scss">
   header {
     position: relative;
     padding: 0 !important;
