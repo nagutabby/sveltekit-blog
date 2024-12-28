@@ -12,7 +12,7 @@
   "devDependencies": {
     "@idotj/mastodon-embed-timeline": "^4.4.2",
     "@picocss/pico": "^2.0.6",
-    "@sveltejs/adapter-cloudflare": "^4.7.4",
+    "@sveltejs/adapter-cloudflare": "^5.0.0",
     "@sveltejs/kit": "^2.15.1",
     "@sveltejs/vite-plugin-svelte": "^5.0.3",
     "@types/highlightjs": "^9.12.6",
