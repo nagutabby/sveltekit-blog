@@ -20,7 +20,7 @@
     "microcms-js-sdk": "^3.1.2",
     "sass": "^1.83.0",
     "svelte": "^5.16.0",
-    "svelte-check": "^4.0.4",
+    "svelte-check": "^4.1.1",
     "tslib": "^2.7.0",
     "typescript": "^5.6.2",
     "vite": "^6.0.6"
