@@ -1,49 +1,53 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
-  import {
-    toggleModal,
-    closeWithClickOutside,
-    closeWithEscapeKey,
-  } from "$lib/modal";
   import { onMount } from "svelte";
 
-  function handleSubmit(event: SubmitEvent) {
+  const portal = (element: HTMLElement) => {
+  document.body.appendChild(element);
+
+  return {
+    destroy() {
+      element.remove();
+    }
+  };
+}
+
+  const handleSubmit = (event: SubmitEvent) => {
     event.preventDefault();
     const searchField = document.getElementById("search") as HTMLInputElement;
+    const searchModal = document.getElementById(
+      "search-modal",
+    ) as HTMLDialogElement;
+    if (searchModal) {
+      searchModal.close()
+    }
     localStorage.setItem("search", searchField.value);
-    toggleModal(event);
-    const formData = new FormData(event.target as HTMLFormElement);
-    const query = formData.get("search") as string;
-    goto(`/search?q=${encodeURIComponent(query)}`);
+    goto(`/search?q=${encodeURIComponent(searchField.value)}`);
   }
 
   onMount(() => {
     const searchField = document.getElementById("search") as HTMLInputElement;
-    const searchButton = document.getElementById("search-button");
+    const searchModal = document.getElementById("search-modal");
 
-    searchButton?.addEventListener("click", async (event) => {
+    searchModal?.addEventListener("click", async () => {
       if (localStorage.getItem("search")) {
         searchField.value = localStorage.getItem("search")!;
       }
-      toggleModal(event);
     });
-
-    const searchCloseButton = document.getElementById("search-close-button");
-    searchCloseButton?.addEventListener("click", async (event) => {
-      toggleModal(event);
-    });
-
-    closeWithClickOutside();
-    closeWithEscapeKey();
   });
 </script>
 
-<div class="header-icons">
-  <a href="/" class="contrast" role="button" aria-label="Home">
+<div class="flex justify-between">
+  <a
+    href="/"
+    class="btn btn-lg btn-ghost btn-circle"
+    role="button"
+    aria-label="Home"
+  >
     <svg
       xmlns="http://www.w3.org/2000/svg"
       fill="currentColor"
-      class="bi bi-house"
+      class="bi bi-house h-1/2"
       viewBox="0 0 16 16"
     >
       <path
@@ -52,15 +56,19 @@
     </svg>
   </a>
   <button
-    class="contrast"
-    data-target="search-modal"
-    id="search-button"
+    class="btn btn-lg btn-ghost btn-circle"
     aria-label="Search"
+    onclick={() => {
+      const searchModal = document.getElementById(
+        "search-modal",
+      ) as HTMLDialogElement;
+      searchModal.showModal();
+    }}
   >
     <svg
       xmlns="http://www.w3.org/2000/svg"
       fill="currentColor"
-      class="bi bi-search"
+      class="bi bi-search h-1/2"
       viewBox="0 0 16 16"
     >
       <path
@@ -70,55 +78,28 @@
   </button>
 </div>
 
-<dialog id="search-modal">
-  <article>
-    <button
-      aria-label="Close"
-      class="close"
-      id="search-close-button"
-      data-target="search-modal"
-    ></button>
-    <form data-target="search-modal" onsubmit={handleSubmit}>
-      <input
-        type="search"
-        name="search"
-        id="search"
-        placeholder="Search"
-        aria-label="Search"
-      />
+<dialog use:portal class="modal" id="search-modal">
+  <div class="modal-box flex flex-col gap-y-5">
+    <h3 class="font-bold text-2xl">検索</h3>
+    <form class="flex" onsubmit={handleSubmit}>
+      <label class="input input-bordered flex items-center gap-2 w-full">
+        <input type="text" class="grow" id="search" required />
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 16 16"
+          fill="currentColor"
+          class="h-4 w-4 opacity-70"
+        >
+          <path
+            fill-rule="evenodd"
+            d="M9.965 11.026a5 5 0 1 1 1.06-1.06l2.755 2.754a.75.75 0 1 1-1.06 1.06l-2.755-2.754ZM10.5 7a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0Z"
+            clip-rule="evenodd"
+          />
+        </svg>
+      </label>
     </form>
-  </article>
+  </div>
+  <form method="dialog" class="modal-backdrop">
+    <button>close</button>
+  </form>
 </dialog>
-
-<style lang="scss">
-  .header-icons {
-    display: flex;
-    justify-content: space-between;
-
-    & a,
-    button {
-      border-radius: 50%;
-      min-width: 60px;
-      width: 3vw;
-      aspect-ratio: 1 / 1;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      opacity: 0.9;
-      & svg {
-        width: 100%;
-        aspect-ratio: 1 / 1;
-      }
-    }
-  }
-  .close {
-    padding: 0 !important;
-    margin: 0 0 1rem auto;
-    height: 1.5rem;
-    width: 1.5rem;
-    background-size: 100%;
-    &:focus {
-      box-shadow: none;
-    }
-  }
-</style>

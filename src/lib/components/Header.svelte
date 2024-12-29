@@ -5,8 +5,8 @@
     url: string;
     title: string;
     description: string;
-  }
-  const { url, title, description }: Props = $props()
+  };
+  const { url, title, description }: Props = $props();
 </script>
 
 <svelte:head>
@@ -17,22 +17,24 @@
   />
 </svelte:head>
 
-<header>
+<header class="relative">
   <img
     alt=""
     srcset="{url}?fm=webp&fit=clip&w=500 500w, {url}?fm=webp&fit=clip&w=1000 1000w"
   />
-  <div class="title">
-    <div class="container header-icons-container">
-      <HeaderIcons />
-    </div>
-    <div class="container header-group">
-      <h1>
-        {title}
-      </h1>
-      <h2>
-        {description}
-      </h2>
+  <div class="title w-full h-full">
+    <div class="container p-10 relative h-full flex flex-col gap-y-[25%]">
+      <div class="asbolute w-full">
+        <HeaderIcons />
+      </div>
+      <div class="flex flex-col max-w-full prose">
+        <h1 class="text-4xl">
+          {title}
+        </h1>
+        <h2 class="text-2xl my-3">
+          {description}
+        </h2>
+      </div>
     </div>
   </div>
 </header>
@@ -49,8 +51,6 @@
     }
     & .title {
       flex-flow: column;
-      height: 100%;
-      width: 100%;
       background: rgba(0, 0, 0, 0.5);
       backdrop-filter: blur(3px);
       justify-content: center;
@@ -60,22 +60,6 @@
       top: 50%;
       transform: translate(-50%, -50%);
       display: flex;
-      & .header-group {
-        display: flex;
-        flex-flow: column;
-        gap: 1rem 0;
-        justify-content: center;
-        width: 100%;
-        position: relative;
-        & h2 {
-          font-size: 1.4rem;
-        }
-      }
     }
-    & .header-icons-container {
-      position: fixed;
-      top: 2rem;
-      z-index: 1;
-    };
   }
 </style>

@@ -7,108 +7,18 @@
   const { data }: {data: PageData} = $props();
 </script>
 
-<div class="main-content">
-  <div class="article-card">
-    {#if data.contents.length % 3 == 0}
-      {#each data.contents as { }, i}
-        {#if (i + 1) % 3 == 0}
-          <div class="grid">
-            <Card
-              url={data.contents[i - 2].id}
-              image={data.contents[i - 2].image.url}
-              title={data.contents[i - 2].title}
-            />
-            <Card
-              url={data.contents[i - 1].id}
-              image={data.contents[i - 1].image.url}
-              title={data.contents[i - 1].title}
-            />
-            <Card
-              url={data.contents[i].id}
-              image={data.contents[i].image.url}
-              title={data.contents[i].title}
-            />
-          </div>
-        {/if}
-      {/each}
-    {:else if data.contents.length % 3 == 2}
-      {#each data.contents as { }, i}
-        {#if (i + 1) % 3 == 0}
-          <div class="grid">
-            <Card
-              url={data.contents[i - 2].id}
-              image={data.contents[i - 2].image.url}
-              title={data.contents[i - 2].title}
-            />
-            <Card
-              url={data.contents[i - 1].id}
-              image={data.contents[i - 1].image.url}
-              title={data.contents[i - 1].title}
-            />
-            <Card
-              url={data.contents[i].id}
-              image={data.contents[i].image.url}
-              title={data.contents[i].title}
-            />
-          </div>
-        {:else if i + 1 == data.contents.length}
-          <div class="grid">
-            <Card
-              url={data.contents[i - 1].id}
-              image={data.contents[i - 1].image.url}
-              title={data.contents[i - 1].title}
-            />
-            <Card
-              url={data.contents[i].id}
-              image={data.contents[i].image.url}
-              title={data.contents[i].title}
-            />
-          </div>
-        {/if}
-      {/each}
-    {:else if data.contents.length % 3 == 1}
-      {#each data.contents as { }, i}
-        {#if (i + 1) % 3 == 0}
-          <div class="grid">
-            <Card
-              url={data.contents[i - 2].id}
-              image={data.contents[i - 2].image.url}
-              title={data.contents[i - 2].title}
-            />
-            <Card
-              url={data.contents[i - 1].id}
-              image={data.contents[i - 1].image.url}
-              title={data.contents[i - 1].title}
-            />
-            <Card
-              url={data.contents[i].id}
-              image={data.contents[i].image.url}
-              title={data.contents[i].title}
-            />
-          </div>
-        {:else if i + 1 == data.contents.length}
-          <div class="grid">
-            <Card
-              url={data.contents[i].id}
-              image={data.contents[i].image.url}
-              title={data.contents[i].title}
-            />
-          </div>
-        {/if}
-      {/each}
-    {/if}
+<div class="flex flex-col md:flex-row items-start md:relative gap-10 md:gap-0">
+  <div class="flex flex-wrap gap-5 justify-center w-full md:w-[63%]">
+    {#each data.contents as article}
+      <Card
+        url={article.id}
+        image={article.image.url}
+        title={article.title}
+      />
+    {/each}
   </div>
-  <div class="timeline">
+  <div class="w-full md:w-[33%] md:absolute md:top-0 md:bottom-0 md:right-0">
     <Timeline></Timeline>
   </div>
 </div>
 <Pagination totalArticles={data.totalCount} />
-
-<style lang="scss">
-  .main-content {
-    display: flex;
-    flex-flow: column;
-    justify-content: space-between;
-    margin: 1rem 0;
-  }
-</style>

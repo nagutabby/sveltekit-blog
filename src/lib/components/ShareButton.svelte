@@ -1,11 +1,36 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import {
-    toggleModal,
-    closeWithClickOutside,
-    closeWithEscapeKey,
-  } from "$lib/modal";
   import { browser } from "$app/environment";
+
+  let isError = $state(false);
+
+  const handleSubmit = (event: SubmitEvent) => {
+    event.preventDefault();
+    const mastodonInstanceNameField = document.getElementById(
+      "mastodon-instance-name",
+    ) as HTMLInputElement;
+    const mastodonShareModal = document.getElementById(
+      "search-share-modal",
+    ) as HTMLDialogElement;
+    isError = !isValidDomain(mastodonInstanceNameField.value);
+    if (!isError) {
+      if (mastodonShareModal) {
+        mastodonShareModal.close();
+      }
+      localStorage.setItem(
+        "mastodon-instance-name",
+        mastodonInstanceNameField.value,
+      );
+      history.pushState(
+        null,
+        document.title,
+        location.pathname + location.search,
+      );
+      window.open(
+        `https://${mastodonInstanceNameField.value}/share?text=${encodeURIComponent(document.title)}${encodeURIComponent("\n")}${encodeURIComponent(location.href)}`,
+      );
+    }
+  };
 
   const isValidDomain = (domain: string): boolean => {
     const regexp = /^[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,6}$/i;
@@ -31,62 +56,28 @@
           "mastodon-instance-name",
         )!;
       }
-      toggleModal(event);
     });
-
-    const mastodonShareCloseButtons = Array.from(
-      document.querySelectorAll(".mastodon-share-close-button"),
-    );
-    mastodonShareCloseButtons.forEach((mastodonShareCloseButton) => {
-      mastodonShareCloseButton.addEventListener("click", async (event) => {
-        toggleModal(event);
-      });
-    });
-
-    const mastodonShareConfirmButton = document.getElementById(
-      "mastodon-share-confirm-button",
-    );
-    const form = document.getElementById("form") as HTMLFormElement;
-
-    mastodonShareConfirmButton?.addEventListener("click", async (event) => {
-      if (form.checkValidity()) {
-        if (!isValidDomain(mastodonInstanceNameField.value)) {
-          mastodonInstanceNameField.focus();
-        } else {
-          localStorage.setItem(
-            "mastodon-instance-name",
-            mastodonInstanceNameField.value,
-          );
-          history.pushState(
-            null,
-            document.title,
-            location.pathname + location.search,
-          );
-          window.open(
-            `https://${
-              mastodonInstanceNameField.value
-            }/share?text=${encodeURIComponent(
-              document.title,
-            )}${encodeURIComponent("\n")}${encodeURIComponent(location.href)}`,
-          );
-          toggleModal(event);
-        }
-      }
-    });
-    closeWithClickOutside();
-    closeWithEscapeKey();
   });
 </script>
 
-<p class="share-header">記事をシェア</p>
+<h3 class="text-center mb-7">記事をシェア</h3>
 <div class="button-group">
-  <button data-target="mastodon-modal" id="mastodon-share-button" aria-label="Mastodon">
+  <button
+    class="btn"
+    aria-label="Mastodon"
+    onclick={() => {
+      const mastodonShareModal = document.getElementById(
+        "mastodon-share-modal",
+      ) as HTMLDialogElement;
+      mastodonShareModal.showModal();
+    }}
+  >
     <svg
       xmlns="http://www.w3.org/2000/svg"
       width="1em"
       height="1em"
       fill="currentColor"
-      class="bi bi-mastodon"
+      class="bi bi-mastodon text-secondary"
       viewBox="0 0 16 16"
     >
       <path
@@ -94,12 +85,43 @@
       />
     </svg>
   </button>
-  <a role="button" href="https://b.hatena.ne.jp/entry/panel/?url={currentUrl}" aria-label="はてなブックマーク">
+  <dialog id="mastodon-share-modal" class="modal">
+    <div class="modal-box">
+      <h3 class="font-bold text-2xl m-0">Mastodonでシェア</h3>
+      <p class="my-3">インスタンス名</p>
+      <form id="form" onsubmit={handleSubmit}>
+        <label
+          for="mastodon-instance-name"
+          class={`flex-col input input-bordered flex items-center gap-2 w-full ${isError ? 'input-error' : ''}`}
+        >
+          <input
+            type="text"
+            id="mastodon-instance-name"
+            name="mastodon-instance-name"
+            placeholder="mastodon.social"
+            class="grow w-full"
+            required
+          />
+        </label>
+      </form>
+    </div>
+    <form method="dialog" class="modal-backdrop">
+      <button>close</button>
+    </form>
+  </dialog>
+  <a
+    role="button"
+    class="btn"
+    href="https://b.hatena.ne.jp/entry/panel/?url={currentUrl}"
+    aria-label="はてなブックマーク"
+    target="_blank"
+  >
     <svg
       xmlns="http://www.w3.org/2000/svg"
       width="1em"
       height="1em"
       viewBox="0,0,256,256"
+      class="text-secondary"
     >
       <g transform="translate(-40.96,-40.96) scale(1.32,1.32)"
         ><g fill="currentColor"
@@ -113,43 +135,6 @@
     </svg>
   </a>
 </div>
-<dialog id="mastodon-modal">
-  <article>
-    <button
-      aria-label="Close"
-      class="close mastodon-share-close-button"
-      data-target="mastodon-modal"
-    ></button>
-    <h3>Mastodonでシェア</h3>
-    <form id="form" onsubmit={(event) => event.preventDefault()}>
-      <label for="mastodon-instance-name">
-        インスタンス名
-        <input
-          type="text"
-          id="mastodon-instance-name"
-          name="mastodon-instance-name"
-          placeholder="mastodon.social"
-          required
-        />
-      </label>
-      <div class="cancel-and-share-buttons">
-        <button
-          class="secondary outline mastodon-share-close-button"
-          data-target="mastodon-modal"
-        >
-          キャンセル
-        </button>
-        <button
-          type="submit"
-          data-target="mastodon-modal"
-          id="mastodon-share-confirm-button"
-        >
-          シェア
-        </button>
-      </div>
-    </form>
-  </article>
-</dialog>
 
 <style lang="scss">
   .button-group {
@@ -162,40 +147,16 @@
       display: flex;
       align-items: center;
       min-width: 50px;
-      width: 12%;
       color: var(--pico-primary);
       background-color: transparent;
       border: transparent;
       padding: 0;
       margin: 0;
       display: block;
-      &:hover {
-        color: var(--pico-primary-hover);
-      }
-      &:focus {
-        box-shadow: none !important;
-      }
       & svg {
         width: 100%;
         height: 100%;
       }
     }
-  }
-  .close {
-    padding: 0 !important;
-    margin: 0 0 1rem auto;
-    height: 1.5rem;
-    width: 1.5rem;
-    background-size: 100%;
-    &:focus {
-      box-shadow: none;
-    }
-  }
-  #mastodon-share-button {
-    column-gap: 0.3rem;
-  }
-  .share-header {
-    text-align: center;
-    font-size: 20px;
   }
 </style>

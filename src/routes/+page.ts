@@ -4,7 +4,7 @@ import type { PageLoad } from "./$types";
 
 export const load: PageLoad = async ({ url }) => {
   const page = Number(url.searchParams.get("page")) || 1;
-  const limit = 9;
+  const limit = 10;
   const startIndex = limit * (page - 1);
   let pageQueries: MicroCMSQueries;
   pageQueries = {

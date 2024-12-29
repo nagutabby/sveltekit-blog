@@ -13,24 +13,24 @@
     let previousTag: string = "";
     for (let i = 0; i < toc.length; i++) {
       if (previousTag === "") {
-        rawToc += `<ul><li><a href="#${toc[i].id}">${toc[i].text}</a>`;
+        rawToc += `<ul><li><a href="#${toc[i].id}" class="link !link-secondary">${toc[i].text}</a>`;
       } else if (toc[i].name === previousTag) {
-        rawToc += `</li><li><a href="#${toc[i].id}">${toc[i].text}</a>`;
+        rawToc += `</li><li><a href="#${toc[i].id}" class="link !link-secondary">${toc[i].text}</a>`;
       } else if (previousTag === "H1") {
         if (toc[i].name === "H2" || "H3") {
-          rawToc += `<ul><li><a href="#${toc[i].id}">${toc[i].text}</a>`;
+          rawToc += `<ul><li><a href="#${toc[i].id}" class="link !link-secondary">${toc[i].text}</a>`;
         }
       } else if (previousTag === "H2") {
         if (toc[i].name === "H3") {
-          rawToc += `<ul><li><a href="#${toc[i].id}">${toc[i].text}</a>`;
+          rawToc += `<ul><li><a href="#${toc[i].id}" class="link !link-secondary">${toc[i].text}</a>`;
         } else if (toc[i].name === "H1") {
-          rawToc += `</li></ul></li><li><a href="#${toc[i].id}">${toc[i].text}</a>`;
+          rawToc += `</li></ul></li><li><a href="#${toc[i].id}" class="link !link-secondary">${toc[i].text}</a>`;
         }
       } else if (previousTag === "H3") {
         if (toc[i].name === "H2") {
-          rawToc += `</li></ul></li><li><a href="#${toc[i].id}">${toc[i].text}</a></li>`;
+          rawToc += `</li></ul></li><li><a href="#${toc[i].id}" class="link !link-secondary">${toc[i].text}</a></li>`;
         } else if (toc[i].name === "H1") {
-          rawToc += `</li></ul></li></ul></li><li><a href="#${toc[i].id}">${toc[i].text}</a>`;
+          rawToc += `</li></ul></li></ul></li><li><a href="#${toc[i].id}" class="link !link-secondary">${toc[i].text}</a>`;
         }
       }
       previousTag = toc[i].name;
@@ -76,4 +76,3 @@
 </script>
 
 {@html rawToc}
-
