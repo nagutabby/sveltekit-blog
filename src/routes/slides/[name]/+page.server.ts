@@ -1,4 +1,6 @@
-export async function load({ params }) {
+import type { PageServerLoad } from './$types';
+
+export const load: PageServerLoad = async ({ params }) => {
   if (!params.name) {
     throw new Error('Name parameter is required');
   }
