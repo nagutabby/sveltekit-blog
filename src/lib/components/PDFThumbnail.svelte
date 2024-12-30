@@ -5,10 +5,6 @@
   import workerUrl from "pdfjs-dist/build/pdf.worker.mjs?url";
   import { browser } from "$app/environment";
 
-  if (browser) {
-    pdfjs.GlobalWorkerOptions.workerSrc = workerUrl;
-  }
-
   const { pdfUrl }: string = $props();
   let canvas = $state<HTMLCanvasElement>();
   let loading = $state(true);
@@ -16,7 +12,9 @@
 
   onMount(async () => {
     try {
-      console.log(`/api/slides/${pdfUrl}`);
+      if (browser) {
+        pdfjs.GlobalWorkerOptions.workerSrc = workerUrl;
+      }
       const response = await fetch(`/api/slides/${pdfUrl}`);
       if (!response.ok) throw new Error("PDF fetch failed");
 
