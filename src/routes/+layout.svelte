@@ -20,7 +20,7 @@
   description={page.data.description}
 ></Header>
 
-<main class="container p-12 mx-auto">
+<main class="container p-3 md:p-12 mx-auto">
   {@render children()}
 </main>
 
