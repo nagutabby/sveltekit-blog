@@ -1,5 +1,5 @@
 <footer class="footer bg-base-100">
-  <div class="container px-3 md:px-12 py-5 flex justify-center items-center gap-x-8 mx-auto">
+  <div class="container px-3 lg:px-12 py-5 flex justify-center items-center gap-x-8 mx-auto">
     <nav class="flex flex-col gap-y-1">
       <h6 class="footer-title">Contact</h6>
       <a href="/contact" aria-label="Contact" class="link link-secondary">

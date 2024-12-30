@@ -8,20 +8,24 @@
   const { children } = $props();
 </script>
 
-<OpenGraph
-  url={page.data.image.url}
-  title={page.data.title}
-  description={page.data.description}
-></OpenGraph>
-
-<Header
-  url={page.data.image.url}
-  title={page.data.title}
-  description={page.data.description}
-></Header>
-
-<main class="container p-3 md:p-12 mx-auto">
+{#if page.route.id?.includes("/slides")}
   {@render children()}
-</main>
+{:else}
+  <OpenGraph
+    url={page.data.image.url}
+    title={page.data.title}
+    description={page.data.description}
+  ></OpenGraph>
+
+  <Header
+    url={page.data.image.url}
+    title={page.data.title}
+    description={page.data.description}
+  ></Header>
+
+  <main class="container px-3 md:px-10 py-10 mx-auto">
+    {@render children()}
+  </main>
+{/if}
 
 <Footer></Footer>

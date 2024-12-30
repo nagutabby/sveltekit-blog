@@ -23,7 +23,7 @@
     srcset="{url}?fm=webp&fit=clip&w=500 500w, {url}?fm=webp&fit=clip&w=1000 1000w"
   />
   <div class="title w-full h-full">
-    <div class="container p-3 md:p-12 relative h-full flex flex-col gap-y-[25%]">
+    <div class="container px-3 lg:px-12 py-10 relative h-full flex flex-col gap-y-[25%]">
       <div class="asbolute w-full">
         <HeaderIcons />
       </div>

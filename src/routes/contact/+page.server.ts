@@ -1,5 +1,5 @@
 import {
-  API_TOKEN,
+  EMAIL_API_TOKEN,
   FROM_ADDRESS,
   BCC_ADDRESS
 } from "$env/static/private";
@@ -58,7 +58,7 @@ export const actions: Actions = {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Api-Token": API_TOKEN
+          "Api-Token": EMAIL_API_TOKEN
         },
         body: JSON.stringify(payload)
       });

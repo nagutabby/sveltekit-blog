@@ -10,6 +10,7 @@
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch"
   },
   "devDependencies": {
+    "@aws-sdk/client-s3": "^3.717.0",
     "@idotj/mastodon-embed-timeline": "^4.4.2",
     "@sveltejs/adapter-cloudflare": "^5.0.0",
     "@sveltejs/kit": "^2.15.1",
@@ -20,6 +21,7 @@
     "daisyui": "^4.12.23",
     "highlight.js": "^11.11.1",
     "microcms-js-sdk": "^3.1.2",
+    "pdfjs-dist": "^4.9.155",
     "postcss": "^8.4.49",
     "sass": "^1.83.0",
     "svelte": "^5.16.0",
