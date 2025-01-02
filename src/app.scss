@@ -38,9 +38,18 @@ main {
 .mt-post-header-date,
 .mt-post-counter-bar,
 .mt-post-preview-description {
-  --mt-color-contrast-gray: oklch(var(--nc));
+  --mt-color-contrast-gray: oklch(var(--nc)) !important;
 }
 
+.mt-post-counter-bar-favorites,
+.mt-post-counter-bar-reblog,
+.mt-post-counter-bar-replies {
+  opacity: 1 !important;
+}
+
+.mt-post-txt-wrapper a {
+  text-decoration: underline !important;
+}
 pre,
 pre>code {
   background: oklch(var(--b1)) !important;

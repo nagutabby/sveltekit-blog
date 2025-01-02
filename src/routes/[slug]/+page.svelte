@@ -17,9 +17,6 @@
   import Date from "$lib/components/Date.svelte";
   import { onMount } from "svelte";
   import "../../app.scss";
-  import Header from "$lib/components/Header.svelte";
-  import Footer from "$lib/components/Footer.svelte";
-  import OpenGraph from "$lib/components/OpenGraph.svelte";
 
   const { data }: { data: PageData } = $props();
 

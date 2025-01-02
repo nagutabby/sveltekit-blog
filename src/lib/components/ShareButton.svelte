@@ -60,7 +60,7 @@
   });
 </script>
 
-<h3 class="text-center mb-7">記事をシェア</h3>
+<p class="text-center mb-7 text-xl">記事をシェア</p>
 <div class="button-group">
   <button
     class="btn"
@@ -87,7 +87,7 @@
   </button>
   <dialog id="mastodon-share-modal" class="modal">
     <div class="modal-box">
-      <h3 class="font-bold text-2xl m-0">Mastodonでシェア</h3>
+      <p class="font-bold text-2xl m-0">Mastodonでシェア</p>
       <p class="my-3">インスタンス名</p>
       <form id="form" onsubmit={handleSubmit}>
         <label

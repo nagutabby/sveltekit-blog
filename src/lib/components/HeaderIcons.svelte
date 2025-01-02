@@ -97,9 +97,9 @@
 
 <dialog use:portal class="modal" id="search-modal">
   <div class="modal-box flex flex-col gap-y-5">
-    <h3 class="font-bold text-2xl">検索</h3>
+    <p class="font-bold text-2xl">検索</p>
     <form class="flex" onsubmit={handleSubmit}>
-      <label class="input input-bordered flex items-center gap-2 w-full">
+      <label for="search" class="input input-bordered flex items-center gap-2 w-full">
         <input type="text" class="grow" id="search" required />
         <svg
           xmlns="http://www.w3.org/2000/svg"
