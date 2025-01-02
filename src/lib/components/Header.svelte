@@ -1,5 +1,5 @@
 <script lang="ts">
-  import HeaderIcons from "./HeaderIcons.svelte";
+  import Navigation from "./Navigation.svelte";
 
   type Props = {
     url: string;
@@ -23,9 +23,9 @@
     srcset="{url}?fm=webp&fit=clip&w=500 500w, {url}?fm=webp&fit=clip&w=1000 1000w"
   />
   <div class="title w-full h-full">
-    <div class="container px-3 lg:px-12 py-10 relative h-full flex flex-col gap-y-[25%]">
+    <div class="container px-3 lg:px-12 py-3 relative h-full flex flex-col gap-y-[25%]">
       <div class="asbolute w-full">
-        <HeaderIcons />
+        <Navigation />
       </div>
       <div class="flex flex-col max-w-full prose">
         <h1 class="text-4xl">
