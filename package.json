@@ -7,7 +7,9 @@
     "build": "vite build",
     "preview": "vite preview",
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
-    "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch"
+    "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
+    "test:unit": "vitest",
+    "test": "pnpm test:unit run"
   },
   "devDependencies": {
     "@aws-sdk/client-s3": "^3.717.0",
@@ -29,7 +31,8 @@
     "tailwindcss": "^3.4.17",
     "tslib": "^2.8.1",
     "typescript": "^5.7.2",
-    "vite": "^6.0.6"
+    "vite": "^6.0.6",
+    "vitest": "^2.0.4"
   },
   "type": "module",
   "packageManager": "pnpm@9.15.1"
