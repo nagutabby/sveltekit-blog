@@ -21,58 +21,78 @@ export const load: PageServerLoad = async () => {
 export const actions: Actions = {
   default: async ({ request }) => {
     const data = await request.formData();
-    type EmailPayload = {
-      from: {
-        email: string;
-        name: string;
-      };
-      to: {
-        email: string;
-        name: string;
-      }[];
-      bcc: {
-        email: string;
-        name: string;
-      }[];
-      subject: string;
-      html: string;
-    };
-    const payload: EmailPayload = {
-      from: {
-        email: FROM_ADDRESS,
-        name: "Hiroto Sasagawa"
-      },
-      to: [{
-        email: data.get("email") as string,
-        name: data.get("name") as string
-      }],
-      bcc: [{
-        email: BCC_ADDRESS,
-        name: "Hiroto Sasagawa"
-      }],
-      subject: "お問い合わせを受け付けました",
-      html: `<!DOCTYPE HTML><html><p>お問い合わせ内容は以下の通りです。</p><ul><li>氏名: ${data.get("name")}</li><li>メールアドレス: ${data.get("email")}</li><li>本文: ${data.get("text")}</li></ul><p>返信まで数日かかる場合がございます。予めご了承ください。</p></html>`
-    };
-    try {
-      const response = await fetch("https://send.api.mailtrap.io/api/send", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Api-Token": EMAIL_API_TOKEN
-        },
-        body: JSON.stringify(payload)
-      });
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(`Mailtrap API error: ${JSON.stringify(error)}`);
+    const imRobot = data.get("im-robot") === "true";
+    const name = data.get("name") as string;
+    const email = data.get("email") as string;
+    const text = data.get("text") as string;
+
+    if (imRobot) {
+      const errors: Record<string, string> = {};
+      errors.imRobot = "Botによるメッセージ送信はできません";
+      if (Object.keys(errors).length > 0) {
+        return fail(400, {
+          errors,
+          values: {
+            name,
+            email,
+            text
+          }
+        });
       }
-      return {
-        name: data.get("name"),
-        email: data.get("email"),
-        text: data.get("text"),
+    } else {
+      type EmailPayload = {
+        from: {
+          email: string;
+          name: string;
+        };
+        to: {
+          email: string;
+          name: string;
+        }[];
+        bcc: {
+          email: string;
+          name: string;
+        }[];
+        subject: string;
+        html: string;
       };
-    } catch {
-      return fail(500);
+      const payload: EmailPayload = {
+        from: {
+          email: FROM_ADDRESS,
+          name: "Hiroto Sasagawa"
+        },
+        to: [{
+          email,
+          name,
+        }],
+        bcc: [{
+          email: BCC_ADDRESS,
+          name: "Hiroto Sasagawa",
+        }],
+        subject: "お問い合わせを受け付けました",
+        html: `<!DOCTYPE HTML><html><p>お問い合わせ内容は以下の通りです。</p><ul><li>氏名: ${name}</li><li>メールアドレス: ${email}</li><li>本文: ${text}</li></ul><p>返信まで数日かかる場合がございます。予めご了承ください。</p></html>`,
+      };
+      try {
+        const response = await fetch("https://send.api.mailtrap.io/api/send", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Api-Token": EMAIL_API_TOKEN
+          },
+          body: JSON.stringify(payload)
+        });
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(`Mailtrap API error: ${JSON.stringify(error)}`);
+        }
+        return {
+          name,
+          email,
+          text,
+        };
+      } catch {
+        return fail(500);
+      }
     }
   }
 };
