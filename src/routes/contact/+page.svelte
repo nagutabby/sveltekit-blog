@@ -12,14 +12,14 @@
   id="form"
   use:enhance={() => {
     isLoading = true;
-    return async ({ result, update }) => {
+    return async ({ update }) => {
       await update();
       isLoading = false;
     };
   }}
 >
   <div
-    class="flex flex-col gap-y-5 lg:flex-row lg:flex-wrap justify-center lg:w-[80%] mx-auto"
+    class="flex flex-col gap-y-7 lg:flex-row lg:flex-wrap justify-center lg:w-[80%] mx-auto"
   >
     {#if form?.errors}
       <div role="alert" class="alert alert-error">
@@ -58,19 +58,30 @@
         >
       </div>
     {/if}
-    <label
-      class="input input-bordered flex items-center gap-2 w-full lg:w-[48%] lg:mr-[2%]"
-    >
-      氏名
-      <input type="text" name="name" class="grow" required />
-    </label>
-    <label
-      class="input input-bordered flex items-center gap-2 w-full lg:w-[48%] lg:ml-[2%]"
-    >
-      メールアドレス
-      <input type="email" name="email" class="grow" required />
-    </label>
-
+    <div class="flex w-full flex-col lg:flex-row gap-y-2 lg:gap-y-0">
+      <label for="name" class="form-control w-full lg:w-[48%] lg:mr-[2%]">
+        <div class="label">
+          <span class="label-text text-lg">氏名</span>
+        </div>
+        <input
+          type="text"
+          id="name"
+          name="name"
+          class="input input-bordered w-full"
+        />
+      </label>
+      <label for="email" class="form-control w-full lg:w-[48%] lg:ml-[2%]">
+        <div class="label">
+          <span class="label-text text-lg">メールアドレス</span>
+        </div>
+        <input
+          type="email"
+          id="email"
+          name="email"
+          class="input input-bordered w-full"
+        />
+      </label>
+    </div>
     <label class="form-control w-full">
       <div class="label">
         <span class="label-text text-lg">内容</span>
@@ -81,7 +92,6 @@
         rows="5"
         required
       ></textarea>
-      <div class="label"></div>
     </label>
     <div class="form-control hidden" aria-hidden="true">
       <label for="im-robot" class="label cursor-pointer">
