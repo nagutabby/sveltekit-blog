@@ -5,7 +5,7 @@
   import workerUrl from "pdfjs-dist/build/pdf.worker.mjs?url";
   import { browser } from "$app/environment";
 
-  const { pdfUrl }: string = $props();
+  const { pdfUrl }: { pdfUrl: string } = $props();
   let canvas = $state<HTMLCanvasElement>();
   let loading = $state(true);
   let error = $state<string | null>();
