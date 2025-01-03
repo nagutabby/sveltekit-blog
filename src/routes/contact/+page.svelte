@@ -36,7 +36,11 @@
             d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
           />
         </svg>
-        <span>{form.errors.imRobot}</span>
+        <ul>
+          {#each Object.values(form.errors) as error}
+            <li>{error}</li>
+          {/each}
+        </ul>
       </div>
     {:else if form}
       <div role="alert" class="alert alert-success">
@@ -68,6 +72,7 @@
           id="name"
           name="name"
           class="input input-bordered w-full"
+          required
         />
       </label>
       <label for="email" class="form-control w-full lg:w-[48%] lg:ml-[2%]">
@@ -79,12 +84,13 @@
           id="email"
           name="email"
           class="input input-bordered w-full"
+          required
         />
       </label>
     </div>
     <label class="form-control w-full">
       <div class="label">
-        <span class="label-text text-lg">内容</span>
+        <span class="label-text text-lg">本文</span>
       </div>
       <textarea
         name="text"

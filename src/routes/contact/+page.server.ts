@@ -25,20 +25,37 @@ export const actions: Actions = {
     const name = data.get("name") as string;
     const email = data.get("email") as string;
     const text = data.get("text") as string;
+    const errors: Record<string, string> = {};
+
+    const emailRegex = /^[a-zA-Z0-9_+-]+(\.[a-zA-Z0-9_+-]+)*@([a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9]\.)+[a-zA-Z]{2,}$/;
 
     if (imRobot) {
-      const errors: Record<string, string> = {};
       errors.imRobot = "Botによるメッセージ送信はできません";
-      if (Object.keys(errors).length > 0) {
-        return fail(400, {
-          errors,
-          values: {
-            name,
-            email,
-            text
-          }
-        });
-      }
+    }
+
+    if (!name) {
+      errors.name = "氏名は必須です";
+    }
+
+    if (!email) {
+      errors.email = "メールアドレスは必須です";
+    } else if (!emailRegex.test(email)) {
+      errors.email = "メールアドレスの形式が不適切です";
+    }
+
+    if (!text) {
+      errors.text = "本文は必須です";
+    }
+
+    if (Object.keys(errors).length > 0) {
+      return fail(400, {
+        errors,
+        values: {
+          name,
+          email,
+          text
+        }
+      });
     } else {
       type EmailPayload = {
         from: {
