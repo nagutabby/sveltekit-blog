@@ -11,34 +11,36 @@
   let error = $state<string | null>();
 
   onMount(async () => {
-    try {
-      if (browser) {
-        pdfjs.GlobalWorkerOptions.workerSrc = workerUrl;
+    if (canvas) {
+      try {
+        if (browser) {
+          pdfjs.GlobalWorkerOptions.workerSrc = workerUrl;
+        }
+        const response = await fetch(`/api/slides/${pdfUrl}`);
+        if (!response.ok) throw new Error("PDF fetch failed");
+
+        const pdfData = await response.arrayBuffer();
+
+        const pdf = await pdfjs.getDocument({ data: pdfData }).promise;
+        const page = await pdf.getPage(1);
+
+        const viewport = page.getViewport({ scale: 1 });
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+
+        const context = canvas.getContext("2d");
+        if (!context) throw new Error("Canvas context is null");
+
+        await page.render({
+          canvasContext: context,
+          viewport: viewport,
+        }).promise;
+
+        loading = false;
+      } catch (err) {
+        error = err instanceof Error ? err.message : "Failed to load PDF";
+        loading = false;
       }
-      const response = await fetch(`/api/slides/${pdfUrl}`);
-      if (!response.ok) throw new Error("PDF fetch failed");
-
-      const pdfData = await response.arrayBuffer();
-
-      const pdf = await pdfjs.getDocument({ data: pdfData }).promise;
-      const page = await pdf.getPage(1);
-
-      const viewport = page.getViewport({ scale: 1 });
-      canvas.width = viewport.width;
-      canvas.height = viewport.height;
-
-      const context = canvas.getContext("2d");
-      if (!context) throw new Error("Canvas context is null");
-
-      await page.render({
-        canvasContext: context,
-        viewport: viewport,
-      }).promise;
-
-      loading = false;
-    } catch (err) {
-      error = err instanceof Error ? err.message : "Failed to load PDF";
-      loading = false;
     }
   });
 </script>
