@@ -21,7 +21,7 @@
   <div
     class="flex flex-col gap-y-7 lg:flex-row lg:flex-wrap justify-center lg:w-[80%] mx-auto"
   >
-    {#if form?.errors}
+    {#if form?.errors && Object.keys(form.errors).length > 0}
       <div role="alert" class="alert alert-error">
         <svg
           xmlns="http://www.w3.org/2000/svg"
