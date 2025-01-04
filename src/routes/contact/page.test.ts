@@ -68,7 +68,7 @@ describe('お問い合わせフォーム', () => {
     expect(alert).toHaveTextContent('本文は必須です');
   });
 
-  it('値を送信した時に送信ボタンのテキストが変化する', async () => {
+  it('値を送信したときに送信ボタンのテキストが変化する', async () => {
     const mockForm: ActionData = {
       errors: {},
       values: {
