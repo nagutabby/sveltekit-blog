@@ -4,7 +4,7 @@ export const load: PageServerLoad = async ({ fetch }) => {
   const response = await fetch('/api/slides');
 
   if (!response.ok) {
-    throw new Error('Failed to fetch slides');
+    throw new Error('スライドのメタデータの取得に失敗しました');
   }
 
   const slides = await response.json();
