@@ -74,17 +74,17 @@
   });
 </script>
 
-<div class="flex md:flex-row items-start justify-between flex-col-reverse">
+<div class="flex lg:flex-row items-start justify-between flex-col-reverse">
   <div
-    class="flex flex-wrap gap-5 justify-center w-full md:w-[63%]"
+    class="flex flex-wrap gap-5 justify-center w-full lg:w-[63%]"
     id="content"
   >
-    <article class="prose prose-lg max-w-full">
+    <article class="prose md:prose-lg max-w-full">
       <Date createdAt={data.createdAt} revisedAt={data.revisedAt} />
       {@html data.body}
     </article>
   </div>
-  <div class="w-full md:w-[33%] prose md:top-0 md:sticky py-5">
+  <div class="w-full lg:w-[33%] prose md:prose-lg lg:top-0 lg:sticky py-5">
     <div class="toc">
       {#if isLoading}
         <div class="flex justify-center">
