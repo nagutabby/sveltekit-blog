@@ -4,9 +4,8 @@
   type Props = {
     url: string;
     title: string;
-    description: string;
   };
-  const { url, title, description }: Props = $props();
+  const { url, title }: Props = $props();
 </script>
 
 <svelte:head>
@@ -21,19 +20,17 @@
   <img
     alt=""
     srcset="{url}?fm=webp&fit=clip&w=500 500w, {url}?fm=webp&fit=clip&w=1000 1000w"
+    class="w-full h-[40vh] lg:h-[50vh]"
   />
-  <div class="title w-full h-full">
-    <div class="container px-3 lg:px-12 py-3 relative h-full flex flex-col gap-y-[25%]">
+  <div class="title w-full h-full left-[50%] top-[50%] absolute flex flex-col">
+    <div class="container px-3 lg:px-12 py-3 relative h-full flex flex-col gap-y-[30%]">
       <div class="asbolute w-full">
         <Navigation />
       </div>
-      <div class="flex flex-col max-w-full prose">
-        <h1 class="text-4xl">
+      <div class="flex flex-col max-w-full">
+        <h1 class="text-3xl sm:text-4xl lg:text-5xl font-semibold">
           {title}
         </h1>
-        <h2 class="text-2xl my-3">
-          {description}
-        </h2>
       </div>
     </div>
   </div>
@@ -41,25 +38,17 @@
 
 <style lang="scss">
   header {
-    position: relative;
     padding: 0 !important;
     & img {
-      width: 100%;
-      height: 60vh;
       object-fit: cover;
       background-color: white;
     }
     & .title {
-      flex-flow: column;
       background: rgba(0, 0, 0, 0.5);
       backdrop-filter: blur(3px);
       justify-content: center;
       align-items: center;
-      position: absolute;
-      left: 50%;
-      top: 50%;
       transform: translate(-50%, -50%);
-      display: flex;
     }
   }
 </style>

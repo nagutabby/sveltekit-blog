@@ -20,7 +20,6 @@
   <Header
     url={page.data.image.url}
     title={page.data.title}
-    description={page.data.description}
   ></Header>
 
   <main class="container px-3 md:px-10 py-10 mx-auto">
