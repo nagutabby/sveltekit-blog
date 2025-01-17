@@ -17,6 +17,7 @@ function create_entry(title: string, description: string, path: string, createdA
   <summary>${description}</summary>
   <link href="${new URL(path, 'https://blog.nagutabby.uk').href}" />
   ${revisedAt ? `<updated>${revisedAt}</updated>` : ''}
+  <published>${createdAt}</published>
   <id>tag:blog.nagutabby.uk,${createdDate}:/${path}</id>
   </entry>`;
 }
