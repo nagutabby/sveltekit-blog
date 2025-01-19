@@ -73,8 +73,8 @@ async function fetchActor(actorUrl: string): Promise<ActorInfo | null> {
     });
 
     if (!response.ok) {
-      console.error(`Actor fetch failed: ${response.status} ${response.statusText}`);
-      throw new Error(`Failed to fetch actor: ${response.status}`);
+      console.log(`Actor fetch failed: ${response.status} ${response.statusText}`);
+      throw new Error(`${response.status}`);
     }
 
     const actor = await response.json();
@@ -247,7 +247,7 @@ export const POST = async ({ request }: RequestEvent) => {
 
         default:
           const message = `${activity.type} activity is not supported`;
-          console.error(message);
+          console.log(message);
           return new Response(message, { status: 422 });
       }
     } catch (error) {
