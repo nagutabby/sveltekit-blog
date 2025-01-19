@@ -8,7 +8,7 @@ export const GET = async () => {
         "https://w3id.org/security/v1"
       ],
       "id": "https://blog.nagutabby.uk/actor",
-      "type": "Person",
+      "type": "Service",
       "preferredUsername": "article",
       "name": "nagutabbyの考え事",
       "summary": "ブログ投稿用アカウント",
@@ -28,9 +28,6 @@ export const GET = async () => {
       headers: {
         'Content-Type': 'application/activity+json',
         'Cache-Control': 'max-age=0, private, must-revalidate',
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'GET',
-        'Access-Control-Allow-Headers': 'Content-Type'
       }
     }
   );
