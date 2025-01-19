@@ -245,6 +245,15 @@ export const POST = async ({ request }: RequestEvent) => {
           return new Response('Invalid Accept activity', { status: 400 });
         }
 
+        case 'Create': {
+          return new Response('Create activities are not supported', {
+            status: 422,
+            headers: {
+              'Content-Type': 'application/activity+json'
+            }
+          });
+        }
+
         default:
           return new Response('Activity type not supported', { status: 400 });
       }
