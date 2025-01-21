@@ -2,7 +2,7 @@ import { getAllContents } from "../../lib/microcms";
 
 function create_entry(path: string, lastmod: string) {
   return `<url>
-    <loc>${new URL(path, "https://blog.nagutabby.uk").href}</loc>
+    <loc>${new URL(`articles/${path}`, "https://blog.nagutabby.uk").href}</loc>
     ${lastmod ? `<lastmod>${lastmod}</lastmod>` : ''}
   </url>`;
 }
