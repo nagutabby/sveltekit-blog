@@ -12,11 +12,10 @@
   import json from "highlight.js/lib/languages/json";
   import dockerfile from "highlight.js/lib/languages/dockerfile";
   import Toc from "$lib/components/Toc.svelte";
-  import type { PageData } from "./$types";
+  import type { PageData } from "../[name]/$types";
   import ShareButton from "$lib/components/ShareButton.svelte";
   import Date from "$lib/components/Date.svelte";
   import { onMount } from "svelte";
-  import "../../app.scss";
 
   const { data }: { data: PageData } = $props();
 

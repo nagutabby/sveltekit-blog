@@ -11,7 +11,7 @@
   <div class="flex flex-wrap gap-5 justify-center w-full md:w-[63%]">
     {#each data.contents as article}
       <Card
-        url={article.id}
+        url={`articles/${article.id}`}
         image={article.image.url}
         title={article.title}
       />

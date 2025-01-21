@@ -13,15 +13,6 @@ export default defineConfig({
   build: {
     target: "ES2020",
   },
-
-  css: {
-    preprocessorOptions: {
-      scss: {
-        additionalData: `@use "${join(currentDir, './src/variables.scss')}" as *;`,
-      },
-    },
-  },
-
   test: {
     include: ['src/**/*.{test,spec}.{js,ts}'],
     environment: 'jsdom'
