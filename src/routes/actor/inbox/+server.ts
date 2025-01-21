@@ -191,7 +191,7 @@ export const POST = async ({ request }: RequestEvent) => {
         }
 
         case 'Accept': {
-          if (activity.object?.type === 'Follow') {
+          if (activity.object?.type === 'Follow' || activity.object?.type === 'Subscribe') {
             // アクターの情報を取得
             const actorInfo = await fetchActor(activity.actor);
             if (!actorInfo) {
