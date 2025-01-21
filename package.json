@@ -23,6 +23,7 @@
     "@testing-library/svelte": "^5.2.6",
     "@types/highlightjs": "^9.12.6",
     "autoprefixer": "^10.4.20",
+    "canonicalize": "^2.0.0",
     "daisyui": "^4.12.23",
     "fast-xml-parser": "^4.5.1",
     "highlight.js": "^11.11.1",

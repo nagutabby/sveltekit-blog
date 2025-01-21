@@ -1,5 +1,7 @@
 import type { RequestHandler } from '@sveltejs/kit';
-import { getDetail, type Blog } from '$lib/microcms'; // ここで実際のデータファイルをインポートしてください
+import { getDetail, type Blog } from '$lib/microcms';
+import { signCreateActivity } from '$lib/signRequest';
+import { PRIVATE_KEY } from '$env/static/private';
 
 export const GET: RequestHandler = async ({ params }) => {
   const { name } = params;
@@ -29,7 +31,10 @@ export const GET: RequestHandler = async ({ params }) => {
 
   // Createアクティビティの定義
   const createActivity = {
-    "@context": "https://www.w3.org/ns/activitystreams",
+    "@context": [
+      "https://www.w3.org/ns/activitystreams",
+      "https://w3id.org/security/v1"
+    ],
     "id": `https://blog.nagutabby.uk/articles/${name}/create`,
     "type": "Create",
     "actor": "https://blog.nagutabby.uk/actor",
@@ -38,7 +43,14 @@ export const GET: RequestHandler = async ({ params }) => {
     "object": note
   };
 
-  return new Response(JSON.stringify(createActivity), {
+  const signatureData = await signCreateActivity(createActivity, PRIVATE_KEY)
+
+  const signedActivity = {
+    ...createActivity,
+    signature: signatureData
+  }
+
+  return new Response(JSON.stringify(signedActivity), {
     headers: {
       'Content-Type': 'application/activity+json'
     }
