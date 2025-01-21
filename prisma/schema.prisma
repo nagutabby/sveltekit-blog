@@ -28,6 +28,7 @@ model Follower {
 model RelayConnection {
   id             Int       @id @default(autoincrement())
   actorId        String
+  inbox          String
   connected      Boolean   @default(false)
   lastAcceptedAt DateTime?
   createdAt      DateTime  @default(now())

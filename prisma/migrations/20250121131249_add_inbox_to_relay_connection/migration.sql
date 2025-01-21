@@ -1,0 +1,2 @@
+ALTER TABLE "RelayConnection" ADD COLUMN "inbox" TEXT NOT NULL DEFAULT '';
+ALTER TABLE "RelayConnection" ALTER COLUMN "inbox" DROP DEFAULT;
