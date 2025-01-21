@@ -6,7 +6,7 @@ export const POST: RequestHandler = async ({ request, fetch }) => {
 
   if (data.id) {
     const response = await fetch(`/articles/${data.id}/create`);
-    console.log(response.json)
+    console.log(response.json())
   }
   return new Response(null, { status: 200 });
 }
