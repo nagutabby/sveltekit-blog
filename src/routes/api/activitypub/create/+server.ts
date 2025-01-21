@@ -8,7 +8,7 @@ export const POST: RequestHandler = async ({ request, fetch }) => {
 
   if (data.id) {
     try {
-      const createActivity = await fetch(`/articles/${data.id}/create`);
+      const createActivity = await fetch(`/api/articles/${data.id}/create`);
       if (!createActivity.ok) {
         console.error('Error fetching create activity:', await createActivity.text());
         return new Response(null, { status: 500 });

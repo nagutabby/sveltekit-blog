@@ -19,13 +19,13 @@ export const GET: RequestHandler = async ({ params }) => {
 
   // Noteオブジェクトの定義
   const note = {
-    "id": `https://blog.nagutabby.uk/articles/${name}`,
+    "id": `https://blog.nagutabby.uk/api/articles/${name}`,
     "type": "Note",
     "attributedTo": "https://blog.nagutabby.uk/actor",
     "name": articleData.title,
     "content": `<p>${articleData.title}</p><a href="https://blog.nagutabby.uk/articles/${name}" target="_blank">https://blog.nagutabby.uk/articles/${name}</a>`,
     "published": articleData.publishedAt,
-    "url": `https://blog.nagutabby.uk/articles/${name}`,
+    "url": `https://blog.nagutabby.uk/api/articles/${name}`,
     "to": ["https://www.w3.org/ns/activitystreams#Public"]
   };
 
@@ -35,7 +35,7 @@ export const GET: RequestHandler = async ({ params }) => {
       "https://www.w3.org/ns/activitystreams",
       "https://w3id.org/security/v1"
     ],
-    "id": `https://blog.nagutabby.uk/articles/${name}/create`,
+    "id": `https://blog.nagutabby.uk/api/articles/${name}/create`,
     "type": "Create",
     "actor": "https://blog.nagutabby.uk/actor",
     "published": new Date().toISOString(),
@@ -43,12 +43,12 @@ export const GET: RequestHandler = async ({ params }) => {
     "object": note
   };
 
-  const signatureData = await signCreateActivity(createActivity, PRIVATE_KEY)
+  const signatureData = await signCreateActivity(createActivity, PRIVATE_KEY);
 
   const signedActivity = {
     ...createActivity,
     signature: signatureData
-  }
+  };
 
   return new Response(JSON.stringify(signedActivity), {
     headers: {
