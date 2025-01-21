@@ -79,7 +79,7 @@
     id="content"
   >
     <article class="prose md:prose-lg max-w-full">
-      <Date createdAt={data.createdAt} revisedAt={data.revisedAt} />
+      <Date publishedAt={data.publishedAt} revisedAt={data.revisedAt} />
       {@html data.body}
     </article>
   </div>

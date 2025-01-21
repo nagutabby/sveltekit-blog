@@ -2,8 +2,8 @@ import { getAllContents } from "../../lib/microcms";
 
 let latestDate: Date;
 
-function create_entry(title: string, description: string, path: string, createdAt: string, revisedAt: string) {
-  const createdDate = new Date(createdAt).toISOString().substring(0, 10);
+function create_entry(title: string, description: string, path: string, publishedAt: string, revisedAt: string) {
+  const publishedDate = new Date(publishedAt).toISOString().substring(0, 10);
   if (latestDate === undefined) {
     latestDate = new Date(revisedAt);
   } else {
@@ -17,8 +17,8 @@ function create_entry(title: string, description: string, path: string, createdA
   <summary>${description}</summary>
   <link href="${new URL(`/articles/${path}`, 'https://blog.nagutabby.uk').href}" />
   ${revisedAt ? `<updated>${revisedAt}</updated>` : ''}
-  <published>${createdAt}</published>
-  <id>tag:blog.nagutabby.uk,${createdDate}:/articles/${path}</id>
+  <published>${publishedAt}</published>
+  <id>tag:blog.nagutabby.uk,${publishedDate}:/articles/${path}</id>
   </entry>`;
 }
 
@@ -29,7 +29,7 @@ export async function GET({ setHeaders }) {
 
   const response = await getAllContents();
 
-  const posts = response.contents.map((post) => create_entry(post.title, post.description, post.id, post.createdAt, post.revisedAt));
+  const posts = response.contents.map((post) => create_entry(post.title, post.description, post.id, post.publishedAt, post.revisedAt));
 
   const atom = `<?xml version="1.0" encoding="UTF-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
