@@ -225,18 +225,26 @@ export const POST = async ({ request }: RequestEvent) => {
 
         case 'Accept': {
           if (activity.object?.type === 'Follow') {
+            // アクターの情報を取得
+            const actorInfo = await fetchActor(activity.actor);
+            if (!actorInfo) {
+              return new Response('Could not fetch actor information', { status: 400 });
+            }
+
             await prisma.relayConnection.upsert({
               where: {
                 actorId: activity.actor
               },
               update: {
                 connected: true,
-                lastAcceptedAt: new Date()
+                lastAcceptedAt: new Date(),
+                inbox: actorInfo.inbox
               },
               create: {
                 actorId: activity.actor,
                 connected: true,
-                lastAcceptedAt: new Date()
+                lastAcceptedAt: new Date(),
+                inbox: actorInfo.inbox
               }
             });
 
