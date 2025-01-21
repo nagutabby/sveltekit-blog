@@ -24,7 +24,7 @@ function convertTagUriToHttps(tagUri: string): string {
 
 function convertAtomToActivityPub(atomEntries: any[]) {
   return atomEntries.map(entry => ({
-    id: `${convertTagUriToHttps(entry.id)}/activity`,
+    id: `${convertTagUriToHttps(entry.id)}/create`,
     type: 'Create',
     actor: 'https://blog.nagutabby.uk/actor',
     published: entry.published,
