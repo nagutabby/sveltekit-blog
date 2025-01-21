@@ -17,6 +17,7 @@ export const GET: RequestHandler = async ({ params }) => {
 
   // Noteオブジェクトの定義
   const note = {
+    "@context": "https://www.w3.org/ns/activitystreams",
     "id": `https://blog.nagutabby.uk/api/articles/${name}`,
     "type": "Note",
     "attributedTo": "https://blog.nagutabby.uk/actor",
