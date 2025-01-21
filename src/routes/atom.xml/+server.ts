@@ -15,10 +15,10 @@ function create_entry(title: string, description: string, path: string, createdA
   return `<entry>
   <title>${title}</title>
   <summary>${description}</summary>
-  <link href="${new URL(path, 'https://blog.nagutabby.uk').href}" />
+  <link href="${new URL(`/articles/${path}`, 'https://blog.nagutabby.uk').href}" />
   ${revisedAt ? `<updated>${revisedAt}</updated>` : ''}
   <published>${createdAt}</published>
-  <id>tag:blog.nagutabby.uk,${createdDate}:/${path}</id>
+  <id>tag:blog.nagutabby.uk,${createdDate}:/articles/${path}</id>
   </entry>`;
 }
 
