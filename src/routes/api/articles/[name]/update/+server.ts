@@ -29,14 +29,14 @@ export const GET: RequestHandler = async ({ params }) => {
     "to": ["https://www.w3.org/ns/activitystreams#Public"]
   };
 
-  // Createアクティビティの定義
+  // Updateアクティビティの定義
   const activity = {
     "@context": [
       "https://www.w3.org/ns/activitystreams",
       "https://w3id.org/security/v1"
     ],
-    "id": `https://blog.nagutabby.uk/api/articles/${name}/create`,
-    "type": "Create",
+    "id": `https://blog.nagutabby.uk/api/articles/${name}/update`,
+    "type": "Update",
     "actor": "https://blog.nagutabby.uk/actor",
     "published": new Date().toISOString(),
     "to": ["https://www.w3.org/ns/activitystreams#Public"],

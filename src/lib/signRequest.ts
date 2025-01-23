@@ -34,7 +34,7 @@ export async function signRequest(url: string, method: string, body: string, pri
   };
 }
 
-export async function signCreateActivity(activity: any, privateKeyPem: string): Promise<object> {
+export async function signActivity(activity: any, privateKeyPem: string): Promise<object> {
   // 署名時刻の生成
   const created = new Date().toISOString();
 
