@@ -7,6 +7,7 @@ export const POST: RequestHandler = async ({ request, fetch }) => {
   const data = await request.json();
 
   if (data.id) {
+    console.log(data);
     try {
       const createActivity = await fetch(`/api/articles/${data.id}/create`);
       if (!createActivity.ok) {
