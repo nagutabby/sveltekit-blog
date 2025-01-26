@@ -66,6 +66,9 @@ export const POST: RequestHandler = async ({ request, fetch }) => {
     case 'edit':
       await sendActivity(data.id, 'update', fetch);
       break;
+    case 'delete':
+      await sendActivity(data.id, data.type, fetch);
+      break;
     default:
       return new Response(null, { status: 400 });
   }
