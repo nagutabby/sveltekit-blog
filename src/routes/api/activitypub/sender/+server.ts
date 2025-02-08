@@ -1,7 +1,12 @@
 import prisma from '$lib/prisma';
+import type { Config } from '@sveltejs/adapter-vercel';
 import type { RequestHandler } from '@sveltejs/kit';
 import { PRIVATE_KEY } from '$env/static/private';
 import { signRequest } from '$lib/signRequest';
+
+export const config: Config = {
+  maxDuration: 30
+};
 
 const sendActivity = async (articleId: string, activityType: string, fetch: Function) => {
   try {
