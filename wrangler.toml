@@ -3,3 +3,6 @@ main = "./workers/relayBlocker.ts"
 name = "sveltekit-blog-worker"
 
 route = "blog.nagutabby.uk/*"
+
+[observability]
+enabled = true
