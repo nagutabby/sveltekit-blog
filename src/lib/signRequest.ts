@@ -15,7 +15,14 @@ export async function signRequest(url: string, method: string, body: string, pri
     `date: ${date}\n` +
     `digest: ${digest}`;
 
-  const signature = crypto.sign('sha256', Buffer.from(signString), privateKeyPem);
+  const signature = crypto.sign(
+    'sha256',
+    Buffer.from(signString),
+    {
+      key: privateKeyPem,
+      padding: crypto.constants.RSA_PKCS1_PADDING
+    }
+  );
 
   const signatureHeader = [
     'keyId="https://blog.nagutabby.uk/actor#main-key"',
