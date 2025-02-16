@@ -9,24 +9,30 @@ export default {
       const pathname = url.pathname;
 
       if (userAgent.toLowerCase().includes('relay') && pathname === '/actor/inbox') {
-        return new Response(
-          JSON.stringify({
-            error: 'Forbidden',
-            status: 403,
-            message: 'Relay server access is not permitted',
-            details: {
-              reason: 'This server does not accept requests from relay servers',
-              path: pathname,
-              userAgent: userAgent
+        const clonedRequest = request.clone();
+        const activity = await clonedRequest.json();
+        if (activity.type && activity.type == 'Accept') {
+          return fetch(request);
+        } else {
+          return new Response(
+            JSON.stringify({
+              error: 'Forbidden',
+              status: 403,
+              message: 'Relay server access is not permitted',
+              details: {
+                reason: 'This server does not accept requests from relay servers',
+                path: pathname,
+                userAgent: userAgent
+              }
+            } as const),
+            {
+              status: 403,
+              headers: {
+                'Content-Type': 'application/activity+json',
+              },
             }
-          } as const),
-          {
-            status: 403,
-            headers: {
-              'Content-Type': 'application/activity+json',
-            },
-          }
-        );
+          );
+        }
       }
 
       return fetch(request);
@@ -46,4 +52,4 @@ export default {
       );
     }
   },
-}
+};

@@ -11,3 +11,4 @@ vite.config.ts.timestamp-*
 /tmp
 private.pem
 public.pem
+/.wrangler
