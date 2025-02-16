@@ -3,8 +3,7 @@
   import { browser } from "$app/environment";
 
   let isError = $state(false);
-  let mastodonShareText = $state("");
-  let blueskyShareText = $state("");
+  let shareText = $state("");
 
   const handleSubmit = (event: SubmitEvent) => {
     event.preventDefault();
@@ -29,7 +28,7 @@
         location.pathname + location.search,
       );
       window.open(
-        `https://${mastodonInstanceNameField.value}/share?text=${mastodonShareText}`,
+        `https://${mastodonInstanceNameField.value}/share?text=${shareText}`,
       );
     }
   };
@@ -41,8 +40,7 @@
   let currentUrl = $state("");
 
   onMount(() => {
-    mastodonShareText = `${encodeURIComponent(document.title)}${encodeURIComponent("\n")}${encodeURIComponent(location.href)}`;
-    blueskyShareText = `${encodeURIComponent(document.title)}${encodeURIComponent("<br>")}${encodeURIComponent(location.href)}`;
+    shareText = `${encodeURIComponent(document.title)}${encodeURIComponent("\n")}${encodeURIComponent(location.href)}`;
     if (browser) {
       currentUrl = window.location.href;
     }
@@ -141,7 +139,7 @@
   <a
     role="button"
     class="btn"
-    href="https://bsky.app/intent/compose?text={blueskyShareText}"
+    href="https://bsky.app/intent/compose?text={shareText}"
     aria-label="Bluesky"
     target="_blank"
   >
