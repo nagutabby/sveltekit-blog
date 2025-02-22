@@ -1,8 +1,4 @@
-type Blog = {
-  image?: {
-    url: string;
-  }
-  title?: string;
-  titles?: string[];
-  description?: string;
-}
+import type { Blog } from "$lib/microcms";
+
+export type BlogInputData = Pick<Blog, "title" | "image" | "body">
+
