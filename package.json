@@ -10,8 +10,8 @@
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
     "test:unit": "vitest",
     "test": "pnpm test:unit run",
-    "worker:dev": "wrangler dev ./workers/relayBlocker.ts",
-    "worker:deploy": "wrangler deploy ./workers/relayBlocker.ts"
+    "worker:dev": "wrangler dev ./src/lib/workers/relayBlocker.ts",
+    "worker:deploy": "wrangler deploy ./src/lib/workers/relayBlocker.ts"
   },
   "devDependencies": {
     "@aws-sdk/client-s3": "^3.717.0",
