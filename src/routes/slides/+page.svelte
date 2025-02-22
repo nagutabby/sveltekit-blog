@@ -14,7 +14,7 @@
 <OpenGraph
   {url}
   {title}
-  {description}
+  body={description}
 ></OpenGraph>
 
 <Header

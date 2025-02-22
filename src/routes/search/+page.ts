@@ -23,7 +23,7 @@ export const load: PageLoad = async ({ url }) => {
       url: "https://images.microcms-assets.io/assets/99c53a99ae2b4682938f6c435d83e3d9/ca63de19468e45b2833ebf325dbfd56c/Microsoft-Fluentui-Emoji-3d-Cat-3d.1024.png"
     },
     title: `「${query}」を含む記事`,
-    description: ""
+    body: `「${query}」を含む記事の検索結果を表示しています`
   };
   const data = {
     ...articleData,

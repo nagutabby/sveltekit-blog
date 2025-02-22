@@ -14,7 +14,7 @@
   <OpenGraph
     url={page.data.image.url}
     title={page.data.title}
-    description={page.data.description}
+    body={page.data.body}
   ></OpenGraph>
 
   <Header url={page.data.image.url} title={page.data.title}></Header>
