@@ -1,7 +1,6 @@
 compatibility_date = "2025-02-08"
-main = "./workers/relayBlocker.ts"
 name = "sveltekit-blog-worker"
-
+main = "src/lib/workers/relayBlocker.ts"
 route = "blog.nagutabby.uk/*"
 
 [observability]
