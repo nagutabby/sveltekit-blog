@@ -6,13 +6,5 @@ export default {
   theme: {
     extend: {},
   },
-  plugins: [
-    daisyui, typography
-  ],
-  daisyui: {
-    themes: [
-      "dracula"
-    ],
-  },
 }
 
