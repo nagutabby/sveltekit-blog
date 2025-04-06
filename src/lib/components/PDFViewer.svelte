@@ -1,13 +1,6 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import * as pdfjs from "pdfjs-dist";
-  // @ts-ignore
-  import workerUrl from "pdfjs-dist/build/pdf.worker.mjs?url";
   import { browser } from "$app/environment";
-
-  if (browser) {
-    pdfjs.GlobalWorkerOptions.workerSrc = workerUrl;
-  }
 
   let url: string = $props();
   let canvas = $state<HTMLCanvasElement>();
@@ -17,9 +10,22 @@
   let loading = $state(true);
   let error = $state<string | null>(null);
   let renderTask: any = null;
+  let pdfjs: any = null;
 
   const DISPLAY_SCALE = 1;
   const QUALITY_SCALE = 2;
+
+  async function loadPdfLibrary() {
+    if (browser) {
+      const pdfModule = await import("pdfjs-dist");
+      pdfjs = pdfModule;
+
+      const workerModule = await import("pdfjs-dist/build/pdf.worker.mjs?url");
+      pdfjs.GlobalWorkerOptions.workerSrc = workerModule.default;
+
+      await loadPDF();
+    }
+  }
 
   async function cancelCurrentRender() {
     if (renderTask) {
@@ -68,21 +74,30 @@
   }
 
   async function loadPDF() {
+    if (!pdfjs) return;
+
     loading = true;
-    const loadingTask = pdfjs.getDocument(url);
-    pdfDoc = await loadingTask.promise;
-    totalPages = pdfDoc.numPages;
-    loading = false;
+    try {
+      const loadingTask = pdfjs.getDocument(url);
+      pdfDoc = await loadingTask.promise;
+      totalPages = pdfDoc.numPages;
+    } catch (err) {
+      error = `PDFの読み込みに失敗しました: ${err.message}`;
+    } finally {
+      loading = false;
+    }
   }
 
   onMount(() => {
-    loadPDF();
+    loadPdfLibrary();
 
-    window.addEventListener("keydown", handleKeyDown);
+    if (browser) {
+      window.addEventListener("keydown", handleKeyDown);
 
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-    };
+      return () => {
+        window.removeEventListener("keydown", handleKeyDown);
+      };
+    }
   });
 
   function handleKeyDown(event: KeyboardEvent) {
@@ -113,6 +128,8 @@
 >
   {#if loading}
     <span class="loading loading-spinner loading-lg"></span>
+  {:else if error}
+    <div class="alert alert-error">{error}</div>
   {:else}
     <canvas
       bind:this={canvas}
