@@ -20,7 +20,7 @@
   <img
     alt=""
     srcset="{url}?fm=webp&fit=clip&w=500 500w, {url}?fm=webp&fit=clip&w=1000 1000w"
-    class="w-full h-[40vh] lg:h-[50vh]"
+    class="w-full h-[55vh] lg:h-[45vh]"
   />
   <div class="title w-full h-full left-[50%] top-[50%] absolute flex flex-col">
     <div class="container px-3 lg:px-12 py-3 relative h-full flex flex-col gap-y-[30%]">
@@ -28,7 +28,7 @@
         <Navigation />
       </div>
       <div class="flex flex-col max-w-full">
-        <h1 class="text-3xl sm:text-4xl lg:text-5xl font-semibold">
+        <h1 class="text-2xl sm:text-3xl lg:text-4xl font-semibold">
           {title}
         </h1>
       </div>

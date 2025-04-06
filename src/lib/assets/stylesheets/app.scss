@@ -1,7 +1,13 @@
 @use "highlight.js/styles/github-dark.min";
-@use "tailwindcss/base";
-@use "tailwindcss/components";
-@use "tailwindcss/utilities";
+@use "tailwindcss";
+@plugin "@tailwindcss/typography";
+@plugin "daisyui" {
+  themes: dracula --default;
+}
+
+:root {
+  --size-field: 0.3rem;
+}
 
 .mt-post {
   margin: 0;
@@ -38,7 +44,7 @@ main {
 .mt-post-header-date,
 .mt-post-counter-bar,
 .mt-post-preview-description {
-  --mt-color-contrast-gray: oklch(var(--nc)) !important;
+  --mt-color-contrast-gray: var(--color-neutral-content) !important;
 }
 
 .mt-post-counter-bar-favorites,
