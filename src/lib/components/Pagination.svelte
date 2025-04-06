@@ -20,13 +20,13 @@
   {#each { length: pages } as _, i}
     <li>
       {#if i + 1 === currentPage}
-        <button class="btn btn-circle btn-outline text-lg" aria-disabled="true" disabled>{i + 1}</button>
+        <button class="btn btn-outline btn-secondary btn-circle text-lg" aria-disabled="true" disabled>{i + 1}</button>
       {:else if query}
-        <a href="/search?q={query}&page={i + 1}" role="button" class="btn btn-circle btn-outline text-lg"
+        <a href="/search?q={query}&page={i + 1}" role="button" class="btn btn-outline btn-secondary btn-circle text-lg"
           >{i + 1}</a
         >
       {:else}
-        <a href="/?page={i + 1}" role="button" class="btn btn-circle btn-outline text-lg">{i + 1}</a>
+        <a href="/?page={i + 1}" role="button" class="btn btn-outline btn-secondary btn-circle text-lg">{i + 1}</a>
       {/if}
     </li>
   {/each}
