@@ -28,7 +28,7 @@
     "daisyui": "^5.0.12",
     "fast-xml-parser": "^5.2.0",
     "highlight.js": "^11.11.1",
-    "jsdom": "^25.0.1",
+    "jsdom": "^26.0.0",
     "microcms-js-sdk": "^3.1.2",
     "msw": "^2.7.0",
     "pdfjs-dist": "^4.9.155",
