@@ -31,7 +31,7 @@
     "jsdom": "^26.0.0",
     "microcms-js-sdk": "^3.1.2",
     "msw": "^2.7.0",
-    "pdfjs-dist": "^4.9.155",
+    "pdfjs-dist": "^5.1.91",
     "postcss": "^8.4.49",
     "prisma": "^6.2.1",
     "sass": "^1.83.0",

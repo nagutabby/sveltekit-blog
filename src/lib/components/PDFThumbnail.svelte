@@ -1,30 +1,31 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import * as pdfjs from "pdfjs-dist";
-  // @ts-ignore
-  import workerUrl from "pdfjs-dist/build/pdf.worker.mjs?url";
   import { browser } from "$app/environment";
 
   const { pdfUrl }: { pdfUrl: string } = $props();
   let canvas = $state<HTMLCanvasElement>();
   let loading = $state(true);
-  let error = $state<string | null>();
+  let error = $state<string | null>(null);
 
   onMount(async () => {
-    if (canvas) {
+    if (canvas && browser) {
       try {
-        if (browser) {
-          pdfjs.GlobalWorkerOptions.workerSrc = workerUrl;
-        }
+        const pdfjs = await import("pdfjs-dist");
+        const workerModule = await import(
+          "pdfjs-dist/build/pdf.worker.mjs?url"
+        );
+        const workerUrl = workerModule.default;
+
+        pdfjs.GlobalWorkerOptions.workerSrc = workerUrl;
+
         const response = await fetch(`/api/slides/${pdfUrl}`);
         if (!response.ok) throw new Error("PDF fetch failed");
 
         const pdfData = await response.arrayBuffer();
-
         const pdf = await pdfjs.getDocument({ data: pdfData }).promise;
         const page = await pdf.getPage(1);
-
         const viewport = page.getViewport({ scale: 1 });
+
         canvas.width = viewport.width;
         canvas.height = viewport.height;
 
@@ -38,6 +39,7 @@
 
         loading = false;
       } catch (err) {
+        console.error("PDF rendering error:", err);
         error = err instanceof Error ? err.message : "Failed to load PDF";
         loading = false;
       }
@@ -50,6 +52,8 @@
 >
   {#if loading}
     <span class="loading loading-spinner"></span>
+  {:else if error}
+    <span class="text-error">{error}</span>
   {/if}
 
   <canvas
