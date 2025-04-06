@@ -14,7 +14,7 @@
   "devDependencies": {
     "@aws-sdk/client-s3": "^3.782.0",
     "@cloudflare/workers-types": "^4.20250406.0",
-    "@idotj/mastodon-embed-timeline": "^4.4.2",
+    "@idotj/mastodon-embed-timeline": "^4.6.0",
     "@prisma/client": "^6.2.1",
     "@sveltejs/adapter-vercel": "^5.5.2",
     "@sveltejs/kit": "^2.15.1",

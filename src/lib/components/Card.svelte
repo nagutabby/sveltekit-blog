@@ -28,8 +28,7 @@
   article {
     padding: 0;
     &:hover {
-      filter: brightness(110%);
-      transition: all 0.3s ease;
+      background-color: var(--mt-color-bg-hover);
     }
     & img {
       width: 100%;

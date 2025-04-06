@@ -11,7 +11,7 @@
       profileName: "@nagutabby",
       maxNbPostFetch: "10",
       maxNbPostShow: "10",
-      dateLocale: "ja-JP",
+      dateFormatLocale: "ja-JP",
       btnSeeMore: "",
       btnReload: "",
       defaultTheme: "dark",
@@ -20,7 +20,7 @@
 </script>
 
 <div id="mt-container" class="mt-container w-full !bg-base-100 rounded-md">
-  <div class="mt-body p-0 m-0" role="feed">
+  <div class="mt-body !p-0 m-0" role="feed">
     <div class="flex justify-center">
       <span class="loading loading-spinner loading-lg mt-5"></span>
     </div>
