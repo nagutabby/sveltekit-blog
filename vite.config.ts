@@ -3,7 +3,6 @@ import { sveltekit } from "@sveltejs/kit/vite";
 import { svelteTesting } from '@testing-library/svelte/vite';
 
 export default defineConfig({
-  // @ts-expect-error
   plugins: [sveltekit(), svelteTesting()],
 
   build: {
