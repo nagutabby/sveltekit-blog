@@ -8,7 +8,7 @@
   const { children } = $props();
 </script>
 
-{#if page.route.id?.includes("/slides")}
+{#if page.route.id?.includes("/slides") || page.route.id === ("/contact")}
   {@render children()}
 {:else}
   <OpenGraph
