@@ -26,7 +26,7 @@
     "@types/highlightjs": "^9.12.6",
     "canonicalize": "^2.0.0",
     "daisyui": "^5.0.12",
-    "fast-xml-parser": "^4.5.1",
+    "fast-xml-parser": "^5.2.0",
     "highlight.js": "^11.11.1",
     "jsdom": "^25.0.1",
     "microcms-js-sdk": "^3.1.2",
