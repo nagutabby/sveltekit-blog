@@ -29,7 +29,7 @@
     "fast-xml-parser": "^5.2.0",
     "highlight.js": "^11.11.1",
     "jsdom": "^26.0.0",
-    "microcms-js-sdk": "^3.1.2",
+    "microcms-js-sdk": "^3.2.0",
     "msw": "^2.7.0",
     "pdfjs-dist": "^5.1.91",
     "postcss": "^8.4.49",
