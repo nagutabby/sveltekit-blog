@@ -32,7 +32,7 @@
     "microcms-js-sdk": "^3.2.0",
     "msw": "^2.7.0",
     "pdfjs-dist": "^5.1.91",
-    "postcss": "^8.4.49",
+    "postcss": "^8.5.3",
     "prisma": "^6.2.1",
     "sass": "^1.83.0",
     "svelte": "^5.16.0",
