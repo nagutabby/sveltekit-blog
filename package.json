@@ -24,7 +24,7 @@
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/svelte": "^5.2.6",
     "@types/highlightjs": "^9.12.6",
-    "canonicalize": "^2.0.0",
+    "canonicalize": "^2.1.0",
     "daisyui": "^5.0.12",
     "fast-xml-parser": "^5.2.0",
     "highlight.js": "^11.11.1",
