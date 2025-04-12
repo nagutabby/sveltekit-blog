@@ -1,5 +1,5 @@
 import type { RequestHandler } from '@sveltejs/kit';
-import { getDetail, type Blog } from '$lib/microcms';
+import { getArticleDetail, type Blog } from '$lib/microcms';
 import { signActivity } from '$lib/signRequest';
 import { PRIVATE_KEY } from '$env/static/private';
 

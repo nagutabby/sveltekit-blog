@@ -1,8 +1,8 @@
-import { getAllContents } from "../../lib/microcms";
-
+import { getAllArticleContents } from "$lib/microcms";
+import { generateDescriptionFromText } from "$lib/utils"
 let latestDate: Date;
 
-function create_entry(title: string, description: string, path: string, publishedAt: string, revisedAt: string) {
+function create_entry(title: string, body: string, path: string, publishedAt: string, revisedAt: string) {
   const publishedDate = new Date(publishedAt).toISOString().substring(0, 10);
   if (latestDate === undefined) {
     latestDate = new Date(revisedAt);
@@ -14,7 +14,7 @@ function create_entry(title: string, description: string, path: string, publishe
 
   return `<entry>
   <title>${title}</title>
-  <summary>${description}</summary>
+  <summary>${generateDescriptionFromText(body)}</summary>
   <link href="${new URL(`/articles/${path}`, 'https://blog.nagutabby.uk').href}" />
   ${revisedAt ? `<updated>${revisedAt}</updated>` : ''}
   <published>${publishedAt}</published>
@@ -27,9 +27,9 @@ export async function GET({ setHeaders }) {
     'Content-Type': 'application/xml'
   });
 
-  const response = await getAllContents();
+  const response = await getAllArticleContents();
 
-  const posts = response.contents.map((post) => create_entry(post.title, post.description, post.id, post.publishedAt, post.revisedAt));
+  const posts = response.contents.map((post) => create_entry(post.title, post.body, post.id, post.publishedAt, post.revisedAt));
 
   const atom = `<?xml version="1.0" encoding="UTF-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">

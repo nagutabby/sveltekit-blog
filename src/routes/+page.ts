@@ -1,7 +1,7 @@
 import type { MicroCMSQueries } from "microcms-js-sdk";
 import type { PageLoad } from "./$types";
 import type { BlogInputData } from "../types/blog";
-import { getList } from "$lib/microcms";
+import { getArticleList } from "$lib/microcms";
 
 export const load: PageLoad = async ({ url }) => {
   const page = Number(url.searchParams.get("page")) || 1;
@@ -12,7 +12,7 @@ export const load: PageLoad = async ({ url }) => {
     limit: limit,
     offset: startIndex
   };
-  const articleData = await getList(pageQueries);
+  const articleData = await getArticleList(pageQueries);
 
   const blogData: BlogInputData = {
     image: {

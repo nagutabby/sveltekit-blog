@@ -1,5 +1,5 @@
 import type { RequestHandler } from '@sveltejs/kit';
-import { getDetail, type Blog } from '$lib/microcms';
+import { getArticleDetail, type Blog } from '$lib/microcms';
 import { signActivity } from '$lib/signRequest';
 import { PRIVATE_KEY } from '$env/static/private';
 
@@ -9,7 +9,7 @@ export const GET: RequestHandler = async ({ params }) => {
 
   // 記事データの取得
   if (name) {
-    articleData = await getDetail(name);
+    articleData = await getArticleDetail(name);
     if (!articleData) {
       return new Response('Article not found', { status: 404 });
     }

@@ -1,5 +1,5 @@
 import type { RequestHandler } from '@sveltejs/kit';
-import { getDetail, type Blog } from '$lib/microcms';
+import { getArticleDetail, type Blog } from '$lib/microcms';
 
 export const GET: RequestHandler = async ({ params }) => {
   const { name } = params;
@@ -7,7 +7,7 @@ export const GET: RequestHandler = async ({ params }) => {
 
   // 記事データの取得
   if (name) {
-    articleData = await getDetail(name);
+    articleData = await getArticleDetail(name);
     if (!articleData) {
       return new Response('Article not found', { status: 404 });
     }

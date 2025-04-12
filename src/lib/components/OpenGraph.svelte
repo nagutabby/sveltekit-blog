@@ -1,8 +1,10 @@
 <script lang="ts">
+  import { page } from "$app/state";
+  import { generateDescriptionFromText } from "$lib/utils";
+
   const baseURL = "https://blog.nagutabby.uk";
   const defaultTitle = "nagutabbyの考え事";
   const defaultDescription = "学んだことをまとめるブログ";
-  import { page } from "$app/stores";
 
   type Props = {
     title: string;
@@ -11,33 +13,15 @@
   };
   const { title, body, url }: Props = $props();
 
-  const generateDescriptionFromText = (body: string) => {
-    const hasHTMLTags = /<[a-z][\s\S]*>/i.test(body);
-
-    const plainText: string = hasHTMLTags ? body.replace(/<[^>]+>/g, "") : body;
-
-    const normalizedText = plainText.replace(/\s+/g, " ").trim();
-    let description = normalizedText.slice(0, 100);
-
-    if (normalizedText.length > 100) {
-      const lastChar = description.slice(-1);
-      if (!/[。、．，!！?？]/.test(lastChar)) {
-        description += "…";
-      }
-    }
-
-    return description;
-  };
-
   let description = $derived(generateDescriptionFromText(body));
 </script>
 
 <svelte:head>
-  <meta property="og:url" content={baseURL + $page.url.pathname} />
+  <meta property="og:url" content={baseURL + page.url.pathname} />
   <meta property="og:site_name" content={defaultTitle} />
   <meta property="og:locale" content="ja_JP" />
   <meta name="twitter:card" content="summary" />
-  <link rel="canonical" href={baseURL + $page.url.pathname} />
+  <link rel="canonical" href={baseURL + page.url.pathname} />
   <meta name="theme-color" content="black" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black" />
   <meta name="mobile-web-app-capable" content="yes" />
