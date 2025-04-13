@@ -1,7 +1,5 @@
 export type Book = {
   title: string;
-  authors: string[];
-  publishedDate: string;
   thumbnailUrl: string;
 }
 
@@ -10,8 +8,6 @@ export type GoogleBooksResponse = {
   items: Array<{
     volumeInfo: {
       title: string;
-      authors: string[];
-      publishedDate: string;
       imageLinks: {
         thumbnail: string;
       }
