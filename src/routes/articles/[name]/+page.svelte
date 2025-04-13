@@ -12,10 +12,13 @@
   import json from "highlight.js/lib/languages/json";
   import dockerfile from "highlight.js/lib/languages/dockerfile";
   import Toc from "$lib/components/Toc.svelte";
-  import type { PageData } from "../[name]/$types";
+  import type { PageData } from "./$types";
   import ShareButton from "$lib/components/ShareButton.svelte";
   import Date from "$lib/components/Date.svelte";
   import { onMount } from "svelte";
+  import { page } from "$app/state";
+  import Header from "$lib/components/Header.svelte";
+  import OpenGraph from "$lib/components/OpenGraph.svelte";
 
   const { data }: { data: PageData } = $props();
 
@@ -73,27 +76,39 @@
   });
 </script>
 
-<div class="flex lg:flex-row items-start justify-between flex-col-reverse">
-  <div
-    class="flex flex-wrap gap-5 justify-center w-full lg:w-[63%]"
-    id="content"
-  >
-    <article class="prose max-w-full">
-      <Date publishedAt={data.publishedAt} revisedAt={data.revisedAt} />
-      {@html data.body}
-    </article>
-  </div>
-  <div class="w-full lg:w-[33%] prose lg:top-0 lg:sticky py-5">
-    <div class="toc">
-      {#if isLoading}
-        <div class="flex justify-center">
-          <span class="loading loading-spinner loading-lg"></span>
+<OpenGraph
+  url={page.data.image.url}
+  title={page.data.title}
+  body={page.data.body}
+></OpenGraph>
+
+<Header url={page.data.image.url} title={page.data.title}></Header>
+
+<main class="container px-3 md:px-10 py-10 mx-auto">
+  <div class="flex lg:flex-row items-start justify-between flex-col-reverse">
+    <div
+      class="flex flex-wrap gap-5 justify-center w-full lg:w-[63%]"
+      id="content"
+    >
+      <article class="prose max-w-full">
+        <div class="my-3">
+          <Date publishedAt={data.publishedAt} revisedAt={data.revisedAt} />
         </div>
-      {:else}
-        <Toc {headingList} />
-      {/if}
+        {@html data.body}
+      </article>
     </div>
-    <hr />
-    <ShareButton />
+    <div class="w-full lg:w-[33%] prose lg:top-0 lg:sticky py-5">
+      <div class="toc">
+        {#if isLoading}
+          <div class="flex justify-center">
+            <span class="loading loading-spinner loading-lg"></span>
+          </div>
+        {:else}
+          <Toc {headingList} />
+        {/if}
+      </div>
+      <hr />
+      <ShareButton />
+    </div>
   </div>
-</div>
+</main>

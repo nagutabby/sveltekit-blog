@@ -72,24 +72,24 @@ export const getAllArticleContents = async (limit = 10, offset = 0) => {
 };
 
 export const getReviewList = async (queries?: MicroCMSQueries) => {
-  return await client.get<ArticleResponse>({ endpoint: "reviews", queries });
+  return await client.get<ReviewResponse>({ endpoint: "reviews", queries });
 };
 export const getReviewDetail = async (
   contentId: string,
   queries?: MicroCMSQueries
 ) => {
-  return await client.getListDetail<Blog>({
-    endpoint: "review",
+  return await client.getListDetail<Review>({
+    endpoint: "reviews",
     contentId,
     queries,
   });
 };
 export const getAllReviewContents = async (limit = 10, offset = 0) => {
-  const data = await client.get<ArticleResponse>({ endpoint: "reviews", queries: { limit, offset } });
+  const data = await client.get<ReviewResponse>({ endpoint: "reviews", queries: { limit, offset } });
   let tmpOffset = 0;
   while (tmpOffset < data.totalCount) {
     tmpOffset += limit;
-    const tmpData: ArticleResponse = await getReviewList({ limit: limit, offset: tmpOffset });
+    const tmpData: ReviewResponse = await getReviewList({ limit: limit, offset: tmpOffset });
     data.contents = data.contents.concat(tmpData.contents);
   }
   return data;

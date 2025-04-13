@@ -1,3 +1,5 @@
+import type { Book, GoogleBooksResponse } from "../types/book";
+
 export const generateDescriptionFromText = (body: string) => {
   const hasHTMLTags = /<[a-z][\s\S]*>/i.test(body);
 
@@ -15,3 +17,25 @@ export const generateDescriptionFromText = (body: string) => {
 
   return description;
 };
+
+export async function getBook(isbn: string, apiKey: string): Promise<Book> {
+  let url = `https://www.googleapis.com/books/v1/volumes?q=isbn:${isbn}&key=${apiKey}`;
+
+  const response = await fetch(url);
+
+  if (!response.ok) {
+    throw new Error(`API request failed with status: ${response.status}`);
+  }
+
+  const data: GoogleBooksResponse = await response.json();
+
+  const volumeInfo = data.items[0].volumeInfo;
+
+  const book = {
+    title: volumeInfo.title,
+    authors: volumeInfo.authors,
+    publishedDate: volumeInfo.publishedDate,
+    thumbnailUrl: volumeInfo.imageLinks?.thumbnail
+  };
+  return book;
+}

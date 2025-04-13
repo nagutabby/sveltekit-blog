@@ -3,9 +3,9 @@
   import Card from "$lib/components/Card.svelte";
   import Pagination from "$lib/components/Pagination.svelte";
   import Timeline from "$lib/components/Timeline.svelte";
-  import OpenGraph from "$lib/components/OpenGraph.svelte";
-  import Header from "$lib/components/Header.svelte";
   import { page } from "$app/state";
+  import Header from "$lib/components/Header.svelte";
+  import OpenGraph from "$lib/components/OpenGraph.svelte";
 
   const { data }: { data: PageData } = $props();
 </script>
@@ -20,18 +20,18 @@
 
 <main class="container px-3 md:px-10 py-10 mx-auto">
   <div
-    class="flex flex-col md:flex-row items-start md:relative gap-10 md:gap-0"
+    class="flex flex-col md:flex-row items-start md:relative gap-10 md:gap-0 justify-between"
   >
     <div class="flex flex-wrap gap-5 justify-center w-full md:w-[63%]">
-      {#each data.contents as article}
+      {#each data.contents as content}
         <Card
-          url={`articles/${article.id}`}
-          image={article.image.url}
-          title={article.title}
+          url={`reviews/${content.review.id}`}
+          image={content.book.thumbnailUrl}
+          title={`「${content.book.title}」 ${content.book.authors[0]}`}
         />
       {/each}
     </div>
-    <div class="w-full md:w-[33%] md:absolute md:top-0 md:bottom-0 md:right-0">
+    <div class="w-full md:w-[33%] {data.contents.length > 3 ? 'md:absolute md:top-0 md:bottom-0 md:right-0' : 'md:h-[40vh]'}">
       <Timeline></Timeline>
     </div>
   </div>
