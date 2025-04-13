@@ -29,14 +29,20 @@ export const load: PageServerLoad = async ({ url }) => {
     return await getBook(isbn, apiKey);
   });
 
-  const bookData = await Promise.all(bookDataPromises);
+  let bookData = await Promise.all(bookDataPromises);
+  bookData = bookData.map(book => {
+    if (book.thumbnailUrl.startsWith('http:')) {
+      book.thumbnailUrl = book.thumbnailUrl.replace('http:', 'https:');
+    }
+    return book;
+  });
 
   const mergedReviewData = reviewData.contents.map((review: Review, index: number) => ({
     review: review,
     book: bookData[index]
   }));
 
-  const { contents, ...reviewMetaData } = reviewData
+  const { contents, ...reviewMetaData } = reviewData;
   const data = {
     contents: mergedReviewData,
     ...reviewHomeData,
