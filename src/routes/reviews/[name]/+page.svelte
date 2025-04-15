@@ -24,11 +24,11 @@
 
 <OpenGraph
   url={page.data.book.thumbnailUrl}
-  title={page.data.book.title}
+  title={page.data.review.title}
   body={page.data.review.body}
 ></OpenGraph>
 
-<Header url={page.data.book.thumbnailUrl} title={page.data.book.title}></Header>
+<Header url={page.data.book.thumbnailUrl} title={page.data.review.title}></Header>
 
 <main class="container px-3 md:px-10 py-10 mx-auto">
   <div class="flex lg:flex-row items-start justify-between flex-col-reverse">

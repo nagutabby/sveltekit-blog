@@ -33,6 +33,7 @@ export type Review = {
   updatedAt: string;
   publishedAt: string;
   revisedAt: string;
+  title: string;
   isbn_13: string;
   rating: number;
   body: string;

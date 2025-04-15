@@ -27,7 +27,7 @@
         <Card
           url={`reviews/${content.review.id}`}
           image={content.book.thumbnailUrl}
-          title={content.book.title}
+          title={content.review.title}
         />
       {/each}
     </div>
