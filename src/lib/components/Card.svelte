@@ -7,9 +7,9 @@
   const { url, image, title }: Props = $props();
 </script>
 
-<a href="/{url}" class="flex h-fit">
-  <article class="card card-side bg-base-100 shadow-xl">
-    <figure class="w-[40%] md:w-[20%]">
+<a href="/{url}" class="flex h-fit w-full">
+  <article class="card card-side bg-base-100 shadow-xl basis-full">
+    <figure class="w-[30%] md:w-[25%] lg:w-[20%]">
       <img
         alt=""
         height="250"
@@ -18,7 +18,7 @@
         loading="lazy"
       />
     </figure>
-    <div class="card-body flex justify-center items-center w-[60%] md:w-[80%]">
+    <div class="card-body flex justify-center items-center">
       <h2 class="card-title text-lg">{title}</h2>
     </div>
   </article>

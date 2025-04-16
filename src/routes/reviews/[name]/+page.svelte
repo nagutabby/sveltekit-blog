@@ -8,6 +8,7 @@
   import Header from "$lib/components/Header.svelte";
   import OpenGraph from "$lib/components/OpenGraph.svelte";
   import StarRating from "$lib/components/StarRating.svelte";
+  import BookInfo from "$lib/components/BookInfo.svelte";
 
   const { data }: { data: PageData } = $props();
 
@@ -28,7 +29,8 @@
   body={page.data.review.body}
 ></OpenGraph>
 
-<Header url={page.data.book.thumbnailUrl} title={page.data.review.title}></Header>
+<Header url={page.data.book.thumbnailUrl} title={page.data.review.title}
+></Header>
 
 <main class="container px-3 md:px-10 py-10 mx-auto">
   <div class="flex lg:flex-row items-start justify-between flex-col-reverse">
@@ -37,16 +39,24 @@
       id="content"
     >
       <article class="prose max-w-full">
-        <div class="my-3">
+        <div class="flex flex-col gap-y-4">
           <Date
             publishedAt={data.review.publishedAt}
             revisedAt={data.review.revisedAt}
           />
-        </div>
-        {@html data.review.body}
-        <div class="flex items-center gap-2">
-          <StarRating rating={data.review.rating}></StarRating>
-          <span class="font-bold text-lg">{data.review.rating}/5</span>
+
+          <div class="flex items-center gap-2">
+            <StarRating rating={data.review.rating}></StarRating>
+            <span class="font-bold text-lg">{data.review.rating}/5</span>
+          </div>
+          <div>
+            {@html data.review.body}
+          </div>
+          <BookInfo
+            title={data.review.title}
+            description={data.book.description}
+            infoLink={data.book.infoLink}
+          />
         </div>
       </article>
     </div>

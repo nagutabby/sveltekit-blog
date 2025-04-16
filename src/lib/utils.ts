@@ -32,10 +32,9 @@ export async function getBook(isbn: string, apiKey: string): Promise<Book> {
   const volumeInfo = data.items[0].volumeInfo;
 
   const book = {
-    title: volumeInfo.title,
-    authors: volumeInfo.authors,
-    publishedDate: volumeInfo.publishedDate,
-    thumbnailUrl: volumeInfo.imageLinks?.thumbnail
+    thumbnailUrl: volumeInfo.imageLinks?.thumbnail,
+    infoLink: volumeInfo.infoLink,
+    description: volumeInfo.description
   };
   return book;
 }
