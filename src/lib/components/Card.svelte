@@ -9,7 +9,7 @@
 
 <a href="/{url}" class="flex h-fit w-full">
   <article class="card card-side bg-base-100 shadow-xl basis-full">
-    <figure class="w-[30%] md:w-[25%] lg:w-[20%]">
+    <figure class="w-[35%] md:w-[30%] lg:w-[25%]">
       <img
         alt=""
         height="250"
@@ -18,7 +18,7 @@
         loading="lazy"
       />
     </figure>
-    <div class="card-body flex justify-center items-center">
+    <div class="card-body flex justify-center items-center basis-full">
       <h2 class="card-title text-lg">{title}</h2>
     </div>
   </article>
