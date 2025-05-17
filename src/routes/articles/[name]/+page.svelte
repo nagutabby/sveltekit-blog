@@ -178,9 +178,6 @@
   :global(.code-wrapper:hover .copy-button) {
     opacity: 1;
   }
-  :global(code) {
-    font-size: 110%;
-  }
 
   :global(.copy-button svg) {
     width: 1.3rem;
