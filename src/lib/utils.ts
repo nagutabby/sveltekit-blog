@@ -1,4 +1,4 @@
-import type { Book, GoogleBooksResponse } from "../types/book";
+import type { Book, GoogleBooksResponse } from "$lib/types/book";
 
 export const generateDescriptionFromText = (body: string) => {
   const hasHTMLTags = /<[a-z][\s\S]*>/i.test(body);

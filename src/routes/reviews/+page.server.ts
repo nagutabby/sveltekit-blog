@@ -1,6 +1,6 @@
 import type { MicroCMSQueries } from "microcms-js-sdk";
 import type { PageServerLoad } from "./$types";
-import type { ReviewInputData } from "../../types/blog";
+import type { ReviewInputData } from "$lib/types/blog";
 import { getReviewList, type Review } from "$lib/microcms";
 import { GOOGLE_CLOUD_API_KEY } from "$env/static/private";
 import { getBook } from "$lib/utils";

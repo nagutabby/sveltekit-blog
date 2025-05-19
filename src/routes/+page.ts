@@ -1,6 +1,6 @@
 import type { MicroCMSQueries } from "microcms-js-sdk";
 import type { PageLoad } from "./$types";
-import type { ArticleInputData } from "../types/blog";
+import type { ArticleInputData } from "$lib/types/blog";
 import { getArticleList } from "$lib/microcms";
 
 export const load: PageLoad = async ({ url }) => {

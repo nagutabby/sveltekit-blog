@@ -1,7 +1,7 @@
 <script lang="ts">
   type Props = {
-    publishedAt: string;
-    revisedAt: string;
+    publishedAt: Date;
+    revisedAt: Date;
   }
   const { publishedAt, revisedAt }: Props = $props();
 
