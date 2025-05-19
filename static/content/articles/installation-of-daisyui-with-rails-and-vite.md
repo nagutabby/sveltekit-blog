@@ -1,8 +1,8 @@
 ---
 title: RailsとViteを使ったdaisyUIのインストール
 image: images/Microsoft-Fluentui-Emoji-3d-Blossom-3d.1024.png
-publishedAt: 2023-08-28T00:00:00.000Z
-updatedAt: 2024-05-04T00:00:00.000Z
+publishedAt: 2023-08-28
+updatedAt: 2024-05-04
 ---
 # このアプリの構成
 

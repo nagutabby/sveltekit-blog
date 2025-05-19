@@ -1,8 +1,8 @@
 ---
 title: シンボリックリンクはショートカットじゃない
 image: images/Microsoft-Fluentui-Emoji-3d-Link-3d.1024.png
-publishedAt: 2024-05-02T00:00:00.000Z
-updatedAt: 2024-05-03T00:00:00.000Z
+publishedAt: 2024-05-02
+updatedAt: 2024-05-03
 ---
 # 共通点
 

@@ -1,8 +1,8 @@
 ---
 title: 意見の対立を上手く解消するには
 image: images/Microsoft-Fluentui-Emoji-3d-Crossed-Swords-3d.1024.png
-publishedAt: 2024-11-27T00:00:00.000Z
-updatedAt: 2024-11-27T00:00:00.000Z
+publishedAt: 2024-11-27
+updatedAt: 2024-11-27
 ---
 # 初めに
 

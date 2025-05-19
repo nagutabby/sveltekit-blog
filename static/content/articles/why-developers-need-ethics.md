@@ -1,8 +1,8 @@
 ---
 title: 開発者が倫理学を学ぶことの重要性
 image: images/Microsoft-Fluentui-Emoji-3d-Hammer-And-Wrench-3d.1024.png
-publishedAt: 2025-04-22T00:00:00.000Z
-updatedAt: 2025-04-22T00:00:00.000Z
+publishedAt: 2025-04-22
+updatedAt: 2025-04-22
 ---
 # はじめに
 

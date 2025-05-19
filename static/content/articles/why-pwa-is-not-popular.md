@@ -1,8 +1,8 @@
 ---
 title: PWA (Progressive Web Apps) が流行らない理由
 image: images/Microsoft-Fluentui-Emoji-3d-End-Arrow-3d.1024.png
-publishedAt: 2024-02-17T00:00:00.000Z
-updatedAt: 2024-05-02T00:00:00.000Z
+publishedAt: 2024-02-17
+updatedAt: 2024-05-02
 ---
 # PWA使ってますか？
 

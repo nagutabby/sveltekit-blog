@@ -1,8 +1,8 @@
 ---
 title: ソフトウェア開発におけるフォアキャスティングとバックキャスティング
 image: images/Microsoft-Fluentui-Emoji-3d-Tear-Off-Calendar-3d.1024.png
-publishedAt: 2024-10-18T00:00:00.000Z
-updatedAt: 2024-10-18T00:00:00.000Z
+publishedAt: 2024-10-18
+updatedAt: 2024-10-18
 ---
 # 初めに
 

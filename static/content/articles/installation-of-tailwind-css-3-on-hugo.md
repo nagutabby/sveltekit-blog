@@ -1,8 +1,8 @@
 ---
 title: HugoにTailwind CSS 3をインストール
 image: images/Microsoft-Fluentui-Emoji-3d-Leaf-Fluttering-In-Wind-3d.1024.png
-publishedAt: 2023-10-09T00:00:00.000Z
-updatedAt: 2024-05-03T00:00:00.000Z
+publishedAt: 2023-10-09
+updatedAt: 2024-05-03
 ---
 HugoにTailwind CSS 3をインストールしてみます。
 

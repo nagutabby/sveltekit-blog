@@ -1,8 +1,8 @@
 ---
 title: 継承と曖昧さ
 image: images/Microsoft-Fluentui-Emoji-3d-Bug-3d.1024.png
-publishedAt: 2025-05-17T00:00:00.000Z
-updatedAt: 2025-05-18T00:00:00.000Z
+publishedAt: 2025-05-17
+updatedAt: 2025-05-18
 ---
 # はじめに
 
@@ -67,7 +67,7 @@ interface Shape {
 class Rectangle implements Shape {
     private double width;
     private double height;
-    
+
     public Rectangle(double width, double height) {
         if (width <= 0 || height <= 0) {
             throw new IllegalArgumentException("幅と高さは正の値である必要があります");
@@ -75,34 +75,34 @@ class Rectangle implements Shape {
         this.width = width;
         this.height = height;
     }
-    
+
     public double getWidth() {
         return width;
     }
-    
+
     public void setWidth(double width) {
         if (width <= 0) {
             throw new IllegalArgumentException("幅は正の値である必要があります");
         }
         this.width = width;
     }
-    
+
     public double getHeight() {
         return height;
     }
-    
+
     public void setHeight(double height) {
         if (height <= 0) {
             throw new IllegalArgumentException("高さは正の値である必要があります");
         }
         this.height = height;
     }
-    
+
     @Override
     public double area() {
         return width * height;
     }
-    
+
     @Override
     public double perimeter() {
         return 2 * (width + height);
@@ -111,30 +111,30 @@ class Rectangle implements Shape {
 
 class Square implements Shape {
     private double side;
-    
+
     public Square(double side) {
         if (side <= 0) {
             throw new IllegalArgumentException("辺の長さは正の値である必要があります");
         }
         this.side = side;
     }
-    
+
     public double getSide() {
         return side;
     }
-    
+
     public void setSide(double side) {
         if (side <= 0) {
             throw new IllegalArgumentException("辺の長さは正の値である必要があります");
         }
         this.side = side;
     }
-    
+
     @Override
     public double area() {
         return side * side;
     }
-    
+
     @Override
     public double perimeter() {
         return 4 * side;
@@ -162,28 +162,28 @@ is-a関係とは、継承によって得られる、サブタイプとスーパ�
 class Rectangle {
     protected int width;
     protected int height;
-    
+
     public Rectangle(int width, int height) {
         this.width = width;
         this.height = height;
     }
-    
+
     public void setWidth(int width) {
         this.width = width;
     }
-    
+
     public void setHeight(int height) {
         this.height = height;
     }
-    
+
     public int getWidth() {
         return width;
     }
-    
+
     public int getHeight() {
         return height;
     }
-    
+
     public int area() {
         return width * height;
     }
@@ -194,14 +194,14 @@ class Square extends Rectangle {
     public Square(int side) {
         super(side, side);
     }
-    
+
     // 親クラスの振る舞いを変更している
     @Override
     public void setWidth(int width) {
         super.setWidth(width);
         super.setHeight(width); // 正方形の制約を維持するため
     }
-    
+
     @Override
     public void setHeight(int height) {
         super.setHeight(height);

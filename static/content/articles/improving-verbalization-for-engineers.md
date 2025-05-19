@@ -1,8 +1,8 @@
 ---
 title: 言語化が苦手なエンジニアは何をすべきか
 image: images/Microsoft-Fluentui-Emoji-3d-Speech-Balloon-3d.1024.png
-publishedAt: 2024-10-01T00:00:00.000Z
-updatedAt: 2024-10-09T00:00:00.000Z
+publishedAt: 2024-10-01
+updatedAt: 2024-10-09
 ---
 # 初めに
 

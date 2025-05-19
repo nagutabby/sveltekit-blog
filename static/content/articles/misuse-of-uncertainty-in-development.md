@@ -1,8 +1,8 @@
 ---
 title: 不確実性という言葉を正しく使う
 image: images/Microsoft-Fluentui-Emoji-3d-Ghost-3d.1024.png
-publishedAt: 2024-12-20T00:00:00.000Z
-updatedAt: 2024-12-20T00:00:00.000Z
+publishedAt: 2024-12-20
+updatedAt: 2024-12-20
 ---
 # 初めに
 

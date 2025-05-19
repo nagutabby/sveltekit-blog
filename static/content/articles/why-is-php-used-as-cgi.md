@@ -1,14 +1,14 @@
 ---
 title: どうしてPHPは未だにCGIとして使われるのか
 image: images/Microsoft-Fluentui-Emoji-3d-Memo-3d.1024.png
-publishedAt: 2024-01-21T00:00:00.000Z
-updatedAt: 2024-01-22T00:00:00.000Z
+publishedAt: 2024-01-21
+updatedAt: 2024-01-22
 ---
 PHPを学習していると、CGIという単語を見かけることが多いですよね。しかし、「まだCGIで消耗してるの？」と思われる方も多いのではないでしょうか。PHPとCGIの関係性を振り返りながら、オワコン技術であるCGIがPHPで使われる理由を考えてみます。
 
 # CGI
 
-CGI(Common Gateway Interface)はWebブラウザーからのネットワークリクエストに基づいてプログラムを実行する仕組みです。  
+CGI(Common Gateway Interface)はWebブラウザーからのネットワークリクエストに基づいてプログラムを実行する仕組みです。
 CGIの登場以前は、Webサーバーは静的なネットワークレスポンスしか返せませんでしたが、CGIによって動的なネットワークレスポンスを返せるようになりました。
 
 処理の流れとしては、WebサーバーからCGIに標準入力が渡され、プログラムがそれを標準出力に変換し、CGIからWebサーバーに標準出力が返されます。とてもシンプルです。

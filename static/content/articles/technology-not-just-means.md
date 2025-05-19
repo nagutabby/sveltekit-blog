@@ -1,8 +1,8 @@
 ---
 title: 技術は「手段」だけではない
 image: images/Microsoft-Fluentui-Emoji-3d-Magic-Wand-3d.1024.png
-publishedAt: 2025-01-05T00:00:00.000Z
-updatedAt: 2025-02-08T00:00:00.000Z
+publishedAt: 2025-01-05
+updatedAt: 2025-02-08
 ---
 # 初めに
 

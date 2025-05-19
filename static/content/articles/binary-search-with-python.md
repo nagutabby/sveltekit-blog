@@ -1,8 +1,8 @@
 ---
 title: Pythonで二分探索を実装する
 image: images/Microsoft-Fluentui-Emoji-3d-Magnifying-Glass-Tilted-Left-3d.1024.png
-publishedAt: 2024-05-14T00:00:00.000Z
-updatedAt: 2024-05-15T00:00:00.000Z
+publishedAt: 2024-05-14
+updatedAt: 2024-05-15
 ---
 # 概要
 

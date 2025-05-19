@@ -1,8 +1,8 @@
 ---
 title: 'Windows, MacOS,  Linuxにおけるプロキシサーバーの設定'
 image: images/Microsoft-Fluentui-Emoji-3d-Laptop-3d.1024.png
-publishedAt: 2023-08-07T00:00:00.000Z
-updatedAt: 2024-05-01T00:00:00.000Z
+publishedAt: 2023-08-07
+updatedAt: 2024-05-01
 ---
 # 全体設定
 

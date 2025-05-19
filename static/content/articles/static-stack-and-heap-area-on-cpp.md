@@ -1,8 +1,8 @@
 ---
 title: C++における静的領域、スタック領域、ヒープ領域の使い分け
 image: images/Microsoft-Fluentui-Emoji-3d-Locked-3d.1024.png
-publishedAt: 2023-09-27T00:00:00.000Z
-updatedAt: 2024-05-01T00:00:00.000Z
+publishedAt: 2023-09-27
+updatedAt: 2024-05-01
 ---
 # 静的領域
 

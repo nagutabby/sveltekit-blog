@@ -1,8 +1,8 @@
 ---
 title: microCMSで検索機能を実装するときの注意点
 image: images/Microsoft-Fluentui-Emoji-3d-Newspaper-3d.1024.png
-publishedAt: 2024-10-05T00:00:00.000Z
-updatedAt: 2024-10-05T00:00:00.000Z
+publishedAt: 2024-10-05
+updatedAt: 2024-10-05
 ---
 # 初めに
 

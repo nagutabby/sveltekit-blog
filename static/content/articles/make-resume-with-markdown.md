@@ -1,8 +1,8 @@
 ---
 title: マークダウンで職務経歴書を作る
 image: images/Microsoft-Fluentui-Emoji-3d-Bookmark-Tabs-3d.1024.png
-publishedAt: 2024-05-01T00:00:00.000Z
-updatedAt: 2024-05-04T00:00:00.000Z
+publishedAt: 2024-05-01
+updatedAt: 2024-05-04
 ---
 就活をしていると職務経歴書が必要になる場面に遭遇します。
 

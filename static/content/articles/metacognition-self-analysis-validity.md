@@ -1,8 +1,8 @@
 ---
 title: メタ認知による自己分析は本当に正しいのか？
 image: images/Microsoft-Fluentui-Emoji-3d-Wrench-3d.1024.png
-publishedAt: 2024-10-26T00:00:00.000Z
-updatedAt: 2024-10-26T00:00:00.000Z
+publishedAt: 2024-10-26
+updatedAt: 2024-10-26
 ---
 # 初めに
 

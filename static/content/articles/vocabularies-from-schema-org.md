@@ -1,8 +1,8 @@
 ---
 title: Schema.orgが提供する語彙
 image: images/Microsoft-Fluentui-Emoji-3d-Robot-3d.1024.png
-publishedAt: 2025-05-03T00:00:00.000Z
-updatedAt: 2025-05-03T00:00:00.000Z
+publishedAt: 2025-05-03
+updatedAt: 2025-05-03
 ---
 # はじめに
 

@@ -1,8 +1,8 @@
 ---
 title: フィードバックの価値と限界
 image: images/Microsoft-Fluentui-Emoji-3d-Repeat-Button-3d.1024.png
-publishedAt: 2024-10-21T00:00:00.000Z
-updatedAt: 2024-10-21T00:00:00.000Z
+publishedAt: 2024-10-21
+updatedAt: 2024-10-21
 ---
 # 初めに
 

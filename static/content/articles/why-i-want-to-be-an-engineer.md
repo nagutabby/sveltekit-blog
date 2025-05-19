@@ -1,8 +1,8 @@
 ---
 title: 私がエンジニアを目指す理由
 image: images/Microsoft-Fluentui-Emoji-3d-Desktop-Computer-3d.1024.png
-publishedAt: 2024-11-28T00:00:00.000Z
-updatedAt: 2024-11-28T00:00:00.000Z
+publishedAt: 2024-11-28
+updatedAt: 2024-11-28
 ---
 # 初めに
 

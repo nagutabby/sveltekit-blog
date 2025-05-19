@@ -1,8 +1,8 @@
 ---
 title: 'Solid Cache, Solid Queue, Solid Cableのパフォーマンスを理解する'
 image: images/Microsoft-Fluentui-Emoji-3d-Open-Mailbox-With-Raised-Flag-3d.1024.png
-publishedAt: 2025-03-15T00:00:00.000Z
-updatedAt: 2025-03-15T00:00:00.000Z
+publishedAt: 2025-03-15
+updatedAt: 2025-03-15
 ---
 # はじめに
 

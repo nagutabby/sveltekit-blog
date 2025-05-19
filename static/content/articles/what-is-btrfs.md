@@ -1,8 +1,8 @@
 ---
 title: Btrfsとは何か
 image: images/Microsoft-Fluentui-Emoji-3d-Open-File-Folder-3d.1024.png
-publishedAt: 2024-05-12T00:00:00.000Z
-updatedAt: 2024-05-14T00:00:00.000Z
+publishedAt: 2024-05-12
+updatedAt: 2024-05-14
 ---
 発音はbetter FS、butter FS、b-tree FSのどれかだそうです。私はbutter FS派です。
 

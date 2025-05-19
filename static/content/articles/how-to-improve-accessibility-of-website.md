@@ -1,8 +1,8 @@
 ---
 title: Webアプリのアクセシビリティを向上させる方法
 image: images/Microsoft-Fluentui-Emoji-3d-Mobile-Phone-3d.1024.png
-publishedAt: 2023-07-05T00:00:00.000Z
-updatedAt: 2024-05-01T00:00:00.000Z
+publishedAt: 2023-07-05
+updatedAt: 2024-05-01
 ---
 # 文章を意味ごとに区切る
 

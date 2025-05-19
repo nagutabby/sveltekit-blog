@@ -1,8 +1,8 @@
 ---
 title: GitHubのアカウントが非公開になった場合の対処法
 image: images/Microsoft-Fluentui-Emoji-3d-Zzz-3d.1024.png
-publishedAt: 2024-10-06T00:00:00.000Z
-updatedAt: 2024-10-06T00:00:00.000Z
+publishedAt: 2024-10-06
+updatedAt: 2024-10-06
 ---
 # 初めに
 
@@ -12,17 +12,17 @@ GitHubのアカウントが突然非公開になることがあります。[GitH
 
 大抵の場合は、「GitHubの[利用規約](https://docs.github.com/en/site-policy/github-terms/github-terms-of-service)や[コミュニティガイドライン](https://docs.github.com/en/site-policy/github-terms/github-community-guidelines)に違反している」と**疑われている**ことが原因です。例えば、営利目的のWebサイトに誘導するために、自分のアカウントにそのWebサイトのURLを関連付けると、それはスパム行為であると見なされます。ここで重要なのは、GitHubのモデレーターが手動でアカウントを非公開にしたり、アカウントアクセスを制限したりしている訳ではないということです。GitHubサポートによれば、「スパムアカウントを見つけて処罰するための多くのプログラムが自動で実行されている」そうです。そのため、スパム検出プログラムが誤ってアカウントを非公開にすることがあります。実際に届いた返信を以下に示します。
 
-> Hello,  
->    
-> Thank you for writing in to GitHub Support and apologies for any inconvenience.  
->    
-> We use a lot of scripts to find (and hide) spammy accounts. It looks like one of these scripts caused your account to be flagged by mistake.  
->    
-> I've removed that flag from your account now, so things ought to be back to normal the next time you sign in.  
->    
-> If there's anything else we might be able to do to help, don't hesitate to let us know.  
->    
-> Best regards,  
+> Hello,
+>  
+> Thank you for writing in to GitHub Support and apologies for any inconvenience.
+>  
+> We use a lot of scripts to find (and hide) spammy accounts. It looks like one of these scripts caused your account to be flagged by mistake.
+>  
+> I've removed that flag from your account now, so things ought to be back to normal the next time you sign in.
+>  
+> If there's anything else we might be able to do to help, don't hesitate to let us know.
+>  
+> Best regards,
 > Felix
 
 # アカウントの復旧方法

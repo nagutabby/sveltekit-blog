@@ -1,8 +1,8 @@
 ---
 title: Linuxでネットワークを管理したい
 image: images/Microsoft-Fluentui-Emoji-3d-Penguin-3d.1024.png
-publishedAt: 2023-07-05T00:00:00.000Z
-updatedAt: 2024-05-01T00:00:00.000Z
+publishedAt: 2023-07-05
+updatedAt: 2024-05-01
 ---
 # ネットワークを管理するファイル
 
@@ -234,7 +234,7 @@ ifconfig enp1s0
 ### インターフェースを有効にする
 
 ```shell
-ifconfig enp1s0 up 
+ifconfig enp1s0 up
 ```
 
 ### インターフェースを無効にする

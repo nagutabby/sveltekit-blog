@@ -1,8 +1,8 @@
 ---
 title: チームを動かすための基盤作り
 image: images/Microsoft-Fluentui-Emoji-3d-House-3d.1024.png
-publishedAt: 2024-11-26T00:00:00.000Z
-updatedAt: 2024-11-26T00:00:00.000Z
+publishedAt: 2024-11-26
+updatedAt: 2024-11-26
 ---
 # 初めに
 

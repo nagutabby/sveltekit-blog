@@ -1,8 +1,8 @@
 ---
 title: 自由と責任は似ている
 image: images/Microsoft-Fluentui-Emoji-3d-Mountain-3d.1024.png
-publishedAt: 2024-10-28T00:00:00.000Z
-updatedAt: 2024-10-28T00:00:00.000Z
+publishedAt: 2024-10-28
+updatedAt: 2024-10-28
 ---
 # 初めに
 

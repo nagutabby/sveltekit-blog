@@ -1,8 +1,8 @@
 ---
 title: 実存主義から考えるエンジニアのキャリア形成
 image: images/Microsoft-Fluentui-Emoji-3d-Foggy-3d.1024.png
-publishedAt: 2024-11-06T00:00:00.000Z
-updatedAt: 2024-11-07T00:00:00.000Z
+publishedAt: 2024-11-06
+updatedAt: 2024-11-07
 ---
 # 初めに
 

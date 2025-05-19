@@ -1,8 +1,8 @@
 ---
 title: Ubuntu(Debian)でMQTTを使う方法
 image: images/Microsoft-Fluentui-Emoji-3d-Factory-3d.1024.png
-publishedAt: 2023-07-12T00:00:00.000Z
-updatedAt: 2024-05-01T00:00:00.000Z
+publishedAt: 2023-07-12
+updatedAt: 2024-05-01
 ---
 # MQTTとは
 

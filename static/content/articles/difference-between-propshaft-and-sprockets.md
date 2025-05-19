@@ -1,8 +1,8 @@
 ---
 title: 'PropshaftとSprocketsの違い: なぜPropshaftなのか'
 image: images/Microsoft-Fluentui-Emoji-3d-Gem-Stone-3d.1024.png
-publishedAt: 2023-08-26T00:00:00.000Z
-updatedAt: 2024-05-01T00:00:00.000Z
+publishedAt: 2023-08-26
+updatedAt: 2024-05-01
 ---
 # Sprockets
 

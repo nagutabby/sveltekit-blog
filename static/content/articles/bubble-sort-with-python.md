@@ -1,8 +1,8 @@
 ---
 title: Pythonでバブルソートを実装する
 image: images/Microsoft-Fluentui-Emoji-3d-Chart-Increasing-3d.1024.png
-publishedAt: 2024-05-01T00:00:00.000Z
-updatedAt: 2024-05-03T00:00:00.000Z
+publishedAt: 2024-05-01
+updatedAt: 2024-05-03
 ---
 # 概要
 
