@@ -4,9 +4,35 @@ image: images/Microsoft-Fluentui-Emoji-3d-Blossom-3d.1024.png
 publishedAt: 2023-08-28T00:00:00.000Z
 updatedAt: 2024-05-04T00:00:00.000Z
 ---
+# このアプリの構成
 
-<h1 id="h4f59cac49a">このアプリの構成</h1><table><tbody><tr><td colspan="1" rowspan="1"><p>ビルドツール</p></td><td colspan="1" rowspan="1"><p>Vite</p></td></tr><tr><td colspan="1" rowspan="1"><p>データベース</p></td><td colspan="1" rowspan="1"><p>PostgreSQL</p></td></tr><tr><td colspan="1" rowspan="1"><p>CSSフレームワーク</p></td><td colspan="1" rowspan="1"><p>Tailwind CSS</p></td></tr><tr><td colspan="1" rowspan="1"><p>UIライブラリ</p></td><td colspan="1" rowspan="1"><p>daisyUI</p></td></tr><tr><td colspan="1" rowspan="1"><p>仮想環境</p></td><td colspan="1" rowspan="1"><p>Docker</p></td></tr><tr><td colspan="1" rowspan="1"><p>Node.jsのパッケージマネージャー</p></td><td colspan="1" rowspan="1"><p>pnpm</p></td></tr></tbody></table><h1 id="h8818f98a46">プロジェクトの準備</h1><h2 id="h903d18fb31">Dockerのインストール</h2><p><a href="https://www.docker.com/" target="_blank" rel="noopener noreferrer nofollow">Dockerの公式サイト</a>からDocker Desktopをダウンロードしてインストールします。</p><h2 id="hcc910410a6">プロジェクトディレクトリの作成</h2><pre><code class="language-bash">mkdir ~/rails-project
-cd ~/rails-project</code></pre><h2 id="hf1701c5a32">Dockerfileの作成</h2><p>Railsのイメージをビルドするために<code>Dockerfile</code>を作ります。</p><pre><code class="language-dockerfile">FROM ruby:3.2.2
+| ビルドツール | Vite |
+| --- | --- |
+| データベース | PostgreSQL |
+| CSSフレームワーク | Tailwind CSS |
+| UIライブラリ | daisyUI |
+| 仮想環境 | Docker |
+| Node.jsのパッケージマネージャー | pnpm |
+
+# プロジェクトの準備
+
+## Dockerのインストール
+
+[Dockerの公式サイト](https://www.docker.com/)からDocker Desktopをダウンロードしてインストールします。
+
+## プロジェクトディレクトリの作成
+
+```bash
+mkdir ~/rails-project
+cd ~/rails-project
+```
+
+## Dockerfileの作成
+
+Railsのイメージをビルドするために`Dockerfile`を作ります。
+
+```dockerfile
+FROM ruby:3.2.2
 
 RUN apt-get update
 RUN curl -sL http s://deb.nodesource.com/setup_18.x | bash -
@@ -30,18 +56,26 @@ RUN bundle update --source bundler --local
 
 COPY . $PROJECT_DIR
 
-EXPOSE 3000</code></pre><h2 id="ha8b2ce2ca8">compose.yamlの作成</h2><p>PostgreSQLとRailsのコンテナを構築するために<code>compose.yaml</code>を作ります。</p><pre><code class="language-yaml">services:
+EXPOSE 3000
+```
+
+## compose.yamlの作成
+
+PostgreSQLとRailsのコンテナを構築するために`compose.yaml`を作ります。
+
+```yaml
+services:
   web:
     image: rails:latest
     build: .
     volumes:
       - .:/root/rails-project
-    command: bash -c &quot;rm -f tmp/pids/server.pid &amp;&amp; rails s -b 0.0.0.0&quot;
+    command: bash -c "rm -f tmp/pids/server.pid && rails s -b 0.0.0.0"
     environment:
       POSTGRES_DEFAULT_USER: postgres
       POSTGRES_DEFAULT_PASSWORD: password
     ports:
-      - &quot;3000:3000&quot;
+      - "3000:3000"
     depends_on:
       - db
 
@@ -54,19 +88,82 @@ EXPOSE 3000</code></pre><h2 id="ha8b2ce2ca8">compose.yamlの作成</h2><p>Postgr
       POSTGRES_PASSWORD: password
 
 volumes:
-  postgres-volume:</code></pre><h2 id="h818d04f982">GemfileとGemfile.lockの作成</h2><p><code>Gemfile</code>を作り、以下の内容を記述します。</p><pre><code>source &quot;https://rubygems.org&quot;
+  postgres-volume:
+```
 
-gem &quot;rails&quot;</code></pre><p>空の<code>Gemfile.lock</code>も作っておきます。</p><h2 id="h1d589f1d35">Railsのイメージの作成</h2><pre><code class="language-bash">docker compose build</code></pre><h2 id="hbe10bea12e">プロジェクトの作成</h2><pre><code class="language-bash">docker compose run web rails new . --minimal --skip-asset-pipeline -d postgresql --force</code></pre><ul><li>--minimal: Railsの追加機能であるAction Cable, Action Mailbox, Action Textをセットアップしない</li><li>--skip-asset-pipeline: アセットパイプラインをセットアップしない</li><li>-d: データベースを指定する</li><li>--force: ファイルを上書きする</li></ul><p><code>Gemfile.lock</code>が更新されたので、改めてRailsのイメージをビルドします。</p><pre><code class="language-bash">docker compose build</code></pre><h2 id="h0a5645141d">データベースと通信できるようにする</h2><p><code>config/database.yml</code> のdefaultセクションにhost, username, passwordを追加します。</p><pre><code class="language-yaml">default: &amp;default
+## GemfileとGemfile.lockの作成
+
+`Gemfile`を作り、以下の内容を記述します。
+
+```
+source "https://rubygems.org"
+
+gem "rails"
+```
+
+空の`Gemfile.lock`も作っておきます。
+
+## Railsのイメージの作成
+
+```bash
+docker compose build
+```
+
+## プロジェクトの作成
+
+```bash
+docker compose run web rails new . --minimal --skip-asset-pipeline -d postgresql --force
+```
+
+-   \--minimal: Railsの追加機能であるAction Cable, Action Mailbox, Action Textをセットアップしない
+-   \--skip-asset-pipeline: アセットパイプラインをセットアップしない
+-   \-d: データベースを指定する
+-   \--force: ファイルを上書きする
+
+`Gemfile.lock`が更新されたので、改めてRailsのイメージをビルドします。
+
+```bash
+docker compose build
+```
+
+## データベースと通信できるようにする
+
+`config/database.yml` のdefaultセクションにhost, username, passwordを追加します。
+
+```yaml
+default: &default
   adapter: postgresql
   host: db
-  username: &lt;%= ENV[&quot;POSTGRES_DEFAULT_USER&quot;] %&gt;
-  password: &lt;%= ENV[&quot;POSTGRES_DEFAULT_PASSWORD&quot;] %&gt;
+  username: <%= ENV["POSTGRES_DEFAULT_USER"] %>
+  password: <%= ENV["POSTGRES_DEFAULT_PASSWORD"] %>
   encoding: unicode
   # For details on connection pooling, see Rails configuration guide
   # https://guides.rubyonrails.org/configuring.html#database-pooling
-  pool: &lt;%= ENV.fetch(&quot;RAILS_MAX_THREADS&quot;) { 5 } %&gt;
+  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
 
-...</code></pre><p>データベースを作成してマイグレーションをします。</p><pre><code class="language-bash">docker compose run web rails db:create db:migrate</code></pre><p>デフォルトのページを表示してみましょう。以下のコマンドを実行して、<a href="http://localhost:3000" target="_blank" rel="noopener noreferrer nofollow">http://localhost:3000</a>にアクセスします。</p><pre><code class="language-bash">docker compose up</code></pre><figure><img src="images/2023-08-28_2011.54.02.png" alt="" width="3024" height="1890"></figure><h2 id="h446a12fbcc">Makefileの作成</h2><p>Docker Composeのコマンドは長いので、エイリアスを設定するために<code>Makefile</code>を作ります。</p><pre><code class="language-makefile"># イメージをビルドする
+...
+```
+
+データベースを作成してマイグレーションをします。
+
+```bash
+docker compose run web rails db:create db:migrate
+```
+
+デフォルトのページを表示してみましょう。以下のコマンドを実行して、[http://localhost:3000](http://localhost:3000)にアクセスします。
+
+```bash
+docker compose up
+```
+
+![](images/2023-08-28_2011.54.02.png)
+
+## Makefileの作成
+
+Docker Composeのコマンドは長いので、エイリアスを設定するために`Makefile`を作ります。
+
+```makefile
+# イメージをビルドする
 .PHONY: build
 build:
 	docker compose build
@@ -121,16 +218,48 @@ purge:
 # rails db:dropを実行する
 .PHONY: drop
 drop:
-	docker compose run web rails db:drop</code></pre><h2 id="hbadc803201">GNU Makeのインストール</h2><p>Makefileを扱うにはGNU Makeが必要です。UbuntuとMacOSにおけるインストールコマンドを示します。</p><h3 id="hc578189bb9">Ubuntu</h3><pre><code class="language-bash">sudo apt install -y build-essential</code></pre><h3 id="h5b4fb634f9">MacOS</h3><pre><code class="language-bash">brew install make
-echo &apos;export PATH=&quot;$(brew --prefix)/opt/make/libexec/gnubin:$PATH&quot;&apos; &gt;&gt; ~/.zshrc
-source ~/.zshrc</code></pre><h1 id="h5c0da2f09e">Viteのインストール</h1><p>package.jsonを作ります。</p><pre><code class="language-json">{
-  &quot;devDependencies&quot;: {
+	docker compose run web rails db:drop
+```
+
+## GNU Makeのインストール
+
+Makefileを扱うにはGNU Makeが必要です。UbuntuとMacOSにおけるインストールコマンドを示します。
+
+### Ubuntu
+
+```bash
+sudo apt install -y build-essential
+```
+
+### MacOS
+
+```bash
+brew install make
+echo 'export PATH="$(brew --prefix)/opt/make/libexec/gnubin:$PATH"' >> ~/.zshrc
+source ~/.zshrc
+```
+
+# Viteのインストール
+
+package.jsonを作ります。
+
+```json
+{
+  "devDependencies": {
   }
-}</code></pre><p>空の<code>pnpm-lock.yaml</code>も作っておきます。</p><p><code>.pnpm-store</code>を<code>.gitignore</code>に追加します。</p><pre><code># See https://help.github.com/articles/ignoring-files for more about ignoring files.
+}
+```
+
+空の`pnpm-lock.yaml`も作っておきます。
+
+`.pnpm-store`を`.gitignore`に追加します。
+
+```
+# See https://help.github.com/articles/ignoring-files for more about ignoring files.
 #
 # If you find yourself ignoring temporary files generated by your text editor
 # or operating system, you probably want to add a global ignore instead:
-#   git config --global core.excludesfile &apos;~/.gitignore_global&apos;
+#   git config --global core.excludesfile '~/.gitignore_global'
 
 # Ignore bundler config.
 /.bundle
@@ -159,36 +288,72 @@ node_modules
 # https://vitejs.dev/guide/env-and-mode.html#env-files
 *.local
 
-.pnpm-store</code></pre><p>以下のコマンドでViteをインストールします。</p><pre><code class="language-bash">make exec-web
+.pnpm-store
+```
+
+以下のコマンドでViteをインストールします。
+
+```bash
+make exec-web
 
 bundle add vite_rails
 bundle exec vite install
 
-exit</code></pre><p><code>bin/dev</code>を作り、以下の内容を記述します。</p><pre><code>#!/usr/bin/env sh
+exit
+```
+
+`bin/dev`を作り、以下の内容を記述します。
+
+```bash
+#!/usr/bin/env sh
 
 if ! gem list foreman -i --silent; then
-  echo &quot;Installing foreman...&quot;
+  echo "Installing foreman..."
   gem install foreman
 fi
 
-exec foreman start -f Procfile.dev &quot;$@&quot;</code></pre><p><code>bin/dev</code>に実行権限を付与します。</p><pre><code class="language-bash">sudo chmod u+x bin/dev</code></pre><p><code>Procfile.dev</code>を変更して、ホストOSからコンテナの3000番ポートにアクセスできるようにします。</p><pre><code>vite: bin/vite dev
-web: bin/rails s -p 3000 -b 0.0.0.0</code></pre><p><code>config/vite.json</code>のdevelopmentセクションにhostセクションを追加して、ホストOSからコンテナの3036番ポートにアクセスできるようにします。</p><pre><code class="language-json">{
-  &quot;all&quot;: {
-    &quot;sourceCodeDir&quot;: &quot;app/frontend&quot;,
-    &quot;watchAdditionalPaths&quot;: []
+exec foreman start -f Procfile.dev "$@"
+```
+
+`bin/dev`に実行権限を付与します。
+
+```bash
+sudo chmod u+x bin/dev
+```
+
+`Procfile.dev`を変更して、ホストOSからコンテナの3000番ポートにアクセスできるようにします。
+
+```
+vite: bin/vite dev
+web: bin/rails s -p 3000 -b 0.0.0.0
+```
+
+`config/vite.json`のdevelopmentセクションにhostセクションを追加して、ホストOSからコンテナの3036番ポートにアクセスできるようにします。
+
+```json
+{
+  "all": {
+    "sourceCodeDir": "app/frontend",
+    "watchAdditionalPaths": []
   },
-  &quot;development&quot;: {
-    &quot;autoBuild&quot;: true,
-    &quot;publicOutputDir&quot;: &quot;vite-dev&quot;,
-    &quot;host&quot;: &quot;0.0.0.0&quot;,
-    &quot;port&quot;: 3036
+  "development": {
+    "autoBuild": true,
+    "publicOutputDir": "vite-dev",
+    "host": "0.0.0.0",
+    "port": 3036
   },
-  &quot;test&quot;: {
-    &quot;autoBuild&quot;: true,
-    &quot;publicOutputDir&quot;: &quot;vite-test&quot;,
-    &quot;port&quot;: 3037
+  "test": {
+    "autoBuild": true,
+    "publicOutputDir": "vite-test",
+    "port": 3037
   }
-}</code></pre><p><code>Dockerfile</code>にEXPOSEセクションを追加して、ホストOSからコンテナの3036番ポートにアクセスできるようにします。</p><pre><code class="language-dockerfile">FROM ruby:3.2.2
+}
+```
+
+`Dockerfile`にEXPOSEセクションを追加して、ホストOSからコンテナの3036番ポートにアクセスできるようにします。
+
+```dockerfile
+FROM ruby:3.2.2
 
 RUN apt-get update
 RUN curl -sL http s://deb.nodesource.com/setup_18.x | bash -
@@ -213,19 +378,25 @@ RUN bundle update --source bundler --local
 COPY . $PROJECT_DIR
 
 EXPOSE 3000
-EXPOSE 3036</code></pre><p><code>compose.yaml</code>を変更して、webコンテナの起動時にbin/devを実行するようにします。また、ホストOSの3036番ポートからwebコンテナの3036番ポートにアクセスするようにします。</p><pre><code class="language-yaml">services:
+EXPOSE 3036
+```
+
+`compose.yaml`を変更して、webコンテナの起動時にbin/devを実行するようにします。また、ホストOSの3036番ポートからwebコンテナの3036番ポートにアクセスするようにします。
+
+```yaml
+services:
   web:
     image: rails:latest
     build: .
     volumes:
       - .:/root/rails-project
-    command: bash -c &quot;rm -f tmp/pids/server.pid &amp;&amp; bin/dev&quot;
+    command: bash -c "rm -f tmp/pids/server.pid && bin/dev"
     environment:
       POSTGRES_DEFAULT_USER: postgres
       POSTGRES_DEFAULT_PASSWORD: password
     ports:
-      - &quot;3000:3000&quot;
-      - &quot;3036:3036&quot;
+      - "3000:3000"
+      - "3036:3036"
     depends_on:
       - db
 
@@ -238,86 +409,177 @@ EXPOSE 3036</code></pre><p><code>compose.yaml</code>を変更して、webコン�
       POSTGRES_PASSWORD: password
 
 volumes:
-  postgres-volume:</code></pre><h1 id="h4d2e82f7e0">homeコントローラーの作成</h1><p>indexアクションを持つhomeコントローラーを作ります。</p><pre><code class="language-bash">make exec-web
+  postgres-volume:
+```
+
+# homeコントローラーの作成
+
+indexアクションを持つhomeコントローラーを作ります。
+
+```bash
+make exec-web
 
 rails g controller home index
 
-exit</code></pre><p><code>config/routes.rb</code>を変更して、rootにアクセスした際にhome#indexのビューが表示されるようにします。</p><pre><code class="language-ruby">Rails.application.routes.draw do
-  root &quot;home#index&quot;
+exit
+```
+
+`config/routes.rb`を変更して、rootにアクセスした際にhome#indexのビューが表示されるようにします。
+
+```ruby
+Rails.application.routes.draw do
+  root "home#index"
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
-  # Defines the root path route (&quot;/&quot;)
-  # root &quot;articles#index&quot;
-end</code></pre><p><code>app/assets/stylesheets</code>を削除し、<code>app/frontend/entrypoints/application.css</code>を作ります。</p><p><code>app/views/layouts/application.html.erb</code>の<code>stylesheet_link_tag</code>を<code>vite_stylesheet_tag</code>に置き換えます。</p><pre><code class="language-erb">&lt;!DOCTYPE html&gt;
-&lt;html&gt;
-  &lt;head&gt;
-    &lt;title&gt;RailsProject&lt;/title&gt;
-    &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width,initial-scale=1&quot;&gt;
-    &lt;%= csrf_meta_tags %&gt;
-    &lt;%= csp_meta_tag %&gt;
+  # Defines the root path route ("/")
+  # root "articles#index"
+end
+```
 
-    &lt;%= vite_stylesheet_tag &apos;application&apos; %&gt;
-    &lt;%= vite_client_tag %&gt;
-    &lt;%= vite_javascript_tag &apos;application&apos; %&gt;
-    &lt;!--
+`app/assets/stylesheets`を削除し、`app/frontend/entrypoints/application.css`を作ります。
+
+`app/views/layouts/application.html.erb`の`stylesheet_link_tag`を`vite_stylesheet_tag`に置き換えます。
+
+```erb
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>RailsProject</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+
+    <%= vite_stylesheet_tag 'application' %>
+    <%= vite_client_tag %>
+    <%= vite_javascript_tag 'application' %>
+    <!--
       If using a TypeScript entrypoint file:
-        vite_typescript_tag &apos;application&apos;
+        vite_typescript_tag 'application'
 
       If using a .jsx or .tsx entrypoint, add the extension:
-        vite_javascript_tag &apos;application.jsx&apos;
+        vite_javascript_tag 'application.jsx'
 
       Visit the guide for more information: https://vite-ruby.netlify.app/guide/rails
-    --&gt;
+    -->
 
-  &lt;/head&gt;
+  </head>
 
-  &lt;body&gt;
-    &lt;%= yield %&gt;
-  &lt;/body&gt;
-&lt;/html&gt;</code></pre><p><code>make up</code>を実行してから、<a href="http://localhost:3000" target="_blank" rel="noopener noreferrer nofollow">http://localhost:3000</a>にアクセスすると、コンソールに<code>Vite ⚡️ Rails</code>と表示されます。</p><figure><img src="images/2023-08-28_2012.40.24.png" alt="" width="3024" height="1890"></figure><h1 id="h24f46f17b4">config/routes.rbとerbファイルに対してHMRを有効にする</h1><p>HMR用のプラグインをインストールします。</p><pre><code class="language-bash">make exec-web
+  <body>
+    <%= yield %>
+  </body>
+</html>
+```
+
+`make up`を実行してから、[http://localhost:3000](http://localhost:3000)にアクセスすると、コンソールに`Vite ⚡️ Rails`と表示されます。
+
+![](images/2023-08-28_2012.40.24.png)
+
+# config/routes.rbとerbファイルに対してHMRを有効にする
+
+HMR用のプラグインをインストールします。
+
+```bash
+make exec-web
 
 pnpm add -D vite-plugin-full-reload
 
-exit</code></pre><p><code>vite.config.ts</code>に<code>vite-plugin-full-reload</code>を追加します。</p><pre><code class="language-typescript">import { defineConfig } from &apos;vite&apos;
-import RubyPlugin from &apos;vite-plugin-ruby&apos;
-import FullReload from &apos;vite-plugin-full-reload&apos;
+exit
+```
+
+`vite.config.ts`に`vite-plugin-full-reload`を追加します。
+
+```typescript
+import { defineConfig } from 'vite'
+import RubyPlugin from 'vite-plugin-ruby'
+import FullReload from 'vite-plugin-full-reload'
 
 export default defineConfig({
   plugins: [
     RubyPlugin(),
-    FullReload([&apos;config/routes.rb&apos;, &apos;app/views/**/*&apos;], { delay: 100 }),
+    FullReload(['config/routes.rb', 'app/views/**/*'], { delay: 100 }),
   ],
-})</code></pre><p><code>make up</code>を実行してから<code>app/views/home/index.html.erb</code>を変更してみましょう。HMRが動作していることを確認できます。</p><figure><img src="images/2023-08-28-12.49.49.gif" alt="" width="3024" height="1964"></figure><h1 id="h6a003ead1f">Tailwindのインストール</h1><pre><code class="language-bash">make exec-web
+})
+```
+
+`make up`を実行してから`app/views/home/index.html.erb`を変更してみましょう。HMRが動作していることを確認できます。
+
+![](images/2023-08-28-12.49.49.gif)
+
+# Tailwindのインストール
+
+```bash
+make exec-web
 
 pnpm add -D tailwindcss postcss autoprefixer
 pnpm tailwindcss init -p
 
-exit</code></pre><p><code>tailwind.config.js</code>を変更して、Tailwindがコンパイルされるようにします。</p><pre><code class="language-javascript">/** @type {import(&apos;tailwindcss&apos;).Config} */
+exit
+```
+
+`tailwind.config.js`を変更して、Tailwindがコンパイルされるようにします。
+
+```javascript
+/** @type {import('tailwindcss').Config} */
 module.exports = {
   content: [
-    &apos;./app/views/**/*.html.erb&apos;,
-    &apos;./app/frontend/**/*.{js,ts,jsx,tsx,vue,svelte}&apos;,
+    './app/views/**/*.html.erb',
+    './app/frontend/**/*.{js,ts,jsx,tsx,vue,svelte}',
   ],
   theme: {
     extend: {},
   },
   plugins: [],
-}</code></pre><p><code>app/frontend/entrypoints/application.css</code>にTailwindを追加します。</p><pre><code class="language-css">@import &quot;tailwindcss/base&quot;;
-@import &quot;tailwindcss/components&quot;;
-@import &quot;tailwindcss/utilities&quot;;</code></pre><p><code>app/views/home/index.html.erb</code>にTailwindのクラスを追加して動作を確認します。</p><pre><code class="language-erb">&lt;h1 class=&quot;text-3xl font-bold underline&quot;&gt;Home#index&lt;/h1&gt;
-&lt;p&gt;Find me in app/views/home/index.html.erb&lt;/p&gt;</code></pre><figure><img src="images/2023-08-28_2014.31.06.png" alt="" width="3024" height="1890"></figure><h1 id="h5ad05c16ef">daisyUIのインストール</h1><pre><code class="language-bash">make exec-web
+}
+```
+
+`app/frontend/entrypoints/application.css`にTailwindを追加します。
+
+```css
+@import "tailwindcss/base";
+@import "tailwindcss/components";
+@import "tailwindcss/utilities";
+```
+
+`app/views/home/index.html.erb`にTailwindのクラスを追加して動作を確認します。
+
+```erb
+<h1 class="text-3xl font-bold underline">Home#index</h1>
+<p>Find me in app/views/home/index.html.erb</p>
+```
+
+![](images/2023-08-28_2014.31.06.png)
+
+# daisyUIのインストール
+
+```bash
+make exec-web
 
 pnpm add -D daisyui
 
-exit</code></pre><p>daisyUIを<code>tailwind.config.js</code>に追加します。</p><pre><code class="language-javascript">/** @type {import(&apos;tailwindcss&apos;).Config} */
+exit
+```
+
+daisyUIを`tailwind.config.js`に追加します。
+
+```javascript
+/** @type {import('tailwindcss').Config} */
 module.exports = {
   content: [
-    &apos;./app/views/**/*.html.erb&apos;,
-    &apos;./app/frontend/**/*.{js,ts,jsx,tsx,vue,svelte}&apos;,
+    './app/views/**/*.html.erb',
+    './app/frontend/**/*.{js,ts,jsx,tsx,vue,svelte}',
   ],
   theme: {
     extend: {},
   },
-  plugins: [require(&quot;daisyui&quot;)],
-}</code></pre><p><code>app/views/home/index.html.erb</code>にdaisyUIのクラスを追加して動作を確認します。</p><pre><code class="language-erb">&lt;h1 class=&quot;text-3xl font-bold underline text-accent&quot;&gt;Home#index&lt;/h1&gt;
-&lt;p&gt;Find me in app/views/home/index.html.erb&lt;/p&gt;</code></pre><figure><img src="images/2023-08-28_2015.13.01.png" alt="" width="3024" height="1890"></figure>
+  plugins: [require("daisyui")],
+}
+```
+
+`app/views/home/index.html.erb`にdaisyUIのクラスを追加して動作を確認します。
+
+```erb
+<h1 class="text-3xl font-bold underline text-accent">Home#index</h1>
+<p>Find me in app/views/home/index.html.erb</p>
+```
+
+![](images/2023-08-28_2015.13.01.png)

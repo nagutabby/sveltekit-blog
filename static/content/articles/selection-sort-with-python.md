@@ -4,14 +4,29 @@ image: images/Microsoft-Fluentui-Emoji-3d-Chart-Increasing-3d.1024.png
 publishedAt: 2024-05-03T00:00:00.000Z
 updatedAt: 2024-05-03T00:00:00.000Z
 ---
+# 概要
 
-<h1 id="h9707d3a59a">概要</h1><ol><li>ソート範囲における最小値を探す</li><li>最小値をソート範囲の左端の要素と交換する</li><li>ソート範囲を左から1つ狭める</li><li>ソート範囲に含まれる要素数が1になるまで1から3を繰り返す</li></ol><h1 id="hdadc0eaacf">特徴</h1><ul><li>in-placeアルゴリズムである</li><li>計算量はO (n^2) である</li><li>バブルソートと比べると、要素の比較回数は同じであるが、要素の交換回数が少ないためバブルソートよりも高速である</li></ul><h1 id="h922edff87b">実装</h1><pre><code class="language-python">import random
+1.  ソート範囲における最小値を探す
+2.  最小値をソート範囲の左端の要素と交換する
+3.  ソート範囲を左から1つ狭める
+4.  ソート範囲に含まれる要素数が1になるまで1から3を繰り返す
 
-def selection_sort(nums: list[int]) -&gt; list[int]:
+# 特徴
+
+-   in-placeアルゴリズムである
+-   計算量はO (n^2) である
+-   バブルソートと比べると、要素の比較回数は同じであるが、要素の交換回数が少ないためバブルソートよりも高速である
+
+# 実装
+
+```python
+import random
+
+def selection_sort(nums: list[int]) -> list[int]:
     for i in range(len(nums) - 1):
         current_min_index: int = i
         for j in range(i + 1, len(nums)):
-            if nums[current_min_index] &gt; nums[j]:
+            if nums[current_min_index] > nums[j]:
                 current_min_index = j
 
         nums[i], nums[current_min_index] = nums[current_min_index], nums[i]
@@ -20,10 +35,11 @@ def selection_sort(nums: list[int]) -&gt; list[int]:
 
 nums: list[int] = []
 
-while len(nums) &lt; 10:
+while len(nums) < 10:
     num: int = random.randint(1, 100)
     if num not in nums:
         nums.append(num)
 
-print(f&apos;入力: {nums}&apos;)
-print(f&apos;出力: {selection_sort(nums)}&apos;)</code></pre>
+print(f'入力: {nums}')
+print(f'出力: {selection_sort(nums)}')
+```

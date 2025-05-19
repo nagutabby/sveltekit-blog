@@ -4,11 +4,93 @@ image: images/Microsoft-Fluentui-Emoji-3d-Bookmark-Tabs-3d.1024.png
 publishedAt: 2024-05-01T00:00:00.000Z
 updatedAt: 2024-05-04T00:00:00.000Z
 ---
+就活をしていると職務経歴書が必要になる場面に遭遇します。
 
-<p>就活をしていると職務経歴書が必要になる場面に遭遇します。</p><p>簡単に職務経歴書を作れるWebサービスを利用するのも手ですが、自分の知的好奇心や技術力をアピールできるものを作りたいと思う方も多いのではないでしょうか？今回は、「ITエンジニアにやさしい職務経歴書」をテーマにマークダウンで職務経歴書を作る方法を解説していきます。</p><h1 id="h5b3e73489f">準備するもの</h1><ul><li>VSCode</li><li><a href="https://marketplace.visualstudio.com/items?itemName=tomoki1207.pdf" target="_blank" rel="noopener noreferrer nofollow">vscode-pdf</a></li><li>pnpmなどのNode.jsのパッケージ管理システム</li><li>好きなCSSフレームワーク<ul><li>何を使ったらいいか分からない方にはClassless CSSフレームワークをおすすめします</li></ul></li></ul><h1 id="hd2a56d7ce9">セットアップ</h1><p>プロジェクトディレクトリを作ります。</p><pre><code class="language-bash">mkdir ~/resume-example
-cd ~/resume-example</code></pre><p>Node.jsのプロジェクトを初期化します。</p><pre><code class="language-bash">pnpm init</code></pre><p><a href="https://github.com/simonhaenisch/md-to-pdf" target="_blank" rel="noopener noreferrer nofollow">md-to-pdf</a>をインストールします。</p><pre><code class="language-bash">pnpm i -D md-to-pdf</code></pre><p>職務経歴書として使うマークダウンファイルを作ります。</p><p>動作するかテストするために適当な文字列を書き込んでおきましょう。</p><pre><code class="language-bash">echo &apos;# Hello, World!&apos; &gt; resume.md</code></pre><p>マークダウンファイルからpdfファイルを生成してみます。</p><pre><code class="language-bash">pnpm md-to-pdf resume.md</code></pre><p>例えば、resume.mdを引数として指定した場合はresume.pdfが生成されます。</p><p>VSCodeを開いてresume.pdfの内容を見てみましょう。</p><pre><code class="language-bash">code .</code></pre><figure><img src="images/2024-05-01_2013.37.01.png" alt="" width="3024" height="1890"></figure><p>md-to-pdfに渡したマークダウンファイルの内容に基づいて、pdfファイルが出力されることが分かります。</p><p></p><p>動作確認ができたら、md-to-pdfのコマンドをパッケージマネージャーにスクリプトとして登録しましょう。スクリプトを登録することで、pdfファイルを生成するためにコマンドを入力する時間を削減できます。</p><p>package.jsonを開いて、<code>&quot;scripts&quot;</code>ブロックを以下の内容に変更します。</p><pre><code class="language-json">&quot;scripts&quot;: {
-  &quot;make-resume&quot;: &quot;pnpm md-to-pdf resume.md&quot;
-},</code></pre><p><code>make-resume</code>スクリプトを追加すると、以下のコマンドでpdfファイルを生成できるようになります。</p><pre><code class="language-bash">pnpm make-resume</code></pre><h1 id="hcc1af24286">スタイリング</h1><h2 id="h5caccfc304">レイアウトを作る</h2><p>md-to-pdfにはフロントマターで指定できるオプションが用意されています。</p><p>一例として、出力されるpdfファイルのレイアウトを設定する方法を示します。</p><p>resume.mdを以下のように変更します。</p><pre><code class="language-markdown">---
+簡単に職務経歴書を作れるWebサービスを利用するのも手ですが、自分の知的好奇心や技術力をアピールできるものを作りたいと思う方も多いのではないでしょうか？今回は、「ITエンジニアにやさしい職務経歴書」をテーマにマークダウンで職務経歴書を作る方法を解説していきます。
+
+# 準備するもの
+
+-   VSCode
+-   [vscode-pdf](https://marketplace.visualstudio.com/items?itemName=tomoki1207.pdf)
+-   pnpmなどのNode.jsのパッケージ管理システム
+-   好きなCSSフレームワーク
+    -   何を使ったらいいか分からない方にはClassless CSSフレームワークをおすすめします
+
+# セットアップ
+
+プロジェクトディレクトリを作ります。
+
+```bash
+mkdir ~/resume-example
+cd ~/resume-example
+```
+
+Node.jsのプロジェクトを初期化します。
+
+```bash
+pnpm init
+```
+
+[md-to-pdf](https://github.com/simonhaenisch/md-to-pdf)をインストールします。
+
+```bash
+pnpm i -D md-to-pdf
+```
+
+職務経歴書として使うマークダウンファイルを作ります。
+
+動作するかテストするために適当な文字列を書き込んでおきましょう。
+
+```bash
+echo '# Hello, World!' > resume.md
+```
+
+マークダウンファイルからpdfファイルを生成してみます。
+
+```bash
+pnpm md-to-pdf resume.md
+```
+
+例えば、resume.mdを引数として指定した場合はresume.pdfが生成されます。
+
+VSCodeを開いてresume.pdfの内容を見てみましょう。
+
+```bash
+code .
+```
+
+![](images/2024-05-01_2013.37.01.png)
+
+md-to-pdfに渡したマークダウンファイルの内容に基づいて、pdfファイルが出力されることが分かります。
+
+動作確認ができたら、md-to-pdfのコマンドをパッケージマネージャーにスクリプトとして登録しましょう。スクリプトを登録することで、pdfファイルを生成するためにコマンドを入力する時間を削減できます。
+
+package.jsonを開いて、`"scripts"`ブロックを以下の内容に変更します。
+
+```json
+"scripts": {
+  "make-resume": "pnpm md-to-pdf resume.md"
+},
+```
+
+`make-resume`スクリプトを追加すると、以下のコマンドでpdfファイルを生成できるようになります。
+
+```bash
+pnpm make-resume
+```
+
+# スタイリング
+
+## レイアウトを作る
+
+md-to-pdfにはフロントマターで指定できるオプションが用意されています。
+
+一例として、出力されるpdfファイルのレイアウトを設定する方法を示します。
+
+resume.mdを以下のように変更します。
+
+````markdown
+---
 pdf_options:
   format: A4
   margin: 20mm
@@ -26,21 +108,37 @@ This is a dummy text.
 This is a dummy text.
 
 ## Table
-| Header 1 | Header 2 |
-| ---- | ---- |
-| Data 1 | Data 2 |
-| Data 3 | Data 4 |
+|  Header 1  | Header 2 |
+|  ----  | ---- |
+|  Data 1  | Data 2 |
+|  Data 3  | Data 4 |
 
 ## Code
 
 ```
-print(&apos;Hello, World!&apos;)
+print('Hello, World!')
 ```
 
 ## List
 - This is a dummy text.
 - This is a dummy text.
-- This is a dummy text.</code></pre><figure><img src="images/resume_without_css.jpg" alt="" width="1242" height="1756"></figure><p>上記の例では、A4のページに上下左右20mmの余白が設けられます。</p><p>オプションの詳細は<a href="https://github.com/simonhaenisch/md-to-pdf/blob/master/readme.md" target="_blank" rel="noopener noreferrer nofollow">md-to-pdfのREADME</a>を参照してください。</p><h2 id="h96054fbb83">デザインを工夫する</h2><p>今のままではデザインが味気ないですね。CSSフレームワークを使って見栄えを良くしましょう。</p><p>stylesheetオプションにCSSファイルのパスを指定することでCSSを読み込めます。</p><pre><code class="language-markdown">---
+- This is a dummy text.
+````
+
+![](images/resume_without_css.jpg)
+
+上記の例では、A4のページに上下左右20mmの余白が設けられます。
+
+オプションの詳細は[md-to-pdfのREADME](https://github.com/simonhaenisch/md-to-pdf/blob/master/readme.md)を参照してください。
+
+## デザインを工夫する
+
+今のままではデザインが味気ないですね。CSSフレームワークを使って見栄えを良くしましょう。
+
+stylesheetオプションにCSSファイルのパスを指定することでCSSを読み込めます。
+
+````markdown
+---
 pdf_options:
   format: A4
   margin: 20mm
@@ -60,18 +158,27 @@ This is a dummy text.
 This is a dummy text.
 
 ## Table
-| Header 1 | Header 2 |
-| ---- | ---- |
-| Data 1 | Data 2 |
-| Data 3 | Data 4 |
+|  Header 1  | Header 2 |
+|  ----  | ---- |
+|  Data 1  | Data 2 |
+|  Data 3  | Data 4 |
 
 ## Code
 
 ```
-print(&apos;Hello, World!&apos;)
+print('Hello, World!')
 ```
 
 ## List
 - This is a dummy text.
 - This is a dummy text.
-- This is a dummy text.</code></pre><figure><img src="images/resume_with_css.jpg" alt="" width="1242" height="1756"></figure><p>モダンなデザインになりました。</p><h1 id="h9be0c3393d">おわりに</h1><p><a href="https://github.com/nagutabby/resume" target="_blank" rel="noopener noreferrer nofollow">マークダウンで作る職務経歴書の例</a>をGitHubで公開しています。参考までにどうぞ。</p><p></p><p><br></p><p></p>
+- This is a dummy text.
+````
+
+![](images/resume_with_css.jpg)
+
+モダンなデザインになりました。
+
+# おわりに
+
+[マークダウンで作る職務経歴書の例](https://github.com/nagutabby/resume)をGitHubで公開しています。参考までにどうぞ。
