@@ -1,5 +1,6 @@
 import { marked } from 'marked';
 import { Renderer } from 'marked';
+import { gfmHeadingId } from "marked-gfm-heading-id";
 
 export function convertMarkdownToHtml(content: string) {
   const renderer = new Renderer();
@@ -14,15 +15,8 @@ export function convertMarkdownToHtml(content: string) {
     return `<img src="${href}" alt="${text}"${titleAttr}>`;
   };
 
-  const markedOptions = {
-    renderer,
-    headerIds: true,
-    gfm: true,
-    breaks: false,
-    pedantic: false,
-    smartLists: true,
-    smartypants: true
-  };
+  marked.use({ renderer });
+  marked.use(gfmHeadingId());
 
-  return marked(content, markedOptions);
+  return marked(content);
 }
