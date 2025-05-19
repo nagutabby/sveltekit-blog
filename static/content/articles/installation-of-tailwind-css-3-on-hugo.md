@@ -7,7 +7,7 @@ updatedAt: 2024-05-03T00:00:00.000Z
 
 <p>HugoにTailwind CSS 3をインストールしてみます。</p><h1 id="h3e2f255d1b">Hugoプロジェクトの作成</h1><pre><code class="language-bash">hugo new site hugo-tailwind-css-3-sample
 cd hugo-tailwind-css-3-sample
-git init</code></pre><h1 id="h6a003ead1f">Tailwindのインストール</h1><p>pnpmでTailwindをインストールします。TailwindはPostCSSのプラグインなので、PostCSSのインストールも必要です。</p><pre><code class="language-bash">pnpm init 
+git init</code></pre><h1 id="h6a003ead1f">Tailwindのインストール</h1><p>pnpmでTailwindをインストールします。TailwindはPostCSSのプラグインなので、PostCSSのインストールも必要です。</p><pre><code class="language-bash">pnpm init
 pnpm add -D autoprefixer postcss postcss-cli tailwindcss</code></pre><p><code>.gitignore</code>を作成し、そのファイルに<code>node_modules</code>を追記します。</p><p>これにより<code>node_modules</code>がGitの管理対象から除外されます。</p><pre><code>/node_modules</code></pre><p><code>tailwind.config.js</code>と<code>postcss.config.js</code>を作成します。</p><pre><code class="language-bash">pnpm tailwind init -p</code></pre><h1 id="hdbc0c6b369">Cache bustersの設定</h1><p>Hugo 0.112でTailwind CSS 3がサポートされました。Hugoは、HTMLをビルドするタイミングで<code>hugo_stats.json</code>に自動的にTailwindのクラスを追記します。そして、この<code>hugo_stats.json</code>の内容が変更されるたびに、CSSファイルをビルドし直します。</p><p><code>hugo_stats.json</code>の内容に応じてTailwindのコードを生成させるために、<code>tailwind.config.js</code>を変更します。</p><pre><code class="language-javascript">/** @type {import(&apos;tailwindcss&apos;).Config} */
 module.exports = {
   content: [
@@ -68,4 +68,4 @@ date = 2023-10-09T01:18:58+09:00
 draft = false
 +++
 
-Hello, Hugo!</code></pre><h1 id="he4943fbc48">Tailwindの動作確認</h1><p>Hugoのサーバーを起動して、Tailwind CSS 3が動作することを確認します。</p><pre><code class="language-bash">hugo serve</code></pre><p><code>http://localhost:1313</code>にアクセスすると、赤く大きい文字で<code>Hello, Hugo!</code>と表示されます。</p><figure><img src="https://images.microcms-assets.io/assets/99c53a99ae2b4682938f6c435d83e3d9/cea74af6f54842f486e8d424128d18fc/%E3%82%B9%E3%82%AF%E3%83%AA%E3%83%BC%E3%83%B3%E3%82%B7%E3%83%A7%E3%83%83%E3%83%88%202023-10-09%201.31.07.png" alt="" width="3024" height="1890"></figure><h1 id="h3de35099b3">参考</h1><ul><li><a href="https://gohugo.io/getting-started/configuration/#configure-cache-busters">https://gohugo.io/getting-started/configuration/#configure-cache-busters</a></li></ul>
+Hello, Hugo!</code></pre><h1 id="he4943fbc48">Tailwindの動作確認</h1><p>Hugoのサーバーを起動して、Tailwind CSS 3が動作することを確認します。</p><pre><code class="language-bash">hugo serve</code></pre><p><code>http://localhost:1313</code>にアクセスすると、赤く大きい文字で<code>Hello, Hugo!</code>と表示されます。</p><figure><img src="images/2023-10-09_201.31.07.png" alt="" width="3024" height="1890"></figure><h1 id="h3de35099b3">参考</h1><ul><li><a href="https://gohugo.io/getting-started/configuration/#configure-cache-busters">https://gohugo.io/getting-started/configuration/#configure-cache-busters</a></li></ul>

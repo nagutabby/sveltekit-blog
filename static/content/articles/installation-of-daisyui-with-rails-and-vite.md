@@ -66,7 +66,7 @@ gem &quot;rails&quot;</code></pre><p>空の<code>Gemfile.lock</code>も作って
   # https://guides.rubyonrails.org/configuring.html#database-pooling
   pool: &lt;%= ENV.fetch(&quot;RAILS_MAX_THREADS&quot;) { 5 } %&gt;
 
-...</code></pre><p>データベースを作成してマイグレーションをします。</p><pre><code class="language-bash">docker compose run web rails db:create db:migrate</code></pre><p>デフォルトのページを表示してみましょう。以下のコマンドを実行して、<a href="http://localhost:3000" target="_blank" rel="noopener noreferrer nofollow">http://localhost:3000</a>にアクセスします。</p><pre><code class="language-bash">docker compose up</code></pre><figure><img src="https://images.microcms-assets.io/assets/99c53a99ae2b4682938f6c435d83e3d9/62826e0184c84bfca34393223a442a9a/%E3%82%B9%E3%82%AF%E3%83%AA%E3%83%BC%E3%83%B3%E3%82%B7%E3%83%A7%E3%83%83%E3%83%88%202023-08-28%2011.54.02.png" alt="" width="3024" height="1890"></figure><h2 id="h446a12fbcc">Makefileの作成</h2><p>Docker Composeのコマンドは長いので、エイリアスを設定するために<code>Makefile</code>を作ります。</p><pre><code class="language-makefile"># イメージをビルドする
+...</code></pre><p>データベースを作成してマイグレーションをします。</p><pre><code class="language-bash">docker compose run web rails db:create db:migrate</code></pre><p>デフォルトのページを表示してみましょう。以下のコマンドを実行して、<a href="http://localhost:3000" target="_blank" rel="noopener noreferrer nofollow">http://localhost:3000</a>にアクセスします。</p><pre><code class="language-bash">docker compose up</code></pre><figure><img src="images/2023-08-28_2011.54.02.png" alt="" width="3024" height="1890"></figure><h2 id="h446a12fbcc">Makefileの作成</h2><p>Docker Composeのコマンドは長いので、エイリアスを設定するために<code>Makefile</code>を作ります。</p><pre><code class="language-makefile"># イメージをビルドする
 .PHONY: build
 build:
 	docker compose build
@@ -274,7 +274,7 @@ end</code></pre><p><code>app/assets/stylesheets</code>を削除し、<code>app/f
   &lt;body&gt;
     &lt;%= yield %&gt;
   &lt;/body&gt;
-&lt;/html&gt;</code></pre><p><code>make up</code>を実行してから、<a href="http://localhost:3000" target="_blank" rel="noopener noreferrer nofollow">http://localhost:3000</a>にアクセスすると、コンソールに<code>Vite ⚡️ Rails</code>と表示されます。</p><figure><img src="https://images.microcms-assets.io/assets/99c53a99ae2b4682938f6c435d83e3d9/d01e110a1f35428b97733c6dc681436e/%E3%82%B9%E3%82%AF%E3%83%AA%E3%83%BC%E3%83%B3%E3%82%B7%E3%83%A7%E3%83%83%E3%83%88%202023-08-28%2012.40.24.png" alt="" width="3024" height="1890"></figure><h1 id="h24f46f17b4">config/routes.rbとerbファイルに対してHMRを有効にする</h1><p>HMR用のプラグインをインストールします。</p><pre><code class="language-bash">make exec-web
+&lt;/html&gt;</code></pre><p><code>make up</code>を実行してから、<a href="http://localhost:3000" target="_blank" rel="noopener noreferrer nofollow">http://localhost:3000</a>にアクセスすると、コンソールに<code>Vite ⚡️ Rails</code>と表示されます。</p><figure><img src="images/2023-08-28_2012.40.24.png" alt="" width="3024" height="1890"></figure><h1 id="h24f46f17b4">config/routes.rbとerbファイルに対してHMRを有効にする</h1><p>HMR用のプラグインをインストールします。</p><pre><code class="language-bash">make exec-web
 
 pnpm add -D vite-plugin-full-reload
 
@@ -287,7 +287,7 @@ export default defineConfig({
     RubyPlugin(),
     FullReload([&apos;config/routes.rb&apos;, &apos;app/views/**/*&apos;], { delay: 100 }),
   ],
-})</code></pre><p><code>make up</code>を実行してから<code>app/views/home/index.html.erb</code>を変更してみましょう。HMRが動作していることを確認できます。</p><figure><img src="https://images.microcms-assets.io/assets/99c53a99ae2b4682938f6c435d83e3d9/f51d0d1af58e425e8916df40ab8d1ad8/%E7%94%BB%E9%9D%A2%E5%8F%8E%E9%8C%B2-2023-08-28-12.49.49.gif" alt="" width="3024" height="1964"></figure><h1 id="h6a003ead1f">Tailwindのインストール</h1><pre><code class="language-bash">make exec-web
+})</code></pre><p><code>make up</code>を実行してから<code>app/views/home/index.html.erb</code>を変更してみましょう。HMRが動作していることを確認できます。</p><figure><img src="images/2023-08-28-12.49.49.gif" alt="" width="3024" height="1964"></figure><h1 id="h6a003ead1f">Tailwindのインストール</h1><pre><code class="language-bash">make exec-web
 
 pnpm add -D tailwindcss postcss autoprefixer
 pnpm tailwindcss init -p
@@ -305,7 +305,7 @@ module.exports = {
 }</code></pre><p><code>app/frontend/entrypoints/application.css</code>にTailwindを追加します。</p><pre><code class="language-css">@import &quot;tailwindcss/base&quot;;
 @import &quot;tailwindcss/components&quot;;
 @import &quot;tailwindcss/utilities&quot;;</code></pre><p><code>app/views/home/index.html.erb</code>にTailwindのクラスを追加して動作を確認します。</p><pre><code class="language-erb">&lt;h1 class=&quot;text-3xl font-bold underline&quot;&gt;Home#index&lt;/h1&gt;
-&lt;p&gt;Find me in app/views/home/index.html.erb&lt;/p&gt;</code></pre><figure><img src="https://images.microcms-assets.io/assets/99c53a99ae2b4682938f6c435d83e3d9/141834ec7c9643db9a2e0b84f14a8825/%E3%82%B9%E3%82%AF%E3%83%AA%E3%83%BC%E3%83%B3%E3%82%B7%E3%83%A7%E3%83%83%E3%83%88%202023-08-28%2014.31.06.png" alt="" width="3024" height="1890"></figure><h1 id="h5ad05c16ef">daisyUIのインストール</h1><pre><code class="language-bash">make exec-web
+&lt;p&gt;Find me in app/views/home/index.html.erb&lt;/p&gt;</code></pre><figure><img src="images/2023-08-28_2014.31.06.png" alt="" width="3024" height="1890"></figure><h1 id="h5ad05c16ef">daisyUIのインストール</h1><pre><code class="language-bash">make exec-web
 
 pnpm add -D daisyui
 
@@ -320,4 +320,4 @@ module.exports = {
   },
   plugins: [require(&quot;daisyui&quot;)],
 }</code></pre><p><code>app/views/home/index.html.erb</code>にdaisyUIのクラスを追加して動作を確認します。</p><pre><code class="language-erb">&lt;h1 class=&quot;text-3xl font-bold underline text-accent&quot;&gt;Home#index&lt;/h1&gt;
-&lt;p&gt;Find me in app/views/home/index.html.erb&lt;/p&gt;</code></pre><figure><img src="https://images.microcms-assets.io/assets/99c53a99ae2b4682938f6c435d83e3d9/1b015b5c9b4d47e7b59bc33936d5310e/%E3%82%B9%E3%82%AF%E3%83%AA%E3%83%BC%E3%83%B3%E3%82%B7%E3%83%A7%E3%83%83%E3%83%88%202023-08-28%2015.13.01.png" alt="" width="3024" height="1890"></figure>
+&lt;p&gt;Find me in app/views/home/index.html.erb&lt;/p&gt;</code></pre><figure><img src="images/2023-08-28_2015.13.01.png" alt="" width="3024" height="1890"></figure>
