@@ -3,6 +3,7 @@ import type { MicroCMSImage } from "microcms-js-sdk";
 
 export type ArticleFrontMatter = {
   title: string;
+  image: string;
   publishedAt: Date;
   updatedAt: Date;
 };
@@ -10,6 +11,7 @@ export type ArticleFrontMatter = {
 export type Article = {
   body: string;
   title: string;
+  image: string;
   publishedAt: Date;
   updatedAt: Date;
 };
