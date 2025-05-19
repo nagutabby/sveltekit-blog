@@ -9,6 +9,7 @@ export type ArticleFrontMatter = {
 };
 
 export type Article = {
+  id: string;
   body: string;
   title: string;
   image: string;

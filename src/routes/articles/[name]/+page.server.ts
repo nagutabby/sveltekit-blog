@@ -1,18 +1,10 @@
-import type { PageServerLoad } from "./$types";
 import fs from 'fs';
 import path from 'path';
 import matter from 'gray-matter';
-import { convertMarkdownToHtml } from '$lib/markdown';
+import { convertMarkdownToHtml, transformImagePath } from '$lib/markdown';
 import { error } from '@sveltejs/kit';
+import type { PageServerLoad } from "./$types";
 import type { Article, ArticleFrontMatter } from '$lib/types/blog';
-
-const transformImagePath = (imagePath: string): string => {
-  if (imagePath && typeof imagePath === 'string' && imagePath.startsWith('images/')) {
-    const fileName = path.basename(imagePath);
-    return `/content/articles/images/${fileName}`;
-  }
-  return imagePath;
-};
 
 export const load: PageServerLoad = async ({ params }) => {
   const fileName = `${params.name}.md`;
@@ -34,7 +26,7 @@ export const load: PageServerLoad = async ({ params }) => {
 
   const body = await convertMarkdownToHtml(content);
 
-  const article: Article = { body, ...frontMatter };
+  const article: Article = { id: params.name, body, ...frontMatter };
 
   return article;
 };
