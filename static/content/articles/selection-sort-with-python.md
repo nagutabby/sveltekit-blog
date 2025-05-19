@@ -1,8 +1,8 @@
 ---
-title: "Pythonで選択ソートを実装する"
-image: "https://images.microcms-assets.io/assets/99c53a99ae2b4682938f6c435d83e3d9/d4219785c85749ea8db95d86b998f2b8/Microsoft-Fluentui-Emoji-3d-Chart-Increasing-3d.1024.png"
-publishedAt: 2024-05-03
-updatedAt: 2024-05-03
+title: Pythonで選択ソートを実装する
+image: images/Microsoft-Fluentui-Emoji-3d-Chart-Increasing-3d.1024.png
+publishedAt: 2024-05-03T00:00:00.000Z
+updatedAt: 2024-05-03T00:00:00.000Z
 ---
 
 <h1 id="h9707d3a59a">概要</h1><ol><li>ソート範囲における最小値を探す</li><li>最小値をソート範囲の左端の要素と交換する</li><li>ソート範囲を左から1つ狭める</li><li>ソート範囲に含まれる要素数が1になるまで1から3を繰り返す</li></ol><h1 id="hdadc0eaacf">特徴</h1><ul><li>in-placeアルゴリズムである</li><li>計算量はO (n^2) である</li><li>バブルソートと比べると、要素の比較回数は同じであるが、要素の交換回数が少ないためバブルソートよりも高速である</li></ul><h1 id="h922edff87b">実装</h1><pre><code class="language-python">import random

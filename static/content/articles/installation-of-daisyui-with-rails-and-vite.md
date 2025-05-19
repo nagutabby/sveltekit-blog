@@ -1,8 +1,8 @@
 ---
-title: "RailsとViteを使ったdaisyUIのインストール"
-image: "https://images.microcms-assets.io/assets/99c53a99ae2b4682938f6c435d83e3d9/62f8b5b98d5c4c1ab127abf893bd069b/Microsoft-Fluentui-Emoji-3d-Blossom-3d.1024.png"
-publishedAt: 2023-08-28
-updatedAt: 2024-05-04
+title: RailsとViteを使ったdaisyUIのインストール
+image: images/Microsoft-Fluentui-Emoji-3d-Blossom-3d.1024.png
+publishedAt: 2023-08-28T00:00:00.000Z
+updatedAt: 2024-05-04T00:00:00.000Z
 ---
 
 <h1 id="h4f59cac49a">このアプリの構成</h1><table><tbody><tr><td colspan="1" rowspan="1"><p>ビルドツール</p></td><td colspan="1" rowspan="1"><p>Vite</p></td></tr><tr><td colspan="1" rowspan="1"><p>データベース</p></td><td colspan="1" rowspan="1"><p>PostgreSQL</p></td></tr><tr><td colspan="1" rowspan="1"><p>CSSフレームワーク</p></td><td colspan="1" rowspan="1"><p>Tailwind CSS</p></td></tr><tr><td colspan="1" rowspan="1"><p>UIライブラリ</p></td><td colspan="1" rowspan="1"><p>daisyUI</p></td></tr><tr><td colspan="1" rowspan="1"><p>仮想環境</p></td><td colspan="1" rowspan="1"><p>Docker</p></td></tr><tr><td colspan="1" rowspan="1"><p>Node.jsのパッケージマネージャー</p></td><td colspan="1" rowspan="1"><p>pnpm</p></td></tr></tbody></table><h1 id="h8818f98a46">プロジェクトの準備</h1><h2 id="h903d18fb31">Dockerのインストール</h2><p><a href="https://www.docker.com/" target="_blank" rel="noopener noreferrer nofollow">Dockerの公式サイト</a>からDocker Desktopをダウンロードしてインストールします。</p><h2 id="hcc910410a6">プロジェクトディレクトリの作成</h2><pre><code class="language-bash">mkdir ~/rails-project

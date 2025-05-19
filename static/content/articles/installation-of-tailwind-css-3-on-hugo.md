@@ -1,8 +1,8 @@
 ---
-title: "HugoにTailwind CSS 3をインストール"
-image: "https://images.microcms-assets.io/assets/99c53a99ae2b4682938f6c435d83e3d9/1e141866c0c94053983ce6ed58e3ed94/Microsoft-Fluentui-Emoji-3d-Leaf-Fluttering-In-Wind-3d.1024.png"
-publishedAt: 2023-10-09
-updatedAt: 2024-05-03
+title: HugoにTailwind CSS 3をインストール
+image: images/Microsoft-Fluentui-Emoji-3d-Leaf-Fluttering-In-Wind-3d.1024.png
+publishedAt: 2023-10-09T00:00:00.000Z
+updatedAt: 2024-05-03T00:00:00.000Z
 ---
 
 <p>HugoにTailwind CSS 3をインストールしてみます。</p><h1 id="h3e2f255d1b">Hugoプロジェクトの作成</h1><pre><code class="language-bash">hugo new site hugo-tailwind-css-3-sample

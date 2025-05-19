@@ -1,8 +1,8 @@
 ---
-title: "PropshaftとSprocketsの違い: なぜPropshaftなのか"
-image: "https://images.microcms-assets.io/assets/99c53a99ae2b4682938f6c435d83e3d9/621342dccd3e45089b183cd48edd0e58/Microsoft-Fluentui-Emoji-3d-Gem-Stone-3d.1024.png"
-publishedAt: 2023-08-26
-updatedAt: 2024-05-01
+title: 'PropshaftとSprocketsの違い: なぜPropshaftなのか'
+image: images/Microsoft-Fluentui-Emoji-3d-Gem-Stone-3d.1024.png
+publishedAt: 2023-08-26T00:00:00.000Z
+updatedAt: 2024-05-01T00:00:00.000Z
 ---
 
 <h1 id="hca38cfafb0">Sprockets</h1><h2 id="h0544ccba1b">コンセプト</h2><p>HTTP/2以前を主なターゲットとしているアセットパイプラインです。</p><h2 id="he3bf764d36">主な機能</h2><ul><li>アセット(静的ファイル)のパスの解決</li><li>アセットの連結<ul><li>Webページをレンダリングする際のリクエストの数を減らす</li></ul></li><li>CoffeeScript, Sass/SCSSのトランスパイル</li><li>アセットファイルの縮小, 圧縮</li><li>ダイジェストの付与</li><li>開発サーバーの提供</li></ul><h1 id="h7caff2d77f">Propshaft</h1><h2 id="h0544ccba1b">コンセプト</h2><p>HTTP/2とES6を利用することを想定したアセットパイプラインです。</p><p>HTTP/2の機能の1つに、単一コネクションにおけるレスポンスの並列化があります。これを利用することで、複数のアセットファイルを連結する必要がなくなります。</p><p>また、ES6に準拠したプログラムをそのまま利用するので、ES5に準拠したプログラムへのトランスパイルが不要になります。</p><h2 id="he3bf764d36">主な機能</h2><ul><li>アセット(静的ファイル)のパスの解決</li><li>ダイジェストの付与</li><li>開発サーバーの提供</li><li>CSSファイルに書かれているアセットのURLのコンパイル<ul><li>アセットのURLにダイジェストを付与する</li></ul></li></ul><h1 id="h7f8e05668e">Propshaftを使用する利点</h1><p>ソフトウェアを構成するプログラムが少ないので、以下の利点があります。</p><ul><li>Sprocketよりもアセットパイプラインのパフォーマンスが高い</li><li>バグによってソフトウェアが動作しなくなる可能性が比較的低い</li><li>開発者が使い方を理解しやすい</li></ul><h1 id="hd16f02a732">Propshaftのリポジトリの中身を調べてみた</h1><p>参照: <a href="https://github.com/rails/propshaft">https://github.com/rails/propshaft</a></p><h2 id="h4effb31774">lib/propshaft/compiler/css_asset_urls.rb</h2><p>CSSに書かれているアセットのURLをコンパイルします。</p><pre><code># frozen_string_literal: true

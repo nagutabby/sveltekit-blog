@@ -1,8 +1,8 @@
 ---
-title: "Solid Cache, Solid Queue, Solid Cableのパフォーマンスを理解する"
-image: "https://images.microcms-assets.io/assets/99c53a99ae2b4682938f6c435d83e3d9/a79644ff0d3b43b188409a6b56598bc0/Microsoft-Fluentui-Emoji-3d-Open-Mailbox-With-Raised-Flag-3d.1024.png"
-publishedAt: 2025-03-15
-updatedAt: 2025-03-15
+title: 'Solid Cache, Solid Queue, Solid Cableのパフォーマンスを理解する'
+image: images/Microsoft-Fluentui-Emoji-3d-Open-Mailbox-With-Raised-Flag-3d.1024.png
+publishedAt: 2025-03-15T00:00:00.000Z
+updatedAt: 2025-03-15T00:00:00.000Z
 ---
 
 <h1 id="h8d027c8ed3">はじめに</h1><p>Rails環境では長らく、バックグラウンドジョブ処理、キャッシュ処理、リアルタイム通信などの重要なコンポーネントがRedisに依存していました。しかし、Redisサーバーの運用・監視が必要になるという問題点がありました。この依存関係の複雑さを削減するために、Solidライブラリが生まれました。この記事では、Railsエコシステムの中で注目を集めている3つのSolidライブラリについて解説します。</p><h1 id="h4b2641c669">Solid Cache</h1><p>Solid Cacheはキャッシュストアの一種です。データベースを使用してキャッシュを保存するため、インメモリキャッシュに比べて性能が低下しますが、より安価な価格でキャッシュ処理を導入できます。</p><p><a href="https://dev.37signals.com/solid-cache/" target="_blank" rel="noopener noreferrer nofollow">37signalsの調査</a>では、Redisキャッシュに比べて読み取り速度は40%低下しますが、Redisをデータベースに置き換えることで運用コストが80%安くなります。</p><h1 id="h78252578da">Solid Queue</h1><p>Solid Queueはバックグラウンドジョブシステムの一種です。Solid Queueも同様にデータベースを使用するため、I/Oが低下します。しかし、データベースが提供する<a href="https://dev.mysql.com/blog-archive/mysql-8-0-1-using-skip-locked-and-nowait-to-handle-hot-rows/" target="_blank" rel="noopener noreferrer nofollow">SKIP LOCKED構文</a>を用いることで、ロックされた行をスキップしてジョブを取得できるようになっています。そのため、それまでは実現不可能であったジョブのノンブロッキング処理が実現され、データベースを利用したバックグラウンドジョブ処理のパフォーマンスが向上しています。</p><h1 id="h50fe31c0b9">Solid Cable</h1><p>Solid Cableはリアルタイム通信フレームワークの一種です。Solid Cableも同様にデータベースを使用するため、I/Oが低下します。しかし、<a href="https://techracho.bpsinc.jp/hachi8833/2024_11_11/146390" target="_blank" rel="noopener noreferrer nofollow">k6を用いたベンチマーキング</a>で250ユーザーが同時にメッセージを送信する際のパフォーマンスを比較すると、Solid CableとSQLiteを使用した場合とRedisを使用した場合でパフォーマンスの差はほとんどありません。</p><p>具体的には、Solid CableとSQLiteを使用した場合の、RTTの95パーセンタイルが150ms、WebSocketへの接続時間の95パーセンタイルがおよそ291msである一方で、Redisを使用した場合はそれぞれ、135ms、およそ273msでした。</p><h1 id="he45680f0bc">参考記事</h1><ul><li><a href="https://dev.37signals.com/introducing-solid-queue/">https://dev.37signals.com/introducing-solid-queue/</a></li></ul><p></p>

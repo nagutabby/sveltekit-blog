@@ -1,8 +1,8 @@
 ---
-title: "Linuxでネットワークを管理したい"
-image: "https://images.microcms-assets.io/assets/99c53a99ae2b4682938f6c435d83e3d9/58069a149226412f83b74ab1c30a88b7/Microsoft-Fluentui-Emoji-3d-Penguin-3d.1024.png"
-publishedAt: 2023-07-05
-updatedAt: 2024-05-01
+title: Linuxでネットワークを管理したい
+image: images/Microsoft-Fluentui-Emoji-3d-Penguin-3d.1024.png
+publishedAt: 2023-07-05T00:00:00.000Z
+updatedAt: 2024-05-01T00:00:00.000Z
 ---
 
 <h1 id="h097de7bf16">ネットワークを管理するファイル</h1><h2 id="hb1c2bb56a3">/etc/hosts</h2><p>名前解決をするために使われるファイルです。一行に1つのIPアドレスと1つ以上のホスト名を持ちます。</p><p>現在は、DNSによる名前解決と併用されています。</p><p>例:</p><pre><code class="language-shell">127.0.1.1 vultr.guest vultr

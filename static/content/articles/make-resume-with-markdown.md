@@ -1,8 +1,8 @@
 ---
-title: "マークダウンで職務経歴書を作る"
-image: "https://images.microcms-assets.io/assets/99c53a99ae2b4682938f6c435d83e3d9/fea647b538764d80a31802e1419652b7/Microsoft-Fluentui-Emoji-3d-Bookmark-Tabs-3d.1024.png"
-publishedAt: 2024-05-01
-updatedAt: 2024-05-04
+title: マークダウンで職務経歴書を作る
+image: images/Microsoft-Fluentui-Emoji-3d-Bookmark-Tabs-3d.1024.png
+publishedAt: 2024-05-01T00:00:00.000Z
+updatedAt: 2024-05-04T00:00:00.000Z
 ---
 
 <p>就活をしていると職務経歴書が必要になる場面に遭遇します。</p><p>簡単に職務経歴書を作れるWebサービスを利用するのも手ですが、自分の知的好奇心や技術力をアピールできるものを作りたいと思う方も多いのではないでしょうか？今回は、「ITエンジニアにやさしい職務経歴書」をテーマにマークダウンで職務経歴書を作る方法を解説していきます。</p><h1 id="h5b3e73489f">準備するもの</h1><ul><li>VSCode</li><li><a href="https://marketplace.visualstudio.com/items?itemName=tomoki1207.pdf" target="_blank" rel="noopener noreferrer nofollow">vscode-pdf</a></li><li>pnpmなどのNode.jsのパッケージ管理システム</li><li>好きなCSSフレームワーク<ul><li>何を使ったらいいか分からない方にはClassless CSSフレームワークをおすすめします</li></ul></li></ul><h1 id="hd2a56d7ce9">セットアップ</h1><p>プロジェクトディレクトリを作ります。</p><pre><code class="language-bash">mkdir ~/resume-example

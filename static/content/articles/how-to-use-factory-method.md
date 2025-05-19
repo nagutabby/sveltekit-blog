@@ -1,8 +1,8 @@
 ---
-title: "ファクトリーメソッドの使い方"
-image: "https://images.microcms-assets.io/assets/99c53a99ae2b4682938f6c435d83e3d9/a358fb60d37c4acbb595a54c662021e8/Microsoft-Fluentui-Emoji-3d-Factory-3d.1024.png"
-publishedAt: 2024-06-30
-updatedAt: 2024-06-30
+title: ファクトリーメソッドの使い方
+image: images/Microsoft-Fluentui-Emoji-3d-Factory-3d.1024.png
+publishedAt: 2024-06-30T00:00:00.000Z
+updatedAt: 2024-06-30T00:00:00.000Z
 ---
 
 <h1 id="h90a3fed70b">ファクトリーメソッド</h1><p>ファクトリーメソッド (Factory Method) はその名の通り、製品を生産する工場のような役割を持つメソッドです。例えば、缶詰を生産する工場を考えてみます。缶詰を作るには、まず缶に入れる食品を加工する必要があります。さらに、加工した食品を缶に詰めなければなりません。しかし、工場の機械化が進んだ現代では、食品の加工方法や食品を缶に詰める方法を知らなくても、缶詰の生産数を入力すれば機械が代わりに缶詰を作ってくれます。この仕組みをオブジェクト指向プログラミングで実現する方法がファクトリーメソッドです。</p><h1 id="h97b4e90a9e">Pyhonで鯖の缶詰を作る</h1><p>具体例として、鯖の缶詰を作ってみましょう。鯖の缶詰を作るには、鯖、鯖の缶詰、鯖の缶詰を作る人が必要です。これらの役割を、Mackerelクラス、CannedMackerelクラス、Workerクラスに順に割り当てます。</p><div data-filename="mackerel.py"><pre><code class="language-python">class Mackerel:

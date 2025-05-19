@@ -1,8 +1,8 @@
 ---
-title: "microCMSで検索機能を実装するときの注意点"
-image: "https://images.microcms-assets.io/assets/99c53a99ae2b4682938f6c435d83e3d9/660b5c99cfd440e890f71ee4b855634b/Microsoft-Fluentui-Emoji-3d-Newspaper-3d.1024.png"
-publishedAt: 2024-10-05
-updatedAt: 2024-10-05
+title: microCMSで検索機能を実装するときの注意点
+image: images/Microsoft-Fluentui-Emoji-3d-Newspaper-3d.1024.png
+publishedAt: 2024-10-05T00:00:00.000Z
+updatedAt: 2024-10-05T00:00:00.000Z
 ---
 
 <h1 id="h313db3a8b3">初めに</h1><p>柔軟で使いやすいヘッドレスCMSの1つにmicroCMSがあります。microCMSを利用する場合は、基本的なバックエンド処理をmicroCMSに任せることになりますが、microCMSにはパフォーマンス上の制約があります。今回は<a href="https://help.microcms.io/ja/knowledge/content-api-get-response-slow" target="_blank" rel="noopener noreferrer nofollow">公式が提供している記事</a>を基に、注意点を考察します。</p><h1 id="h19030707df">部分一致検索</h1><h2 id="hbbb7e74ea6">filtersとcontainsの組み合わせを避ける</h2><p>例えば複数のタグを単一のtagsテキストフィールドに格納している場合は、<code>?filters=tags[contains]タグ名</code>のようにfiltersプロパティーによる部分一致検索ができます。しかし、filtersプロパティーに対してcontainsを使うと、microCMSに登録したデータが1つずつ参照されるためパフォーマンスが低下し、検索結果が返されるまでの時間が増加します。<a href="https://help.microcms.io/ja/knowledge/categories-and-tabs" target="_blank" rel="noopener noreferrer nofollow">公式が推奨する実装方法</a>を参考にタグ検索機能を実装するか、あるいは最初に全ての記事を取得し、特定のタグにマッチする記事をアプリのバックエンドでフィルタリングする必要があります。</p><p></p><p>また、思い切ってタグ検索を全文検索に置き換えてしまう方法もあります。microCMSは<a href="https://document.microcms.io/content-api/get-list-contents#ha8abec0b2f" target="_blank" rel="noopener noreferrer nofollow">qプロパティーによる全文検索</a>に対応しています。microCMSによる全文検索では、複数のフィールドのデータに基づいて、キーワードにマッチするコンテンツが検索されます。複雑な検索には前述した方法を使い、単純な検索にはqプロパティーを使うのがおすすめです。</p><h1 id="h83527ee2dc">範囲検索</h1><p>テキストフィールドやテキストエリアは文字列のフィールドであり、文字列のフィールドに対して範囲検索をすると検索時間が増加します。数値や日付のフィールドであれば検索時間を抑えられるようです。文字列に対して範囲検索をすると文字ごとに比較が行われ、計算量が大きくなるためと考えられます。</p><h1 id="hd5f682fad8">論理演算による検索</h1><p>ANDやORなどの論理演算を用いた複雑な検索クエリは、データベースに大きな負荷をかける可能性があります。そのため、以下のような流れで検索結果を得ることが推奨されています。</p><ol><li>論理演算子で接続されたクエリを、独立したクエリに分割する</li><li>全てのクエリを並行実行する</li><li>全てのレスポンスを受け取るまで待つ</li><li>アプリのバックエンドで論理演算をして最終的な検索結果を得る</li></ol>

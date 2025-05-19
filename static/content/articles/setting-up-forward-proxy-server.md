@@ -1,8 +1,8 @@
 ---
-title: "Windows, MacOS,  Linuxにおけるプロキシサーバーの設定"
-image: "https://images.microcms-assets.io/assets/99c53a99ae2b4682938f6c435d83e3d9/744df7b1e5534f40b180e0c25e383392/Microsoft-Fluentui-Emoji-3d-Laptop-3d.1024.png"
-publishedAt: 2023-08-07
-updatedAt: 2024-05-01
+title: 'Windows, MacOS,  Linuxにおけるプロキシサーバーの設定'
+image: images/Microsoft-Fluentui-Emoji-3d-Laptop-3d.1024.png
+publishedAt: 2023-08-07T00:00:00.000Z
+updatedAt: 2024-05-01T00:00:00.000Z
 ---
 
 <h1 id="hdd801a1d1b">全体設定</h1><h2 id="h48ba0d2347">Windows</h2><h3 id="h5e0a70c55b">コマンドプロンプト</h3><p>プロキシサーバーを設定する</p><pre><code>set HTTP_PROXY=http[s]://&lt;FQDN&gt;:&lt;PORT&gt;

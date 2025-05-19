@@ -1,8 +1,8 @@
 ---
-title: "Cloudflare TunnelとRaspberry Piでお手軽自宅サーバ構築"
-image: "https://images.microcms-assets.io/assets/99c53a99ae2b4682938f6c435d83e3d9/4a270c5e627743f6ad48b7c7c1c729f9/Microsoft-Fluentui-Emoji-3d-Fire-3d.1024.png"
-publishedAt: 2023-09-28
-updatedAt: 2024-05-03
+title: Cloudflare TunnelとRaspberry Piでお手軽自宅サーバ構築
+image: images/Microsoft-Fluentui-Emoji-3d-Fire-3d.1024.png
+publishedAt: 2023-09-28T00:00:00.000Z
+updatedAt: 2024-05-03T00:00:00.000Z
 ---
 
 <h1 id="hb19cc5d4d0">Cloudflare Tunnel</h1><p>Cloudflare Tunnelはトンネリングを行うためのサービスです。Cloudflareのエッジサーバと自分のサーバの間にトンネルを作成することで、パブリックIPアドレスを持たないサーバにインターネットから接続できるようになります。</p><h1 id="h1d9b980393">Cloudflare Tunnelを採用した背景</h1><p>自宅にRaspberry Piを余らせており、Cloudflare Tunnelを使ってそれをサーバとして運用できないか？と思い、試しに使ってみたらめちゃくちゃ使いやすかったため採用しました。</p><p>入学した時から大学のISPのネットワークを利用しているのですが、ICMPやSMTPなどのアウトバウンドトラフィックがファイアウォールでブロックされており、自宅サーバを上手く構築できずにいました。Cloudflare Tunnelがいい感じにやってくれると知り、試してみました。</p><h1 id="hb02bfbcce5">Cloudflare Tunnelのいいところ</h1><ul><li>DDNS(Dynamic DNS)や固定パブリックIPアドレスが不要</li><li>CloudflareのCDNの恩恵を受けられる</li><li>SSL証明書を自動で発行してくれる</li><li>IPv6アドレスが割り当てられていないサーバでもIPv6アドレス経由のクライアントと通信できる</li><li>DDoS攻撃の負荷分散を実施してくれる</li><li>ARM環境でもトンネルを構築できる</li></ul><h1 id="h705f30e492">検証環境</h1><ul><li>Rasberry Pi 4 model B</li><li>RAM 4GB</li><li>ROM 32GB</li><li>Ubuntu Server 22.10</li></ul><h1 id="h046876a126">手順</h1><h2 id="hcf6045a5ef">ドメインを取得</h2><p><a href="https://www.cloudflare.com/ja-jp/products/registrar/" target="_blank" rel="noopener noreferrer nofollow"><u>Cloudflare Registrar</u></a>などのレジストラでドメインを取得します。どのドメインを取得すればいいか分からない方は、一番安いTLD(Top Level Domain)のドメインを1つ用意しましょう。</p><h2 id="h991a6aff5b">権威DNSサーバをCloudflareのものに変更</h2><p>Cloudflare TunnelはCloudflareのCDNを利用するため、権威DNSサーバをCloudflareのものに変更する必要があります。</p><p>Cloudflare Registrarで取得した場合は、CloudflareのDNSサーバが初めから権威DNSサーバとして使用されますが、それ以外のレジストラで取得した場合はNSレコードで特定のサブドメインをCloudflareのDNSサーバに委任するか、権威DNSサーバをCloudflareに変更しましょう。</p><h2 id="he4de5bf444">サーバにcloudflaredをインストール</h2><p><a href="https://github.com/cloudflare/cloudflared" target="_blank" rel="noopener noreferrer nofollow"><u>cloudflared</u></a>は、その名の通りcloudflareのデーモン(daemon)で、トンネルを作成するために必要なソフトウェアです。</p><p>Raspberry Piで動作しているUbuntuの場合は、<code>cloudflared-linux-armhf.deb</code>という名前のパッケージをGitHubからwgetし、aptでインストールします。</p><pre><code class="language-bash">wget https://github.com/cloudflare/cloudflared/releases/download/2023.3.0/cloudflared-linux-armhf.deb

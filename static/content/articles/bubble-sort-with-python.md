@@ -1,8 +1,8 @@
 ---
-title: "Pythonでバブルソートを実装する"
-image: "https://images.microcms-assets.io/assets/99c53a99ae2b4682938f6c435d83e3d9/d4219785c85749ea8db95d86b998f2b8/Microsoft-Fluentui-Emoji-3d-Chart-Increasing-3d.1024.png"
-publishedAt: 2024-05-01
-updatedAt: 2024-05-03
+title: Pythonでバブルソートを実装する
+image: images/Microsoft-Fluentui-Emoji-3d-Chart-Increasing-3d.1024.png
+publishedAt: 2024-05-01T00:00:00.000Z
+updatedAt: 2024-05-03T00:00:00.000Z
 ---
 
 <h1 id="h9707d3a59a">概要</h1><ol><li>ソート範囲の末尾から順に隣り合う要素の大小を比較する</li><li>右側の要素が左側の要素よりも小さければ2つの要素を交換する</li><li>ソート範囲の左端に到達するまで1から2を繰り返す</li><li>ソート範囲の左端に到達したら、ソート範囲を左から1つ狭める</li><li>ソート範囲に含まれる要素数が1になるまで1から4を繰り返す</li></ol><h1 id="hdadc0eaacf">特徴</h1><ul><li>in-placeアルゴリズムである</li><li>計算量はO (n^2) である</li></ul><h1 id="h922edff87b">実装</h1><pre><code class="language-python">import random

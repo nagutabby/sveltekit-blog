@@ -1,8 +1,8 @@
 ---
-title: "Webアプリのアクセシビリティを向上させる方法"
-image: "https://images.microcms-assets.io/assets/99c53a99ae2b4682938f6c435d83e3d9/93654bdb0a4b4d6ba654235ffecfc643/Microsoft-Fluentui-Emoji-3d-Mobile-Phone-3d.1024.png"
-publishedAt: 2023-07-05
-updatedAt: 2024-05-01
+title: Webアプリのアクセシビリティを向上させる方法
+image: images/Microsoft-Fluentui-Emoji-3d-Mobile-Phone-3d.1024.png
+publishedAt: 2023-07-05T00:00:00.000Z
+updatedAt: 2024-05-01T00:00:00.000Z
 ---
 
 <h1 id="h4f7f573348">文章を意味ごとに区切る</h1><p>スクリーンリーダーが読み上げを適切な位置で区切ってくれるように、文章を意味ごとに区切ります。</p><p>不適切な例:</p><pre><code class="language-html">This is a first&lt;br&gt;
