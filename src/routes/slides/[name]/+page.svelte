@@ -6,5 +6,5 @@
 </script>
 
 <main class="container px-3 lg:px-12 py-10 mx-auto">
-  <PDFViewer url={data.pdfUrl} />
+  <PDFViewer url={data.url} />
 </main>
