@@ -12,7 +12,7 @@ import type { PageServerLoad } from "./$types";
 export const load: PageServerLoad = async ({ url }) => {
   const page = Number(url.searchParams.get("page")) || 1;
   const perPage = 10;
-  const reviewsDir = path.join('static/content/reviews');
+  const reviewsDir = path.join(process.cwd(), 'static/content/reviews');
 
   if (!fs.existsSync(reviewsDir)) {
     throw error(500, 'レビューディレクトリが見つかりません');

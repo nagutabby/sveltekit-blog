@@ -46,7 +46,7 @@ export async function getBook(isbn: string, apiKey: string): Promise<Book> {
 }
 
 export const getAllRawArticles = async () => {
-  const articlesDir = path.join('static/content/articles');
+  const articlesDir = path.join(process.cwd(), 'static/content/articles');
 
   if (!fs.existsSync(articlesDir)) {
     throw error(500, '記事ディレクトリが見つかりません');
@@ -99,7 +99,7 @@ export const getAllHTMLArticles = async () => {
 export const getHTMLArticle = async (id: string) => {
   const fileName = `${id}.md`;
 
-  const filePath = path.join('static/content/articles', fileName);
+  const filePath = path.join(process.cwd(), 'static/content/articles', fileName);
 
   if (!fs.existsSync(filePath)) {
     throw error(404, `記事が見つかりません: ${id}`);

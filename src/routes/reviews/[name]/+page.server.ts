@@ -15,7 +15,7 @@ const convertHalfToFullWidthPunctuations = (text: string): string => {
 export const load: PageServerLoad = async ({ params }) => {
   const fileName = `${params.name}.md`;
 
-  const filePath = path.join('static/content/reviews', fileName);
+  const filePath = path.join(process.cwd(), 'static/content/reviews', fileName);
 
   if (!fs.existsSync(filePath)) {
     throw error(404, `記事が見つかりません: ${params.name}`);

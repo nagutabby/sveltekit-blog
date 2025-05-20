@@ -4,7 +4,7 @@ import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from "./$types";
 
 export const load: PageServerLoad = async () => {
-  const slidesDir = path.join('static/content/slides');
+  const slidesDir = path.join(process.cwd(), 'static/content/slides');
 
   if (!fs.existsSync(slidesDir)) {
     throw error(500, 'スライドディレクトリが見つかりません');

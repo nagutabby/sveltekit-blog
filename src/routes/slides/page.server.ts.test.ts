@@ -17,7 +17,7 @@ describe('スライド一覧', () => {
     vi.resetAllMocks();
 
     // path.joinのモック実装
-    vi.mocked(path.join).mockReturnValue('static/content/slides');
+    vi.mocked(path.join).mockReturnValue(process.cwd() + 'static/content/slides');
   });
 
   // 各テスト後にモックをクリア
@@ -35,13 +35,13 @@ describe('スライド一覧', () => {
     const result = await load({} as any);
 
     // path.joinが正しく呼ばれたか確認
-    expect(path.join).toHaveBeenCalledWith('static/content/slides');
+    expect(path.join).toHaveBeenCalledWith(process.cwd(), 'static/content/slides');
 
     // fs.existsSyncが正しく呼ばれたか確認
-    expect(fs.existsSync).toHaveBeenCalledWith('static/content/slides');
+    expect(fs.existsSync).toHaveBeenCalledWith(path.join(process.cwd(), 'static/content/slides'));
 
     // fs.readdirSyncが正しく呼ばれたか確認
-    expect(fs.readdirSync).toHaveBeenCalledWith('static/content/slides');
+    expect(fs.readdirSync).toHaveBeenCalledWith(path.join(process.cwd(), 'static/content/slides'));
 
     // 結果が期待通りか確認
     expect(result).toEqual({
@@ -69,10 +69,10 @@ describe('スライド一覧', () => {
     await expect(load({} as any)).rejects.toThrow('500: スライドディレクトリが見つかりません');
 
     // path.joinが正しく呼ばれたか確認
-    expect(path.join).toHaveBeenCalledWith('static/content/slides');
+    expect(path.join).toHaveBeenCalledWith(process.cwd(), 'static/content/slides');
 
     // fs.existsSyncが正しく呼ばれたか確認
-    expect(fs.existsSync).toHaveBeenCalledWith('static/content/slides');
+    expect(fs.existsSync).toHaveBeenCalledWith(path.join(process.cwd(), 'static/content/slides'));
 
     // @sveltejs/kitのerror関数が正しく呼ばれたか確認
     expect(error).toHaveBeenCalledWith(500, 'スライドディレクトリが見つかりません');
