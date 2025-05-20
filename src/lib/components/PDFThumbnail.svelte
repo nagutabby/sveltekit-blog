@@ -2,7 +2,7 @@
   import { onMount } from "svelte";
   import { browser } from "$app/environment";
 
-  const { pdfUrl }: { pdfUrl: string } = $props();
+  const { url }: { url: string } = $props();
   let canvas = $state<HTMLCanvasElement>();
   let loading = $state(true);
   let error = $state<string | null>(null);
@@ -18,11 +18,7 @@
 
         pdfjs.GlobalWorkerOptions.workerSrc = workerUrl;
 
-        const response = await fetch(`/api/slides/${pdfUrl}`);
-        if (!response.ok) throw new Error("PDF fetch failed");
-
-        const pdfData = await response.arrayBuffer();
-        const pdf = await pdfjs.getDocument({ data: pdfData }).promise;
+        const pdf = await pdfjs.getDocument(url).promise;
         const page = await pdf.getPage(1);
         const viewport = page.getViewport({ scale: 1 });
 

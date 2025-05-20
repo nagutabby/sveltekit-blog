@@ -10,7 +10,7 @@
 
 <div class="card sm:w-[90%] xl:w-[70%] sm:mx-auto bg-base-100 card-md shadow-sm">
   <div class="card-body">
-    <h2 class="card-title">{title}</h2>
+    <div class="card-title">{title}</div>
     <p>{description}</p>
     <div class="justify-center card-actions">
       <a

@@ -47,6 +47,6 @@
     <meta property="og:description" content={description} />
   {/if}
 
-  <meta property="og:image" content="{url}?fm=webp&fit=clip&w=1000" />
-  <meta name="twitter:image" content="{url}?fm=webp&fit=clip&w=1000" />
+  <meta property="og:image" content={url} />
+  <meta name="twitter:image" content={url} />
 </svelte:head>

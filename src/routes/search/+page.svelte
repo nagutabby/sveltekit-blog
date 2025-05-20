@@ -11,22 +11,22 @@
 </script>
 
 <OpenGraph
-  url={page.data.image.url}
+  url={page.data.image}
   title={page.data.title}
   body={page.data.body}
 ></OpenGraph>
 
-<Header url={page.data.image.url} title={page.data.title}></Header>
+<Header url={page.data.image} title={page.data.title}></Header>
 
 <main class="container px-3 md:px-10 py-10 mx-auto">
   <div
     class="flex flex-col md:flex-row items-start md:relative gap-10 md:gap-0"
   >
     <div class="flex flex-wrap gap-5 justify-center w-full md:w-[63%]">
-      {#each data.contents as article}
+      {#each data.articles as article}
         <Card
-          url={article.id}
-          image={article.image.url}
+          url={`articles/${article.id}`}
+          image={article.image}
           title={article.title}
         />
       {/each}
@@ -35,5 +35,5 @@
       <Timeline></Timeline>
     </div>
   </div>
-  <Pagination totalArticles={data.totalCount} />
+  <Pagination totalPages={data.pagination.totalPages} />
 </main>
