@@ -17,7 +17,7 @@ export const load: PageServerLoad = async ({ url }) => {
 
   const reviewHomeData: ReviewInputData = {
     image: {
-      url: "https://images.microcms-assets.io/assets/99c53a99ae2b4682938f6c435d83e3d9/695170d8996a4099b0c13e031f8dd918/Microsoft-Fluentui-Emoji-3d-Open-Book-3d.1024.png"
+      url: "/images/Microsoft-Fluentui-Emoji-3d-Open-Book-3d.1024.png"
     },
     title: "本のレビュー",
     body: "本を読んだ感想を掲載しています"
