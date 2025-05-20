@@ -1,5 +1,4 @@
 import type { Blog } from "$lib/microcms";
-import type { MicroCMSImage } from "microcms-js-sdk";
 
 export type ArticleFrontMatter = {
   title: string;
@@ -34,5 +33,3 @@ export type Review = {
   publishedAt: Date;
   updatedAt: Date;
 };
-
-export type ArticleInputData = Pick<Blog, "title" | "image" | "body">;
