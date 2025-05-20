@@ -1,10 +1,5 @@
 import { generateDescriptionFromText } from "$lib/utils";
-import fs from 'fs';
-import path from 'path';
-import matter from 'gray-matter';
-import { convertMarkdownToHtml, transformImagePath } from '$lib/markdown';
-import { error } from '@sveltejs/kit';
-import type { Article, ArticleFrontMatter } from '$lib/types/blog';
+import { getAllHTMLArticles } from "$lib/utils";
 
 let latestDate: Date | undefined;
 
@@ -35,47 +30,9 @@ export async function GET({ setHeaders }) {
     'Content-Type': 'application/xml'
   });
 
-  const articlesDir = path.join('static/content/articles');
+  const allArticles = await getAllHTMLArticles()
 
-  if (!fs.existsSync(articlesDir)) {
-    throw error(500, '記事ディレクトリが見つかりません');
-  }
-
-  const fileNames = fs.readdirSync(articlesDir).filter(file => file.endsWith('.md'));
-
-  const articlesPromises = fileNames.map(async (fileName) => {
-    const filePath = path.join(articlesDir, fileName);
-
-    const fileContents = fs.readFileSync(filePath, 'utf8');
-
-    const { data, content } = matter(fileContents);
-
-    if (data.image) {
-      data.image = transformImagePath(data.image);
-    }
-
-    const frontMatter = data as ArticleFrontMatter;
-
-    const body = await convertMarkdownToHtml(content);
-
-    const slug = fileName.replace(/\.md$/, '');
-
-    return {
-      id: slug,
-      body,
-      ...frontMatter
-    } as Article;
-  });
-
-  const allArticles = await Promise.all(articlesPromises);
-
-  const sortedArticles = allArticles.sort((a, b) => {
-    const dateA = a.publishedAt ? new Date(a.publishedAt).getTime() : 0;
-    const dateB = b.publishedAt ? new Date(b.publishedAt).getTime() : 0;
-    return dateB - dateA;
-  });
-
-  const posts = sortedArticles.map((post) => create_entry(post.title, post.body, post.id, post.publishedAt, post.updatedAt));
+  const posts = allArticles.map((post) => create_entry(post.title, post.body, post.id, post.publishedAt, post.updatedAt));
 
   const atom = `<?xml version="1.0" encoding="UTF-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">

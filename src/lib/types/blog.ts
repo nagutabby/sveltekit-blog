@@ -1,5 +1,3 @@
-import type { Blog } from "$lib/microcms";
-
 export type ArticleFrontMatter = {
   title: string;
   image: string;

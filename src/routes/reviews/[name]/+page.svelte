@@ -42,7 +42,7 @@
         <div class="flex flex-col gap-y-4">
           <Date
             publishedAt={data.review.publishedAt}
-            revisedAt={data.review.updatedAt}
+            updatedAt={data.review.updatedAt}
           />
 
           <div class="flex items-center gap-2">

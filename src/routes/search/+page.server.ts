@@ -1,67 +1,39 @@
-
-import fs from 'fs';
-import path from 'path';
-import matter from 'gray-matter';
-import { convertMarkdownToHtml, transformImagePath } from '$lib/markdown';
-import { error } from '@sveltejs/kit';
-import type { Article, ArticleFrontMatter } from '$lib/types/blog';
+import { getAllRawArticles } from '$lib/utils';
 import { redirect } from '@sveltejs/kit';
+import { convertMarkdownToHtml } from '$lib/markdown';
+import type { Article } from '$lib/types/blog';
 import type { PageServerLoad } from "./$types";
+
+interface ArticleWithRawBody extends Article {
+  rawBody: string;
+}
 
 export const load: PageServerLoad = async ({ url }) => {
   const query = url.searchParams.get("q") || "";
   const page = Number(url.searchParams.get("page")) || 1;
   const perPage = 10;
-  const articlesDir = path.join('static/content/articles');
 
-  if (!fs.existsSync(articlesDir)) {
-    throw error(500, '記事ディレクトリが見つかりません');
-  }
+  const allArticles = await getAllRawArticles();
 
-  const fileNames = fs.readdirSync(articlesDir).filter(file => file.endsWith('.md'));
-
-  const articlesPromises = fileNames.map(async (fileName) => {
-    const filePath = path.join(articlesDir, fileName);
-
-    const fileContents = fs.readFileSync(filePath, 'utf8');
-
-    const { data, content } = matter(fileContents);
-    if (data.image) {
-      data.image = transformImagePath(data.image);
-    }
-
-    const frontMatter = data as ArticleFrontMatter;
-
-    const body = await convertMarkdownToHtml(content);
-
-    const slug = fileName.replace(/\.md$/, '');
-
-    return {
-      id: slug,
-      body,
-      rawContent: content,
-      ...frontMatter
-    } as Article & { rawContent: string; };
-  });
-
-  const allArticles = await Promise.all(articlesPromises);
+  const allArticlesWithRawBody: ArticleWithRawBody[] = await Promise.all(
+    allArticles.map(async (article) => {
+      const articleWithRawBody = { ...article } as ArticleWithRawBody;
+      articleWithRawBody.rawBody = article.body;
+      articleWithRawBody.body = await convertMarkdownToHtml(article.body);
+      return articleWithRawBody;
+    })
+  );
 
   const filteredArticles = query
-    ? allArticles.filter(article => {
-      const content = article.rawContent.toLowerCase();
+    ? allArticlesWithRawBody.filter(article => {
+      const content = article.rawBody.toLowerCase();
       const searchQuery = query.toLowerCase();
 
       return content.includes(searchQuery);
     })
-    : allArticles;
+    : allArticlesWithRawBody;
 
-  const sortedArticles = filteredArticles.sort((a, b) => {
-    const dateA = a.publishedAt ? new Date(a.publishedAt).getTime() : 0;
-    const dateB = b.publishedAt ? new Date(b.publishedAt).getTime() : 0;
-    return dateB - dateA;
-  });
-
-  const totalArticles = sortedArticles.length;
+  const totalArticles = filteredArticles.length;
   const totalPages = Math.ceil(totalArticles / perPage);
 
   if (page < 1 || (page > totalPages && totalPages > 0)) {
@@ -70,8 +42,8 @@ export const load: PageServerLoad = async ({ url }) => {
 
   const startIndex = (page - 1) * perPage;
   const endIndex = startIndex + perPage;
-  const paginatedArticles = sortedArticles.slice(startIndex, endIndex).map(article => {
-    const { rawContent, ...rest } = article;
+  const paginatedArticles = filteredArticles.slice(startIndex, endIndex).map(article => {
+    const { rawBody, ...rest } = article;
     return rest;
   });
 
