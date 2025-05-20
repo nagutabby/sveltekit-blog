@@ -22,7 +22,7 @@ function create_entry(title: string, body: string, path: string, publishedAt: Da
 
   return `<entry>
   <title>${title}</title>
-  <summary type="text">${generateDescriptionFromText(body)}</summary>
+  <summary type="text"><![CDATA[${generateDescriptionFromText(body)}]]></summary>
   <link href="${new URL(`/articles/${path}`, 'https://blog.nagutabby.uk').href}" rel="alternate" />
   <updated>${formattedUpdatedAt}</updated>
   <published>${formattedPublishedAt}</published>
