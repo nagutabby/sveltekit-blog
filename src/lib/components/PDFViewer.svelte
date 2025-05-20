@@ -10,18 +10,20 @@
   let loading = $state(true);
   let error = $state<string | null>(null);
   let renderTask: any = null;
+  let pdfjs: any = null;
 
   const DISPLAY_SCALE = 1;
   const QUALITY_SCALE = 2;
 
   async function loadPdfLibrary() {
     if (browser) {
-      const pdfjs = await import("pdfjs-dist");
+      const pdfModule = await import("pdfjs-dist");
+      pdfjs = pdfModule;
 
       const workerModule = await import("pdfjs-dist/build/pdf.worker.mjs?url");
       pdfjs.GlobalWorkerOptions.workerSrc = workerModule.default;
 
-      await loadPDF(pdfjs);
+      await loadPDF();
     }
   }
 
@@ -71,7 +73,7 @@
     renderTask = null;
   }
 
-  async function loadPDF(pdfjs: any) {
+  async function loadPDF() {
     if (!pdfjs) return;
 
     loading = true;
@@ -80,9 +82,7 @@
       pdfDoc = await loadingTask.promise;
       totalPages = pdfDoc.numPages;
     } catch (err) {
-      if (err instanceof Error) {
-        error = `PDFの読み込みに失敗しました: ${err.message}`;
-      }
+      error = `PDFの読み込みに失敗しました: ${err.message}`;
     } finally {
       loading = false;
     }
@@ -131,7 +131,9 @@
   {:else if error}
     <div class="alert alert-error">{error}</div>
   {:else}
-    <canvas bind:this={canvas} class="block !w-full !h-full rounded-md"
+    <canvas
+      bind:this={canvas}
+      class="block !w-full !h-full rounded-md"
     ></canvas>
     <div class="flex items-center gap-4 w-full justify-center">
       <button

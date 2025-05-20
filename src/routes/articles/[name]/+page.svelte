@@ -117,12 +117,12 @@
 </script>
 
 <OpenGraph
-  url={page.data.image}
+  url={page.data.image.url}
   title={page.data.title}
   body={page.data.body}
 ></OpenGraph>
 
-<Header url={page.data.image} title={page.data.title}></Header>
+<Header url={page.data.image.url} title={page.data.title}></Header>
 
 <main class="container px-3 md:px-10 py-10 mx-auto">
   <div class="flex lg:flex-row items-start justify-between flex-col-reverse">
@@ -132,7 +132,7 @@
     >
       <article class="prose max-w-full">
         <div class="my-3">
-          <Date publishedAt={data.publishedAt} updatedAt={data.updatedAt} />
+          <Date publishedAt={data.publishedAt} revisedAt={data.revisedAt} />
         </div>
         {@html data.body}
       </article>

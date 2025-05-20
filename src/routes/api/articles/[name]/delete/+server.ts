@@ -1,19 +1,24 @@
 import type { RequestHandler } from '@sveltejs/kit';
+import { getArticleDetail, type Blog } from '$lib/microcms';
 import { signActivity } from '$lib/signRequest';
 import { PRIVATE_KEY } from '$env/static/private';
 
 export const GET: RequestHandler = async ({ params }) => {
+  const { name } = params;
+
+  // Noteオブジェクトの定義
   const note = {
-    "id": `https://blog.nagutabby.uk/api/articles/${params.name}`,
+    "id": `https://blog.nagutabby.uk/api/articles/${name}`,
     "type": "Note"
   };
 
+  // Deleteアクティビティの定義
   const activity = {
     "@context": [
       "https://www.w3.org/ns/activitystreams",
       "https://w3id.org/security/v1"
     ],
-    "id": `https://blog.nagutabby.uk/api/articles/${params.name}/delete`,
+    "id": `https://blog.nagutabby.uk/api/articles/${name}/delete`,
     "type": "Delete",
     "actor": "https://blog.nagutabby.uk/actor",
     "published": new Date().toISOString(),

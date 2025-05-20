@@ -12,14 +12,14 @@
   <link
     rel="preload"
     as="image"
-    href={url}
+    imagesrcset="{url}?fm=webp&fit=clip&w=500 500w, {url}?fm=webp&fit=clip&w=1000 1000w"
   />
 </svelte:head>
 
 <header class="relative">
   <img
     alt=""
-    src={url}
+    srcset="{url}?fm=webp&fit=clip&w=500 500w, {url}?fm=webp&fit=clip&w=1000 1000w"
     class="w-full h-[55vh] lg:h-[45vh]"
   />
   <div class="title w-full h-full left-[50%] top-[50%] absolute flex flex-col">

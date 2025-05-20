@@ -1,16 +1,23 @@
 <script lang="ts">
   import { page } from "$app/state";
 
-  const { totalPages }: { totalPages: number } = $props();
+  const { totalArticles }: { totalArticles: number } = $props();
 
   let currentPage = $derived(Number(page.url.searchParams.get("page")) || 1);
+
+  const numberOfArticlesPerPage = 10;
+  const pages = $derived(
+    totalArticles % numberOfArticlesPerPage !== 0
+    ? Math.floor(totalArticles / numberOfArticlesPerPage) + 1
+    : Math.floor(totalArticles / numberOfArticlesPerPage)
+  )
 
   const query = page.url.searchParams.get("q");
 
 </script>
 
 <ul class="flex justify-center items-center gap-x-5 p-4">
-  {#each { length: totalPages } as _, i}
+  {#each { length: pages } as _, i}
     <li>
       {#if i + 1 === currentPage}
         <button class="btn btn-outline btn-secondary btn-circle text-lg" aria-disabled="true" disabled>{i + 1}</button>

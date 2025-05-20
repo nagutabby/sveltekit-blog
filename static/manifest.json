@@ -9,23 +9,23 @@
   "display": "standalone",
   "icons": [
     {
-      "src": "/images/Microsoft-Fluentui-Emoji-3d-Cat-3d.192.png",
+      "src": "https://images.microcms-assets.io/assets/99c53a99ae2b4682938f6c435d83e3d9/ca63de19468e45b2833ebf325dbfd56c/Microsoft-Fluentui-Emoji-3d-Cat-3d.1024.png?w=192&h=192",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "/images/maskable_icon_192.png",
+      "src": "https://images.microcms-assets.io/assets/99c53a99ae2b4682938f6c435d83e3d9/f1cf972c3e0848b28975fd33459e73e2/maskable_icon.png?w=192&h=192",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "maskable"
     },
     {
-      "src": "/images/Microsoft-Fluentui-Emoji-3d-Cat-3d.512.png",
+      "src": "https://images.microcms-assets.io/assets/99c53a99ae2b4682938f6c435d83e3d9/ca63de19468e45b2833ebf325dbfd56c/Microsoft-Fluentui-Emoji-3d-Cat-3d.1024.png?w=512&h=512",
       "sizes": "512x512",
       "type": "image/png"
     },
     {
-      "src": "/images/maskable_icon_512.png",
+      "src": "https://images.microcms-assets.io/assets/99c53a99ae2b4682938f6c435d83e3d9/f1cf972c3e0848b28975fd33459e73e2/maskable_icon.png?w=512&h=512",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"

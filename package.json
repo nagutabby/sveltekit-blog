@@ -13,6 +13,7 @@
     "test": "pnpm test:unit run"
   },
   "devDependencies": {
+    "@aws-sdk/client-s3": "^3.782.0",
     "@cloudflare/workers-types": "^4.20250409.0",
     "@idotj/mastodon-embed-timeline": "^4.7.0",
     "@prisma/client": "^6.6.0",
@@ -27,10 +28,8 @@
     "canonicalize": "^2.1.0",
     "daisyui": "^5.0.17",
     "fast-xml-parser": "^5.2.0",
-    "gray-matter": "^4.0.3",
     "jsdom": "^26.0.0",
-    "marked": "^15.0.11",
-    "marked-gfm-heading-id": "^4.1.1",
+    "microcms-js-sdk": "^3.2.0",
     "msw": "^2.7.3",
     "pdfjs-dist": "^5.1.91",
     "postcss": "^8.5.3",
