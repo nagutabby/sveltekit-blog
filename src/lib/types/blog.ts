@@ -17,10 +17,22 @@ export type Article = {
   updatedAt: Date;
 };
 
-export type ArticleInputData = Pick<Blog, "title" | "image" | "body">;
-
-export type ReviewInputData = {
-  image: MicroCMSImage;
+export type ReviewFrontMatter = {
   title: string;
-  body: string;
+  isbn_13: string;
+  rating: number;
+  publishedAt: Date;
+  updatedAt: Date;
 };
+
+export type Review = {
+  id: string;
+  body: string;
+  title: string;
+  isbn_13: string;
+  rating: number;
+  publishedAt: Date;
+  updatedAt: Date;
+};
+
+export type ArticleInputData = Pick<Blog, "title" | "image" | "body">;
