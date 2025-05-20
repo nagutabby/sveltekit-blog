@@ -1,4 +1,3 @@
-// sitemap.test.ts
 import { GET } from './+server';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { getAllRawArticles } from '$lib/utils.js';

@@ -1,4 +1,3 @@
-// src/routes/slides/+page.test.ts
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/svelte';
 import SlidesPage from './+page.svelte';
