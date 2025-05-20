@@ -1,21 +1,28 @@
 import { generateDescriptionFromText } from "$lib/utils";
 import { getAllHTMLArticles } from "$lib/utils";
 
-let latestDate: Date | undefined;
+export async function GET({ setHeaders }) {
+  setHeaders({
+    'Content-Type': 'application/xml'
+  });
 
-function create_entry(title: string, body: string, path: string, publishedAt: Date, updatedAt: Date) {
-  const publishedDate = new Date(publishedAt).toISOString().substring(0, 10);
+  const allArticles = await getAllHTMLArticles();
 
-  if (latestDate === undefined) {
-    latestDate = new Date(updatedAt);
-  } else if (latestDate < new Date(updatedAt)) {
-    latestDate = new Date(updatedAt);
-  }
+  let latestDate: Date | undefined;
 
-  const formattedPublishedAt = new Date(publishedAt).toISOString();
-  const formattedUpdatedAt = new Date(updatedAt).toISOString();
+  function create_entry(title: string, body: string, path: string, publishedAt: Date, updatedAt: Date) {
+    const publishedDate = new Date(publishedAt).toISOString().substring(0, 10);
 
-  return `<entry>
+    if (latestDate === undefined) {
+      latestDate = new Date(updatedAt);
+    } else if (latestDate < new Date(updatedAt)) {
+      latestDate = new Date(updatedAt);
+    }
+
+    const formattedPublishedAt = new Date(publishedAt).toISOString();
+    const formattedUpdatedAt = new Date(updatedAt).toISOString();
+
+    return `<entry>
   <title>${title}</title>
   <summary type="text"><![CDATA[${generateDescriptionFromText(body)}]]></summary>
   <link href="${new URL(`/articles/${path}`, 'https://blog.nagutabby.uk').href}" rel="alternate" />
@@ -23,14 +30,7 @@ function create_entry(title: string, body: string, path: string, publishedAt: Da
   <published>${formattedPublishedAt}</published>
   <id>tag:blog.nagutabby.uk,${publishedDate}:/articles/${path}</id>
   </entry>`;
-}
-
-export async function GET({ setHeaders }) {
-  setHeaders({
-    'Content-Type': 'application/xml'
-  });
-
-  const allArticles = await getAllHTMLArticles()
+  }
 
   const posts = allArticles.map((post) => create_entry(post.title, post.body, post.id, post.publishedAt, post.updatedAt));
 
@@ -47,5 +47,4 @@ ${posts.join('\n')}
 
 
   return new Response(atom);
-
 }
