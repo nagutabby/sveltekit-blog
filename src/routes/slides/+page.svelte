@@ -1,4 +1,3 @@
-<!-- routes/slides/+page.svelte -->
 <script lang="ts">
   import type { PageData } from "./$types";
   import PDFThumbnail from "$lib/components/PDFThumbnail.svelte";
