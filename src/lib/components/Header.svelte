@@ -1,5 +1,6 @@
 <script lang="ts">
   import Navigation from "./Navigation.svelte";
+  import {getWebpPath} from "$lib/utils"
 
   type Props = {
     url: string;
@@ -12,14 +13,14 @@
   <link
     rel="preload"
     as="image"
-    href={url}
+    href={getWebpPath(url)}
   />
 </svelte:head>
 
 <header class="relative">
   <img
     alt=""
-    src={url}
+    src={getWebpPath(url)}
     class="w-full h-[55vh] lg:h-[45vh]"
   />
   <div class="title w-full h-full left-[50%] top-[50%] absolute flex flex-col">

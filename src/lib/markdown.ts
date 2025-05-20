@@ -2,6 +2,7 @@ import { marked } from 'marked';
 import { Renderer } from 'marked';
 import { gfmHeadingId } from "marked-gfm-heading-id";
 import path from 'path';
+import { getWebpPath } from '$lib/utils';
 
 export const  convertMarkdownToHtml = (content: string) => {
   const renderer = new Renderer();
@@ -13,7 +14,7 @@ export const  convertMarkdownToHtml = (content: string) => {
 
     const titleAttr = title ? ` title="${title}"` : '';
 
-    return `<img src="${href}" alt="${text}"${titleAttr}>`;
+    return `<img src="${getWebpPath(href)}" alt="${text}"${titleAttr}>`;
   };
 
   marked.use({ renderer });

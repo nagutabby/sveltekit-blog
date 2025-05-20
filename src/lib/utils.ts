@@ -120,3 +120,17 @@ export const getHTMLArticle = async (id: string) => {
 
   return article;
 };
+
+export function getWebpPath(src: string) {
+  if (!src) return '';
+
+  // URLやデータURIの場合はそのまま返す
+  if (src.startsWith('http') || src.startsWith('data:')) {
+    return src;
+  }
+
+  const lastDotIndex = src.lastIndexOf('.');
+  if (lastDotIndex === -1) return src;
+
+  return src.substring(0, lastDotIndex) + '.webp';
+}
