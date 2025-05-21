@@ -24,12 +24,12 @@
     class="w-full h-[55vh] lg:h-[45vh]"
   />
   <div class="title w-full h-full left-[50%] top-[50%] absolute flex flex-col">
-    <div class="container px-3 lg:px-12 py-3 relative h-full flex flex-col gap-y-[30%]">
-      <div class="asbolute w-full">
+    <div class="container sm:px-4 md:px-8 py-3 relative h-full flex flex-col gap-y-[30%]">
+      <div class="w-full">
         <Navigation />
       </div>
-      <div class="flex flex-col max-w-full">
-        <h1 class="text-2xl sm:text-3xl lg:text-4xl font-semibold">
+      <div class="flex flex-col mx-4">
+        <h1 class="text-2xl sm:text-3xl font-semibold">
           {title}
         </h1>
       </div>

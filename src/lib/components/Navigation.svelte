@@ -37,17 +37,17 @@
   });
 </script>
 
-<div class="flex sm:gap-x-4 overflow-x-auto nav-scrollbar">
+<div class="flex overflow-x-auto navbar p-0 gap-x-1 md:gap-x-2">
   <a
     href="/"
-    class="btn md:btn-lg btn-ghost flex gap-x-2"
+    class="btn btn-ghost flex md:btn-lg"
     role="button"
     aria-label="ホーム"
   >
     <svg
       xmlns="http://www.w3.org/2000/svg"
       fill="currentColor"
-      class="bi bi-house h-1/3 h-[1em]"
+      class="bi bi-house h-[1em]"
       viewBox="0 0 16 16"
     >
       <path
@@ -58,7 +58,7 @@
   </a>
   <a
     href="/slides"
-    class="btn md:btn-lg btn-ghost flex gap-x-2"
+    class="btn btn-ghost flex md:btn-lg"
     role="button"
     aria-label="スライド"
   >
@@ -76,7 +76,7 @@
   </a>
   <a
     href="/reviews"
-    class="btn md:btn-lg btn-ghost flex gap-x-2"
+    class="btn btn-ghost flex md:btn-lg"
     role="button"
     aria-label="レビュー"
   >
@@ -93,7 +93,7 @@
     <span>レビュー</span>
   </a>
   <button
-    class="btn md:btn-lg btn-ghost flex gap-x-2"
+    class="btn btn-ghost flex md:btn-lg"
     aria-label="Search"
     onclick={() => {
       const searchModal = document.getElementById(
