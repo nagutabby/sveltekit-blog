@@ -12,3 +12,4 @@ vite.config.ts.timestamp-*
 private.pem
 public.pem
 /.wrangler
+.obsidian
