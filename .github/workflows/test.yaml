@@ -1,4 +1,4 @@
-name: テストとデプロイ
+name: テスト
 on:
   push:
 
