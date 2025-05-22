@@ -23,7 +23,7 @@ export const load: PageServerLoad = async () => {
   const pdfs = await Promise.all(slidesPromises);
 
   return {
-    image: "images/Microsoft-Fluentui-Emoji-3d-Package-3d.1024.png",
+    image: "/images/Microsoft-Fluentui-Emoji-3d-Package-3d.1024.png",
     title: "スライド一覧",
     body: "LT会で使ったスライドをまとめています",
     pdfs: pdfs,

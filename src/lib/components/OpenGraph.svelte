@@ -14,6 +14,14 @@
   const { title, body, url }: Props = $props();
 
   let description = $derived(generateDescriptionFromText(body));
+
+  const isAbsoluteUrl = (url: string) => {
+    return /^https?:\/\//.test(url);
+  };
+
+  const getImageUrl = (url: string, baseURL: string) => {
+    return isAbsoluteUrl(url) ? url : baseURL + url;
+  };
 </script>
 
 <svelte:head>
@@ -47,6 +55,6 @@
     <meta property="og:description" content={description} />
   {/if}
 
-  <meta property="og:image" content={url} />
-  <meta name="twitter:image" content={url} />
+  <meta property="og:image" content={getImageUrl(url, baseURL)} />
+  <meta name="twitter:image" content={getImageUrl(url, baseURL)} />
 </svelte:head>

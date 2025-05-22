@@ -20,7 +20,7 @@ export const load: PageServerLoad = async ({ url }) => {
   const paginatedArticles = allArticles.slice(startIndex, endIndex);
 
   return {
-    image: "images/Microsoft-Fluentui-Emoji-3d-Cat-3d.1024.png",
+    image: "/images/Microsoft-Fluentui-Emoji-3d-Cat-3d.1024.png",
     title: "nagutabbyの考え事",
     body: "学んだことをまとめるブログ",
     articles: paginatedArticles,
