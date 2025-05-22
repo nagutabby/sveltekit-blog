@@ -1,6 +1,6 @@
 ---
 title:
 image:
-publishedAt:
-updatedAt:
+publishedAt: <% tp.date.now("YYYY-MM-DD") %>
+updatedAt: <% tp.date.now("YYYY-MM-DD") %>
 ---
