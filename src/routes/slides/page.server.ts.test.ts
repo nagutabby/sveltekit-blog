@@ -45,7 +45,7 @@ describe('スライド一覧', () => {
 
     // 結果が期待通りか確認
     expect(result).toEqual({
-      image: "images/Microsoft-Fluentui-Emoji-3d-Package-3d.1024.png",
+      image: "/images/Microsoft-Fluentui-Emoji-3d-Package-3d.1024.png",
       title: "スライド一覧",
       body: "LT会で使ったスライドをまとめています",
       pdfs: [
