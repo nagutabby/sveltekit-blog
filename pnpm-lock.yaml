@@ -41,6 +41,9 @@ importers:
       '@types/highlightjs':
         specifier: ^9.12.6
         version: 9.12.6
+      '@types/lodash.memoize':
+        specifier: ^4.1.9
+        version: 4.1.9
       canonicalize:
         specifier: ^2.1.0
         version: 2.1.0
@@ -56,6 +59,9 @@ importers:
       jsdom:
         specifier: ^26.0.0
         version: 26.0.0
+      lodash.memoize:
+        specifier: ^4.1.2
+        version: 4.1.2
       marked:
         specifier: ^15.0.11
         version: 15.0.11
@@ -1309,6 +1315,12 @@ packages:
   '@types/highlightjs@9.12.6':
     resolution: {integrity: sha512-Qfd1DUrwE851Hc3tExADJY4qY8yeZMt06Xw9AJm/UtpneepJS3MZY29c33BY0wP899veaaHD4gZzYiSuQm84Fg==}
 
+  '@types/lodash.memoize@4.1.9':
+    resolution: {integrity: sha512-glY1nQuoqX4Ft8Uk+KfJudOD7DQbbEDF6k9XpGncaohW3RW4eSWBlx6AA0fZCrh40tZcQNH4jS/Oc59J6Eq+aw==}
+
+  '@types/lodash@4.17.17':
+    resolution: {integrity: sha512-RRVJ+J3J+WmyOTqnz3PiBLA501eKwXl2noseKOrNo/6+XEHjTAxO4xHvxQB6QuNm+s4WRbn6rSiap8+EA+ykFQ==}
+
   '@types/mdast@4.0.4':
     resolution: {integrity: sha512-kGaNbPh1k7AFzgpud/gMdvIm5xuECykRR+JnWKQno9TAXVa6WIVCGTPvYGekIDL4uwCZQSYbUxNBSb1aUo79oA==}
 
@@ -1932,6 +1944,9 @@ packages:
 
   lodash.isplainobject@4.0.6:
     resolution: {integrity: sha512-oSXzaWypCMHkPC3NvBEaPHf0KsA5mvPrOPgQWDsbg8n7orZ290M0BmC/jgRZ4vcJ6DTAhjrsSYgdsW/F+MFOBA==}
+
+  lodash.memoize@4.1.2:
+    resolution: {integrity: sha512-t7j+NzmgnQzTAYXcsHYLgimltOV1MXHtlOWf6GjL9Kj8GK5FInw5JotxvbOs+IvV1/Dzo04/fCGfLVs7aXb4Ag==}
 
   lodash.merge@4.6.2:
     resolution: {integrity: sha512-0KpjqXRVvrYyCsX1swR/XTK0va6VQkQM6MNo7PqW77ByjAhoARA8EfrP1N4+KlKj8YS0ZUCtRT/YUuhyYDujIQ==}
@@ -3531,6 +3546,12 @@ snapshots:
 
   '@types/highlightjs@9.12.6': {}
 
+  '@types/lodash.memoize@4.1.9':
+    dependencies:
+      '@types/lodash': 4.17.17
+
+  '@types/lodash@4.17.17': {}
+
   '@types/mdast@4.0.4':
     dependencies:
       '@types/unist': 3.0.3
@@ -4142,6 +4163,8 @@ snapshots:
   lodash.castarray@4.4.0: {}
 
   lodash.isplainobject@4.0.6: {}
+
+  lodash.memoize@4.1.2: {}
 
   lodash.merge@4.6.2: {}
 
