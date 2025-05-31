@@ -3,25 +3,28 @@ import { Renderer } from 'marked';
 import { gfmHeadingId } from "marked-gfm-heading-id";
 import path from 'path';
 import { getWebpPath } from '$lib/utils';
+import memoize from 'lodash.memoize';
 
-export const  convertMarkdownToHtml = (content: string) => {
-  const renderer = new Renderer();
+const renderer = new Renderer();
 
-  renderer.image = ({ href, title, text }) => {
-    if (href && href.startsWith('images/')) {
-      href = `/content/articles/images/${href.substring(7)}`;
-    }
+renderer.image = ({ href, title, text }) => {
+  if (href && href.startsWith('images/')) {
+    href = `/content/articles/images/${href.substring(7)}`;
+  }
 
-    const titleAttr = title ? ` title="${title}"` : '';
+  const titleAttr = title ? ` title="${title}"` : '';
 
-    return `<img src="${getWebpPath(href)}" alt="${text}"${titleAttr}>`;
-  };
+  return `<img src="${getWebpPath(href)}" alt="${text}"${titleAttr}>`;
+};
 
-  marked.use({ renderer });
-  marked.use(gfmHeadingId());
+marked.use({ renderer });
+marked.use(gfmHeadingId());
 
-  return marked(content);
-}
+const cachedMarked = memoize((content: string) => marked(content));
+
+export const convertMarkdownToHtml = (content: string) => {
+  return cachedMarked(content);
+};
 
 export const transformImagePath = (imagePath: string): string => {
   if (imagePath && typeof imagePath === 'string' && imagePath.startsWith('images/')) {
