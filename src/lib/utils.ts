@@ -48,16 +48,21 @@ export async function getBook(isbn: string, apiKey: string): Promise<Book> {
 export const getAllRawArticles = async () => {
   const articlesDir = path.join(process.cwd(), 'static/content/articles');
 
-  if (!fs.existsSync(articlesDir)) {
+  try {
+    await fs.promises.access(articlesDir, fs.promises.constants.F_OK);
+  } catch {
     throw error(500, '記事ディレクトリが見つかりません');
   }
 
-  const fileNames = fs.readdirSync(articlesDir).filter(file => file.endsWith('.md'));
 
-  const articlesPromises = fileNames.map(async (fileName) => {
+  const allFiles = await fs.promises.readdir(articlesDir);
+  const markdownFiles = allFiles.filter(file => file.endsWith('.md'));
+
+
+  const articlesPromises = markdownFiles.map(async (fileName) => {
     const filePath = path.join(articlesDir, fileName);
 
-    const fileContents = fs.readFileSync(filePath, 'utf8');
+    const fileContents = await fs.promises.readFile(filePath, 'utf8');
 
     const { data, content } = matter(fileContents);
 
@@ -103,11 +108,13 @@ export const getHTMLArticle = async (id: string) => {
 
   const filePath = path.join(process.cwd(), 'static/content/articles', fileName);
 
-  if (!fs.existsSync(filePath)) {
+  try {
+    fs.promises.access(filePath, fs.promises.constants.F_OK);
+  } catch {
     throw error(404, `記事が見つかりません: ${id}`);
   }
 
-  const fileContents = fs.readFileSync(filePath, 'utf8');
+  const fileContents = await fs.promises.readFile(filePath, 'utf8');
 
   const { data, content } = matter(fileContents);
   if (data.image) {
