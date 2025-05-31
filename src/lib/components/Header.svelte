@@ -14,6 +14,7 @@
     rel="preload"
     as="image"
     href={getWebpPath(url)}
+    fetchpriority="high"
   />
 </svelte:head>
 
@@ -22,6 +23,7 @@
     alt=""
     src={getWebpPath(url)}
     class="w-full h-[55vh] lg:h-[45vh]"
+    fetchpriority="high"
   />
   <div class="title w-full h-full left-[50%] top-[50%] absolute flex flex-col">
     <div class="container sm:px-4 md:px-8 py-3 relative h-full flex flex-col gap-y-[30%]">
