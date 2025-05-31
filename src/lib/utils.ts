@@ -89,9 +89,11 @@ export const getAllRawArticles = async () => {
 
 export const getAllHTMLArticles = async () => {
   const allArticles = await getAllRawArticles();
-  allArticles.forEach(async article => {
-    article.body = await convertMarkdownToHtml(article.body);
-  });
+  await Promise.all(
+    allArticles.map(async article => {
+      article.body = await convertMarkdownToHtml(article.body);
+    })
+  );
 
   return allArticles;
 };
