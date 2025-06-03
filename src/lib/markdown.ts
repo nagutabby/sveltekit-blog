@@ -20,11 +20,7 @@ renderer.image = ({ href, title, text }) => {
 marked.use({ renderer });
 marked.use(gfmHeadingId());
 
-const cachedMarked = memoize((content: string) => marked(content));
-
-export const convertMarkdownToHtml = (content: string) => {
-  return cachedMarked(content);
-};
+export const convertMarkdownToHtml = memoize((content: string) => marked(content));
 
 export const transformImagePath = (imagePath: string): string => {
   if (imagePath && typeof imagePath === 'string' && imagePath.startsWith('images/')) {
