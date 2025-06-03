@@ -5,6 +5,8 @@ import { convertMarkdownToHtml, transformImagePath } from '$lib/markdown';
 import { error } from '@sveltejs/kit';
 import type { Article, ArticleFrontMatter } from '$lib/types/blog';
 import type { Book, GoogleBooksResponse } from "$lib/types/book";
+import memoize from 'lodash.memoize';
+import { dev } from '$app/environment';
 
 export const generateDescriptionFromText = (body: string) => {
   const hasHTMLTags = /<[a-z][\s\S]*>/i.test(body);
@@ -45,7 +47,7 @@ export async function getBook(isbn: string, apiKey: string): Promise<Book> {
   return book;
 }
 
-export const getAllRawArticles = async () => {
+const getAllRawArticlesImpl = async () => {
   const articlesDir = path.join(process.cwd(), 'static/content/articles');
 
   try {
@@ -91,6 +93,8 @@ export const getAllRawArticles = async () => {
 
   return sortedArticles;
 };
+
+export const getAllRawArticles = dev ? getAllRawArticlesImpl : memoize(getAllRawArticlesImpl);
 
 export const getAllHTMLArticles = async () => {
   const allArticles = await getAllRawArticles();
