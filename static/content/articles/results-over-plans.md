@@ -1,5 +1,5 @@
 ---
-title: 計画よりも成果が大事
+title: 計画よりも成果の方が大事
 image: images/Microsoft-Fluentui-Emoji-3d-Check-Mark-Button-3d.1024.png
 publishedAt: 2025-06-20
 updatedAt: 2025-06-20
