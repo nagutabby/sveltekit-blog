@@ -22,10 +22,10 @@ marked.use(gfmHeadingId());
 
 export const convertMarkdownToHtml = memoize((content: string) => marked(content));
 
-export const transformImagePath = (imagePath: string): string => {
+export const transformImagePath = (imagePath: string, type: "articles" | "reviews"): string => {
   if (imagePath && typeof imagePath === 'string' && imagePath.startsWith('images/')) {
     const fileName = path.basename(imagePath);
-    return `/content/articles/images/${fileName}`;
+    return `/content/${type}/images/${fileName}`;
   }
   return imagePath;
 };

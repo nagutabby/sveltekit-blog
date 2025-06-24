@@ -1,13 +1,14 @@
 
-import { getAllHTMLArticles } from '$lib/utils';
+import { getAllHTMLData } from '$lib/utils';
 import { redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from "./$types";
+import type { Article } from '$lib/types/blog';
 
 export const load: PageServerLoad = async ({ url }) => {
   const page = Number(url.searchParams.get("page")) || 1;
   const perPage = 10;
 
-  const allArticles = await getAllHTMLArticles()
+  const allArticles = await getAllHTMLData("articles") as Article[]
   const totalArticles = allArticles.length;
   const totalPages = Math.ceil(totalArticles / perPage);
 

@@ -24,12 +24,12 @@
 </script>
 
 <OpenGraph
-  url={page.data.book.thumbnailUrl}
-  title={page.data.review.title}
-  body={page.data.review.body}
+  url={page.data.image}
+  title={page.data.title}
+  body={page.data.body}
 ></OpenGraph>
 
-<Header url={page.data.book.thumbnailUrl} title={page.data.review.title}
+<Header url={page.data.image} title={page.data.title}
 ></Header>
 
 <main class="container px-3 md:px-10 py-10 mx-auto">
@@ -41,21 +41,21 @@
       <article class="prose max-w-full">
         <div class="flex flex-col gap-y-4">
           <Date
-            publishedAt={data.review.publishedAt}
-            updatedAt={data.review.updatedAt}
+            publishedAt={data.publishedAt}
+            updatedAt={data.updatedAt}
           />
 
           <div class="flex items-center gap-2">
-            <StarRating rating={data.review.rating}></StarRating>
-            <span class="font-bold text-lg">{data.review.rating}/5</span>
+            <StarRating rating={data.rating}></StarRating>
+            <span class="font-bold text-lg">{data.rating}/5</span>
           </div>
           <div>
-            {@html data.review.body}
+            {@html data.body}
           </div>
           <BookInfo
-            title={data.review.title}
-            description={data.book.description}
-            infoLink={data.book.infoLink}
+            title={data.title}
+            description={data.description}
+            jpECode={data.jp_e_code}
           />
         </div>
       </article>

@@ -16,7 +16,9 @@ export type Article = {
 
 export type ReviewFrontMatter = {
   title: string;
-  isbn_13: string;
+  description: string;
+  jp_e_code: string;
+  image: string;
   rating: number;
   publishedAt: Date;
   updatedAt: Date;
@@ -26,7 +28,9 @@ export type Review = {
   id: string;
   body: string;
   title: string;
-  isbn_13: string;
+  description: string;
+  jp_e_code: string;
+  image: string;
   rating: number;
   publishedAt: Date;
   updatedAt: Date;

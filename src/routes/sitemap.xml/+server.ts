@@ -1,4 +1,4 @@
-import { getAllRawArticles } from '$lib/utils.js';
+import { getAllRawData } from '$lib/utils.js';
 
 function create_entry(path: string, lastmod: Date) {
   return `<url>
@@ -12,7 +12,7 @@ export async function GET({ setHeaders }) {
     'Content-Type': 'application/xml'
   });
 
-  const allArticles = await getAllRawArticles()
+  const allArticles = await getAllRawData("articles")
 
   const posts = allArticles.map((post) => create_entry(post.id, post.updatedAt));
 

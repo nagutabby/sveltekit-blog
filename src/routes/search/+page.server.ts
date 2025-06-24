@@ -1,4 +1,4 @@
-import { getAllRawArticles } from '$lib/utils';
+import { getAllRawData } from '$lib/utils';
 import { redirect } from '@sveltejs/kit';
 import { convertMarkdownToHtml } from '$lib/markdown';
 import type { Article } from '$lib/types/blog';
@@ -13,7 +13,7 @@ export const load: PageServerLoad = async ({ url }) => {
   const page = Number(url.searchParams.get("page")) || 1;
   const perPage = 10;
 
-  const allArticles = await getAllRawArticles();
+  const allArticles = await getAllRawData("articles");
 
   const allArticlesWithRawBody: ArticleWithRawBody[] = await Promise.all(
     allArticles.map(async (article) => {

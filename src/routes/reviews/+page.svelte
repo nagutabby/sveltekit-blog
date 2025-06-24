@@ -23,15 +23,15 @@
     class="flex flex-col md:flex-row items-start md:relative gap-10 md:gap-0 justify-between"
   >
     <div class="flex flex-wrap gap-5 justify-center w-full md:w-[63%]">
-      {#each data.content as content}
+      {#each data.reviews as review}
         <Card
-          url={`reviews/${content.review.id}`}
-          image={content.book.thumbnailUrl}
-          title={content.review.title}
+          url={`reviews/${review.id}`}
+          title={review.title}
+          image={review.image}
         />
       {/each}
     </div>
-    <div class="w-full md:w-[33%] {data.content.length > 3 ? 'md:absolute md:top-0 md:bottom-0 md:right-0' : 'md:h-[40vh]'}">
+    <div class="w-full md:w-[33%] {data.reviews.length > 3 ? 'md:absolute md:top-0 md:bottom-0 md:right-0' : 'md:h-[40vh]'}">
       <Timeline></Timeline>
     </div>
   </div>

@@ -1,12 +1,12 @@
 import type { RequestHandler } from '@sveltejs/kit';
-import { getHTMLArticle } from '$lib/utils';
+import { getHTMLData } from '$lib/utils';
 import type { Article } from '$lib/types/blog';
 
 export const GET: RequestHandler = async ({ params }) => {
   let article: Article;
 
   if (params.name) {
-    article = await getHTMLArticle(params.name);
+    article = await getHTMLData(params.name, "articles");
   } else {
     return new Response('Article not found', { status: 404 });
   }

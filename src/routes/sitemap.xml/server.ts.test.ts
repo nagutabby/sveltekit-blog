@@ -1,6 +1,6 @@
 import { GET } from './+server';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { getAllRawArticles } from '$lib/utils.js';
+import { getAllRawData } from '$lib/utils.js';
 import { XMLParser } from 'fast-xml-parser';
 import type { Article } from '$lib/types/blog';
 
@@ -8,7 +8,7 @@ beforeEach(() => {
   vi.resetAllMocks();
 
   vi.mock('$lib/utils.js', () => ({
-    getAllRawArticles: vi.fn(),
+    getAllRawData: vi.fn(),
   }));
 });
 
@@ -42,7 +42,7 @@ describe('GET /sitemap.xml', () => {
     ];
 
     // モック関数を設定
-    vi.mocked(getAllRawArticles).mockResolvedValue(mockArticles);
+    vi.mocked(getAllRawData).mockResolvedValue(mockArticles);
 
     // GET関数を呼び出し
     const response = await GET({ setHeaders: mockSetHeaders });
@@ -86,7 +86,7 @@ describe('GET /sitemap.xml', () => {
       },
     ];
 
-    vi.mocked(getAllRawArticles).mockResolvedValue(mockArticles);
+    vi.mocked(getAllRawData).mockResolvedValue(mockArticles);
 
     const response = await GET({ setHeaders: mockSetHeaders });
     const xmlString = await response.text();
