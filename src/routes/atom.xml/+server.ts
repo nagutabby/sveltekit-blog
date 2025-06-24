@@ -1,12 +1,12 @@
 import { generateDescriptionFromText } from "$lib/utils";
-import { getAllHTMLArticles } from "$lib/utils";
+import { getAllHTMLData } from "$lib/utils";
 
 export async function GET({ setHeaders }) {
   setHeaders({
     'Content-Type': 'application/xml'
   });
 
-  const allArticles = await getAllHTMLArticles();
+  const allArticles = await getAllHTMLData("articles");
 
   let latestDate: Date | undefined;
 

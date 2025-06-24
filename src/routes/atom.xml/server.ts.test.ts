@@ -1,13 +1,13 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { GET } from './+server';
 import { XMLParser } from 'fast-xml-parser';
-import { generateDescriptionFromText, getAllHTMLArticles } from '$lib/utils';
+import { generateDescriptionFromText, getAllHTMLData } from '$lib/utils';
 
 // モックのインポートをセットアップ
 vi.mock('$lib/utils', () => {
   return {
     generateDescriptionFromText: vi.fn((text) => `Description for: ${text.substring(0, 50)}...`),
-    getAllHTMLArticles: vi.fn()
+    getAllHTMLData: vi.fn()
   };
 });
 
@@ -43,8 +43,8 @@ describe('/atom.xml endpoint', () => {
   // 各テストの前にモックをリセット
   beforeEach(() => {
     vi.resetAllMocks();
-    // モックの getAllHTMLArticles が記事データを返すように設定
-    vi.mocked(getAllHTMLArticles).mockResolvedValue([...mockArticles]);
+    // モックの getAllHTMLData が記事データを返すように設定
+    vi.mocked(getAllHTMLData).mockResolvedValue([...mockArticles]);
   });
 
   it('Content-Typeヘッダーが正しい', async () => {
@@ -136,7 +136,7 @@ describe('/atom.xml endpoint', () => {
   });
 
   it('記事がない場合でも有効なフィードを返す', async () => {
-    vi.mocked(getAllHTMLArticles).mockResolvedValue([]);
+    vi.mocked(getAllHTMLData).mockResolvedValue([]);
 
     const mockSetHeaders = vi.fn();
 
