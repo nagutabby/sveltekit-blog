@@ -1,3 +1,4 @@
+import type { Article, Review } from "$lib/types/blog.js";
 import { generateDescriptionFromText } from "$lib/utils";
 import { getAllHTMLData } from "$lib/utils";
 
@@ -6,11 +7,12 @@ export async function GET({ setHeaders }) {
     'Content-Type': 'application/xml'
   });
 
-  const allArticles = await getAllHTMLData("articles");
+  const allArticles = await getAllHTMLData("articles") as Article[];
+  const allReviews = await getAllHTMLData("reviews") as Review[];
 
   let latestDate: Date | undefined;
 
-  function create_entry(title: string, body: string, path: string, publishedAt: Date, updatedAt: Date) {
+  function createEntry(title: string, body: string, path: string, publishedAt: Date, updatedAt: Date, type: "articles" | "reviews") {
     const publishedDate = new Date(publishedAt).toISOString().substring(0, 10);
 
     if (latestDate === undefined) {
@@ -25,15 +27,18 @@ export async function GET({ setHeaders }) {
     return `<entry>
   <title>${title}</title>
   <summary type="text"><![CDATA[${generateDescriptionFromText(body)}]]></summary>
-  <link href="${new URL(`/articles/${path}`, 'https://blog.nagutabby.uk').href}" rel="alternate" />
+  <link href="${new URL(`/${type}/${path}`, 'https://blog.nagutabby.uk').href}" rel="alternate" />
   <updated>${formattedUpdatedAt}</updated>
   <published>${formattedPublishedAt}</published>
-  <id>tag:blog.nagutabby.uk,${publishedDate}:/articles/${path}</id>
+  <id>tag:blog.nagutabby.uk,${publishedDate}:/${type}/${path}</id>
   </entry>`;
   }
 
-  const posts = allArticles.map((post) => create_entry(post.title, post.body, post.id, post.publishedAt, post.updatedAt));
+  const articlePosts = allArticles.map((post) => createEntry(post.title, post.body, post.id, post.publishedAt, post.updatedAt, "articles"));
+  const reviewPosts = allReviews.map((post) => createEntry(post.title, post.body, post.id, post.publishedAt, post.updatedAt, "reviews"));
 
+  const posts = [...articlePosts, ...reviewPosts]
+  
   const atom = `<?xml version="1.0" encoding="UTF-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
 <link rel="self" href="https://blog.nagutabby.uk/atom.xml" type="application/rss+xml" />
