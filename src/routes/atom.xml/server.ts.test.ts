@@ -44,7 +44,15 @@ describe('/atom.xml endpoint', () => {
   beforeEach(() => {
     vi.resetAllMocks();
     // モックの getAllHTMLData が記事データを返すように設定
-    vi.mocked(getAllHTMLData).mockResolvedValue([...mockArticles]);
+    vi.mocked(getAllHTMLData).mockImplementation((type) => {
+        if (type === "articles") {
+            return Promise.resolve([...mockArticles]);
+        } else if (type === "reviews") {
+            return Promise.resolve([]);
+        }
+
+        return Promise.resolve([]);
+    });
   });
 
   it('Content-Typeヘッダーが正しい', async () => {

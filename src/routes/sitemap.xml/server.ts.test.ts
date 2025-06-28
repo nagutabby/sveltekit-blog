@@ -18,7 +18,7 @@ afterEach(() => {
 });
 
 describe('GET /sitemap.xml', () => {
-  it('生成されたXMLが正しい構造を持つこと', async () => {
+  it('生成されたXMLが正しい構造を持つ', async () => {
     const mockSetHeaders = vi.fn();
 
     // モックデータを準備（Article型に準拠）
@@ -42,7 +42,15 @@ describe('GET /sitemap.xml', () => {
     ];
 
     // モック関数を設定
-    vi.mocked(getAllRawData).mockResolvedValue(mockArticles);
+    vi.mocked(getAllRawData).mockImplementation((type) => {
+      if (type === "articles") {
+        return Promise.resolve([...mockArticles]);
+      } else if (type === "reviews") {
+        return Promise.resolve([]);
+      }
+
+      return Promise.resolve([]);
+    });
 
     // GET関数を呼び出し
     const response = await GET({ setHeaders: mockSetHeaders });
