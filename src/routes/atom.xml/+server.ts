@@ -24,6 +24,13 @@ export async function GET({ setHeaders }) {
     const formattedPublishedAt = new Date(publishedAt).toISOString();
     const formattedUpdatedAt = new Date(updatedAt).toISOString();
 
+    let categoryTag = '';
+    if (type === "articles") {
+      categoryTag = `<category term="article" label="記事" scheme="https://blog.nagutabby.uk" />`;
+    } else if (type === "reviews") {
+      categoryTag = `<category term="review" label="本のレビュー" scheme="https://blog.nagutabby.uk/reviews" />`;
+    }
+
     return `<entry>
   <title>${title}</title>
   <summary type="text"><![CDATA[${generateDescriptionFromText(body)}]]></summary>
@@ -31,14 +38,15 @@ export async function GET({ setHeaders }) {
   <updated>${formattedUpdatedAt}</updated>
   <published>${formattedPublishedAt}</published>
   <id>tag:blog.nagutabby.uk,${publishedDate}:/${type}/${path}</id>
+  ${categoryTag}
   </entry>`;
   }
 
   const articlePosts = allArticles.map((post) => createEntry(post.title, post.body, post.id, post.publishedAt, post.updatedAt, "articles"));
   const reviewPosts = allReviews.map((post) => createEntry(post.title, post.body, post.id, post.publishedAt, post.updatedAt, "reviews"));
 
-  const posts = [...articlePosts, ...reviewPosts]
-  
+  const posts = [...articlePosts, ...reviewPosts];
+
   const atom = `<?xml version="1.0" encoding="UTF-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
 <link rel="self" href="https://blog.nagutabby.uk/atom.xml" type="application/rss+xml" />
@@ -49,7 +57,6 @@ export async function GET({ setHeaders }) {
 <id>tag:blog.nagutabby.uk,2023-01-01:/</id>
 ${posts.join('\n')}
 </feed>`;
-
 
   return new Response(atom);
 }
