@@ -1,8 +1,8 @@
 ---
 title: RubyはSmalltalkから何を学んだのか？
 image: images/Microsoft-Fluentui-Emoji-3d-Speaker-Low-Volume-3d.1024.png
-publishedAt: 2025-07-19
-updatedAt: 2025-07-19
+publishedAt: 2025-07-27
+updatedAt: 2025-07-27
 ---
 
 ## はじめに
@@ -19,13 +19,6 @@ Transcript
     show: true class; cr;
     show: nil class; cr;
     show: Object class; cr.
-
-"
-SmallInteger
-True
-UndefinedObject
-Object class
-"
 ```
 Ruby:
 ```ruby
@@ -33,11 +26,6 @@ puts 3.class
 puts true.class
 puts nil.class
 puts Object.class
-
-# Integer
-# TrueClass
-# NilClass
-# Class
 ```
 これはシンプルで分かりやすいですね。classメソッドを呼び出すことで、それぞれの値がオブジェクトであることを確認しています。
 ## メッセージパッシング
