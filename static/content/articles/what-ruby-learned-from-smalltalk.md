@@ -12,6 +12,7 @@ Rubyの作者が言語設計において最も影響を受けた言語の1つが
 
 ## オブジェクト
 SmalltalkもRubyも、全てがオブジェクトとして表現されます。
+
 Smalltalk:
 ```smalltalk
 Transcript 
@@ -20,6 +21,7 @@ Transcript
     show: nil class; cr;
     show: Object class; cr.
 ```
+
 Ruby:
 ```ruby
 puts 3.class
@@ -30,6 +32,7 @@ puts Object.class
 これはシンプルで分かりやすいですね。classメソッドを呼び出すことで、それぞれの値がオブジェクトであることを確認しています。
 ## メッセージパッシング
 メッセージパッシングは、オブジェクト同士がメッセージを送り合うことで処理を実行する仕組みです。メッセージパッシングでは、オブジェクトはレシーバー（受信者）としてメッセージを受信し、そのメッセージに対応するメソッドを実行します。
+
 Smalltalk:
 ```smalltalk
 Transcript
@@ -38,6 +41,7 @@ Transcript
   show: 'hello' size; cr;
   show: 'hello' , ' world'; cr.
 ```
+
 Ruby:
 ```ruby
 puts 5 ** 2
@@ -49,6 +53,7 @@ Smalltalkは算術演算においてもメッセージをそのまま使用す�
 
 ## クラス拡張
 SmalltalkやRubyでは、実行時にクラスにメソッドを追加できます。これにより、例えば既存のライブラリやフレームワークのクラスを、元のコードを変更することなく拡張できるため、コードの柔軟性が向上します。
+
 Smalltalk:
 ```smalltalk
 Integer compile: 'isPrime
@@ -73,6 +78,7 @@ Integer compile: 'isPrime
 12 isPrime.
 2 isPrime.
 ```
+
 Ruby:
 ```ruby
 class Integer
@@ -105,10 +111,12 @@ end
 Smalltalkでは平方根計算（`i * i <= self`)の処理が分かりにくいですが、RubyではMath.sqrt()を用いられており、より意図が伝わりやすくなっています。また、イテレーターに関しても、Rubyでは範囲オブジェクトが使用されているため、Smalltalkで使用されているwhileTrueと手動インクリメントによる実装に比べて、処理が明示的になっています。
 ## ブロック構文
 処理のまとまりを他のメソッドに渡すための仕組みであるブロック構文は、SmalltalkとRubyの両方で使用でき、両者の間で記法に大きな違いはありません。
+
 Smalltalk:
 ```smalltalk
 #(1 2 3) do: [:x | Transcript show: x; cr]
 ```
+
 Ruby:
 ```ruby
 [1, 2, 3].each { |x| puts x }
@@ -116,6 +124,7 @@ Ruby:
 ## メタプログラミング
 メタプログラミングは、プログラムがプログラム自身を操作する技法です。Smalltalkでは[リフレクション](https://e-words.jp/w/%E3%83%AA%E3%83%95%E3%83%AC%E3%82%AF%E3%82%B7%E3%83%A7%E3%83%B3.html)（実行時にプログラム自身の構造を調べたり変更したりする仕組み）、動的ディスパッチ（実行時にどのメソッドを呼び出すかを決定する仕組み）などが実装されています。Rubyでもメタプログラミングが採用されています。
 ### 動的ディスパッチ
+
 Smalltalk:
 ```smalltalk
 obj := 'hello world'.
@@ -124,6 +133,7 @@ result := obj perform: methodName.
 Transcript show: result; cr.
 result
 ```
+
 Ruby:
 ```ruby
 obj = 'hello world'
