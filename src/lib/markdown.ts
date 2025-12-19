@@ -20,7 +20,12 @@ renderer.image = ({ href, title, text }) => {
 
 marked.use({ renderer });
 marked.use(gfmHeadingId());
-marked.use(markedKatex());
+
+const options = {
+  nonStandard: true
+};
+
+marked.use(markedKatex(options));
 
 export const convertMarkdownToHtml = memoize((content: string) => marked(content));
 
