@@ -4,6 +4,7 @@ import { gfmHeadingId } from "marked-gfm-heading-id";
 import path from 'path';
 import { getWebpPath } from '$lib/utils';
 import memoize from 'lodash.memoize';
+import markedKatex from 'marked-katex-extension';
 
 const renderer = new Renderer();
 
@@ -19,6 +20,7 @@ renderer.image = ({ href, title, text }) => {
 
 marked.use({ renderer });
 marked.use(gfmHeadingId());
+marked.use(markedKatex());
 
 export const convertMarkdownToHtml = memoize((content: string) => marked(content));
 

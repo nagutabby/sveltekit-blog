@@ -68,6 +68,9 @@ importers:
       marked-gfm-heading-id:
         specifier: ^4.1.1
         version: 4.1.1(marked@15.0.11)
+      marked-katex-extension:
+        specifier: ^5.1.6
+        version: 5.1.6(katex@0.16.27)(marked@15.0.11)
       msw:
         specifier: ^2.7.3
         version: 2.7.3(@types/node@22.10.2)(typescript@5.8.3)
@@ -1629,6 +1632,10 @@ packages:
   comma-separated-tokens@2.0.3:
     resolution: {integrity: sha512-Fu4hJdvzeylCfQPp9SGWidpzrMs7tTrlu6Vb8XGaRGck8QSNZJJp538Wrb60Lax4fPwR64ViY468OIUTbRlGZg==}
 
+  commander@8.3.0:
+    resolution: {integrity: sha512-OkTL9umf+He2DZkUq8f8J9of7yL6RJKI24dVITBmNfZBmri9zYZQrKkuXiKhyfPSu8tUhnVBB1iKXevvnlR4Ww==}
+    engines: {node: '>= 12'}
+
   commondir@1.0.1:
     resolution: {integrity: sha512-W9pAhw0ja1Edb5GVdIF1mjZw/ASI0AlShXM83UUGe2DVr5TdAPEA1OA8m/g8zWp9x6On7gqufY+FatDbC3MDQg==}
 
@@ -1992,6 +1999,10 @@ packages:
       canvas:
         optional: true
 
+  katex@0.16.27:
+    resolution: {integrity: sha512-aeQoDkuRWSqQN6nSvVCEFvfXdqo1OQiCmmW1kc9xSdjutPv7BGO7pqY9sQRJpMOGrEdfDgF2TfRXe5eUAD2Waw==}
+    hasBin: true
+
   kind-of@6.0.3:
     resolution: {integrity: sha512-dcS1ul+9tmeD95T+x28/ehLgd9mENa3LsvDTtzm3vyBEO7RPptvAD+t44WVXaUjTBRcrpFeFlC8WCruUR456hw==}
     engines: {node: '>=0.10.0'}
@@ -2099,6 +2110,12 @@ packages:
     resolution: {integrity: sha512-EeQZieAQmsI6c2tWLx0ETd0VjPwLV8qi+HT0dIsfVMERm0rCIuXfRvZXJbo1SgUi++lmuR1LVY+QzgNiLNvVpw==}
     peerDependencies:
       marked: '>=13 <16'
+
+  marked-katex-extension@5.1.6:
+    resolution: {integrity: sha512-vYpLXwmlIDKILIhJtiRTgdyZRn5sEYdFBuTmbpjD7lbCIzg0/DWyK3HXIntN3Tp8zV6hvOUgpZNLWRCgWVc24A==}
+    peerDependencies:
+      katex: '>=0.16 <0.17'
+      marked: '>=4 <18'
 
   marked@15.0.11:
     resolution: {integrity: sha512-1BEXAU2euRCG3xwgLVT1y0xbJEld1XOrmRJpUwRCcy7rxhSCwMrmEu9LXoPhHSCJG41V7YcQ2mjKRr5BA3ITIA==}
@@ -3938,6 +3955,8 @@ snapshots:
 
   comma-separated-tokens@2.0.3: {}
 
+  commander@8.3.0: {}
+
   commondir@1.0.1: {}
 
   cookie@0.6.0: {}
@@ -4322,6 +4341,10 @@ snapshots:
       - supports-color
       - utf-8-validate
 
+  katex@0.16.27:
+    dependencies:
+      commander: 8.3.0
+
   kind-of@6.0.3: {}
 
   kleur@4.1.5: {}
@@ -4396,6 +4419,11 @@ snapshots:
   marked-gfm-heading-id@4.1.1(marked@15.0.11):
     dependencies:
       github-slugger: 2.0.0
+      marked: 15.0.11
+
+  marked-katex-extension@5.1.6(katex@0.16.27)(marked@15.0.11):
+    dependencies:
+      katex: 0.16.27
       marked: 15.0.11
 
   marked@15.0.11: {}

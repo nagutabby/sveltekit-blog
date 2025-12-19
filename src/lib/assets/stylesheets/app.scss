@@ -1,5 +1,6 @@
 @use "tailwindcss";
 @plugin "@tailwindcss/typography";
+
 @plugin "daisyui" {
   themes: dracula --default;
 }
@@ -56,6 +57,7 @@ main {
 .mt-post-txt-wrapper a {
   text-decoration: underline !important;
 }
+
 pre,
 pre>code {
   background: oklch(var(--b1)) !important;
@@ -81,4 +83,10 @@ pre {
       height: 20px;
     }
   }
+}
+
+.katex-display {
+  overflow-x: auto !important;
+  overflow-y: hidden;
+  padding: 0.1rem 0;
 }
