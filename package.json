@@ -27,7 +27,7 @@
     "@types/lodash.memoize": "^4.1.9",
     "canonicalize": "^2.1.0",
     "daisyui": "^5.0.17",
-    "fast-xml-parser": "^5.2.0",
+    "fast-xml-parser": "^5.3.6",
     "gray-matter": "^4.0.3",
     "jsdom": "^26.0.0",
     "lodash.memoize": "^4.1.2",
