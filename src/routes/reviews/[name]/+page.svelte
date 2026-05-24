@@ -29,7 +29,7 @@
   body={page.data.body}
 ></OpenGraph>
 
-<Header url={page.data.image} title={page.data.title}
+<Header id={page.data.id} url={page.data.image} title={page.data.title}
 ></Header>
 
 <main class="container px-3 md:px-10 py-10 mx-auto">
