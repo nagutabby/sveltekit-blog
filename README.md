@@ -1,38 +1,16 @@
-# create-svelte
+# sveltekit-blog
 
-Everything you need to build a Svelte project, powered by [`create-svelte`](https://github.com/sveltejs/kit/tree/master/packages/create-svelte).
+SvelteKitで構築されたブログのリポジトリです。
+このプロジェクトの成果物には、用途に応じて以下の異なるライセンスが適用されます。
 
-## Creating a project
+## License / ライセンスについて
 
-If you're seeing this, you've probably already done this step. Congrats!
+本リポジトリ内のリソースは、ソースコードと記事コンテンツでデュアルライセンス形式を採用しています。
 
-```bash
-# create a new project in the current directory
-npm create svelte@latest
+### 1. ソースコード (Source Code)
+ブログを動かすためのプログラム、コンポーネント、スタイルシート等のソースコードはMITライセンスのもとで公開されています。
+詳細な許諾条件は[LICENSE-MIT](LICENSE-MIT)をご確認ください。
 
-# create a new project in my-app
-npm create svelte@latest my-app
-```
-
-## Developing
-
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
-
-```bash
-npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
-```
-
-## Building
-
-To create a production version of your app:
-
-```bash
-npm run build
-```
-
-You can preview the production build with `npm run preview`.
-
-> To deploy your app, you may need to install an [adapter](https://kit.svelte.dev/docs/adapters) for your target environment.
+### 2. 記事・コンテンツ (Articles & Contents)
+`static/content/`配下のコンテンツはクリエイティブ・コモンズ 表示 4.0 国際ライセンス（CC BY 4.0）のもとで公開されています。
+詳細な許諾条件は[LICENSE-CC-BY](LICENSE-CC-BY)をご確認ください。
