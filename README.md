@@ -13,4 +13,4 @@ SvelteKitで構築されたブログのリポジトリです。
 
 ### 2. 記事・コンテンツ (Articles & Contents)
 `static/content/`配下のコンテンツはクリエイティブ・コモンズ 表示 4.0 国際ライセンス（CC BY 4.0）のもとで公開されています。
-詳細な許諾条件は[LICENSE-CC-BY](LICENSE-CC-BY)をご確認ください。
+詳細な許諾条件は[LICENSE-CC-BY-4.0](LICENSE-CC-BY-4.0)をご確認ください。
