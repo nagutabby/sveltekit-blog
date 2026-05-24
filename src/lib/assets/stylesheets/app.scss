@@ -90,3 +90,15 @@ pre {
   overflow-y: hidden;
   padding: 0.1rem 0;
 }
+
+::view-transition-group(main-nav) {
+  z-index: 100;
+}
+
+::view-transition-group(article-title) {
+  z-index: 10;
+}
+
+::view-transition-group(article-img-*) {
+  z-index: 1;
+}

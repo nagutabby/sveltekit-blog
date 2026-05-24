@@ -122,7 +122,7 @@
   body={page.data.body}
 ></OpenGraph>
 
-<Header url={page.data.image} title={page.data.title}></Header>
+<Header url={page.data.image} title={page.data.title} id={page.data.id} ></Header>
 
 <main class="container px-3 md:px-10 py-10 mx-auto">
   <div class="flex lg:flex-row items-start justify-between flex-col-reverse">

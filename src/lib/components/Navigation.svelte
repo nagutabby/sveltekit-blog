@@ -37,7 +37,7 @@
   });
 </script>
 
-<div class="flex overflow-x-auto navbar p-0 gap-x-1 md:gap-x-2">
+<div class="flex overflow-x-auto navbar p-0 gap-x-1 md:gap-x-2" style="view-transition-name: main-nav;">
   <a
     href="/"
     class="btn btn-ghost flex md:btn-lg"

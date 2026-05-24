@@ -17,12 +17,13 @@
 
 <main class="container px-3 md:px-10 py-10 mx-auto">
   <div
-    class="flex flex-col md:flex-row items-start md:relative gap-10 md:gap-0"
+    class="flex flex-col lg:flex-row items-start lg:relative gap-10 lg:gap-0"
   >
-    <div class="flex flex-wrap gap-5 justify-center w-full md:w-[63%]">
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 w-full lg:w-[63%] h-fit">
       {#if data.articles}
         {#each data.articles as article}
           <Card
+            id={article.id}
             url={`articles/${article.id}`}
             image={article.image}
             title={article.title}
@@ -30,7 +31,7 @@
         {/each}
       {/if}
     </div>
-    <div class="w-full md:w-[33%] md:absolute md:top-0 md:bottom-0 md:right-0">
+    <div class="w-full lg:w-[33%] lg:absolute lg:top-0 lg:bottom-0 lg:right-0">
       <Timeline></Timeline>
     </div>
   </div>
