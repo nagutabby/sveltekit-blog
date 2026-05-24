@@ -11,14 +11,15 @@
 </script>
 
 <a href="/{url}" class="flex h-full w-full">
-  <article class="card bg-base-100 shadow-xl basis-full image-full w-full">
-    <figure class="w-full">
+  <article class="card bg-base-100 shadow-xl basis-full image-full w-full overflow-hidden">
+    <figure class="w-full aspect-square object-cover rounded-t-[5px]">
       <img
         alt=""
         height="250"
         width="250"
         src={getWebpPath(image)}
         loading="lazy"
+
         style="view-transition-name: article-img-{id};"
       />
     </figure>
@@ -43,13 +44,6 @@
     width: 100%;
     &:hover {
       opacity: 0.7;
-    }
-
-    & img {
-      width: 100%;
-      aspect-ratio: 1 / 1;
-      object-fit: cover;
-      border-radius: 5px 5px 0px 0px;
     }
   }
 </style>
