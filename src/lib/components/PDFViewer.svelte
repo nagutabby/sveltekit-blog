@@ -1,8 +1,8 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { browser } from "$app/environment";
+  import OpenGraph from "$lib/components/OpenGraph.svelte";
 
-  let url: string = $props();
   let canvas = $state<HTMLCanvasElement>();
   let pdfDoc = $state<any>(null);
   let pageNum = $state(1);
@@ -10,6 +10,10 @@
   let loading = $state(true);
   let error = $state<string | null>(null);
   let renderTask: any = null;
+
+  let title = $state<string>("");
+  let description = $state<string>("");
+  let { url }: { url: string } = $props();
 
   let isFullscreenSupported = $state(false);
   let isFullscreen = $state(false);
@@ -83,6 +87,12 @@
       const loadingTask = pdfjs.getDocument(url);
       pdfDoc = await loadingTask.promise;
       totalPages = pdfDoc.numPages;
+
+      const { info } = await pdfDoc.getMetadata();
+      if (info) {
+        title = info.Title || "";
+        description = info.Subject || "";
+      }
     } catch (err) {
       if (err instanceof Error) {
         error = `PDFの読み込みに失敗しました: ${err.message}`;
@@ -119,7 +129,10 @@
 
       return () => {
         window.removeEventListener("keydown", handleKeyDown);
-        document.removeEventListener("fullscreenchange", handleFullscreenChange);
+        document.removeEventListener(
+          "fullscreenchange",
+          handleFullscreenChange,
+        );
       };
     }
   });
@@ -147,6 +160,8 @@
   }
 </script>
 
+<OpenGraph {title} body={description} {url} />
+
 <div
   class="container flex flex-col items-center justify-center gap-y-8 px-3 lg:px-12 py-5"
 >
@@ -159,8 +174,8 @@
       bind:this={viewerContainer}
       class="group relative max-w-full bg-base-100 flex items-center justify-center rounded-md overflow-hidden"
     >
-      <canvas bind:this={canvas} class="block !w-full !h-full rounded-md"></canvas>
-
+      <canvas bind:this={canvas} class="block !w-full !h-full rounded-md"
+      ></canvas>
       {#if isFullscreenSupported}
         <button
           onclick={toggleFullscreen}
@@ -168,9 +183,32 @@
           aria-label={isFullscreen ? "全画面表示を終了" : "全画面表示"}
         >
           {#if isFullscreen}
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-fullscreen-exit" viewBox="0 0 16 16">  <path d="M5.5 0a.5.5 0 0 1 .5.5v4A1.5 1.5 0 0 1 4.5 6h-4a.5.5 0 0 1 0-1h4a.5.5 0 0 0 .5-.5v-4a.5.5 0 0 1 .5-.5m5 0a.5.5 0 0 1 .5.5v4a.5.5 0 0 0 .5.5h4a.5.5 0 0 1 0 1h-4A1.5 1.5 0 0 1 10 4.5v-4a.5.5 0 0 1 .5-.5M0 10.5a.5.5 0 0 1 .5-.5h4A1.5 1.5 0 0 1 6 11.5v4a.5.5 0 0 1-1 0v-4a.5.5 0 0 0-.5-.5h-4a.5.5 0 0 1-.5-.5m10 1a1.5 1.5 0 0 1 1.5-1.5h4a.5.5 0 0 1 0 1h-4a.5.5 0 0 0-.5.5v4a.5.5 0 0 1-1 0z"/></svg>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              fill="currentColor"
+              class="bi bi-fullscreen-exit"
+              viewBox="0 0 16 16"
+            >
+              <path
+                d="M5.5 0a.5.5 0 0 1 .5.5v4A1.5 1.5 0 0 1 4.5 6h-4a.5.5 0 0 1 0-1h4a.5.5 0 0 0 .5-.5v-4a.5.5 0 0 1 .5-.5m5 0a.5.5 0 0 1 .5.5v4a.5.5 0 0 0 .5.5h4a.5.5 0 0 1 0 1h-4A1.5 1.5 0 0 1 10 4.5v-4a.5.5 0 0 1 .5-.5M0 10.5a.5.5 0 0 1 .5-.5h4A1.5 1.5 0 0 1 6 11.5v4a.5.5 0 0 1-1 0v-4a.5.5 0 0 0-.5-.5h-4a.5.5 0 0 1-.5-.5m10 1a1.5 1.5 0 0 1 1.5-1.5h4a.5.5 0 0 1 0 1h-4a.5.5 0 0 0-.5.5v4a.5.5 0 0 1-1 0z"
+              /></svg
+            >
           {:else}
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-arrows-fullscreen" viewBox="0 0 16 16">  <path fill-rule="evenodd" d="M5.828 10.172a.5.5 0 0 0-.707 0l-4.096 4.096V11.5a.5.5 0 0 0-1 0v3.975a.5.5 0 0 0 .5.5H4.5a.5.5 0 0 0 0-1H1.732l4.096-4.096a.5.5 0 0 0 0-.707m4.344 0a.5.5 0 0 1 .707 0l4.096 4.096V11.5a.5.5 0 1 1 1 0v3.975a.5.5 0 0 1-.5.5H11.5a.5.5 0 0 1 0-1h2.768l-4.096-4.096a.5.5 0 0 1 0-.707m0-4.344a.5.5 0 0 0 .707 0l4.096-4.096V4.5a.5.5 0 1 0 1 0V.525a.5.5 0 0 0-.5-.5H11.5a.5.5 0 0 0 0 1h2.768l-4.096 4.096a.5.5 0 0 0 0 .707m-4.344 0a.5.5 0 0 1-.707 0L1.025 1.732V4.5a.5.5 0 0 1-1 0V.525a.5.5 0 0 1 .5-.5H4.5a.5.5 0 0 1 0 1H1.732l4.096 4.096a.5.5 0 0 1 0 .707"/></svg>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              fill="currentColor"
+              class="bi bi-arrows-fullscreen"
+              viewBox="0 0 16 16"
+            >
+              <path
+                fill-rule="evenodd"
+                d="M5.828 10.172a.5.5 0 0 0-.707 0l-4.096 4.096V11.5a.5.5 0 0 0-1 0v3.975a.5.5 0 0 0 .5.5H4.5a.5.5 0 0 0 0-1H1.732l4.096-4.096a.5.5 0 0 0 0-.707m4.344 0a.5.5 0 0 1 .707 0l4.096 4.096V11.5a.5.5 0 1 1 1 0v3.975a.5.5 0 0 1-.5.5H11.5a.5.5 0 0 1 0-1h2.768l-4.096-4.096a.5.5 0 0 1 0-.707m0-4.344a.5.5 0 0 0 .707 0l4.096-4.096V4.5a.5.5 0 1 0 1 0V.525a.5.5 0 0 0-.5-.5H11.5a.5.5 0 0 0 0 1h2.768l-4.096 4.096a.5.5 0 0 0 0 .707m-4.344 0a.5.5 0 0 1-.707 0L1.025 1.732V4.5a.5.5 0 0 1-1 0V.525a.5.5 0 0 1 .5-.5H4.5a.5.5 0 0 1 0 1H1.732l4.096 4.096a.5.5 0 0 1 0 .707"
+              /></svg
+            >
           {/if}
         </button>
       {/if}
@@ -197,9 +235,7 @@
           />
         </svg>
       </button>
-      <span class="text-lg">
-        {pageNum} / {totalPages}
-      </span>
+      <span class="text-lg">{pageNum} / {totalPages}</span>
       <button
         onclick={nextPage}
         disabled={pageNum >= totalPages}
