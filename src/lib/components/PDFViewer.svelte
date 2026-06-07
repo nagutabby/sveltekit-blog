@@ -11,6 +11,10 @@
   let error = $state<string | null>(null);
   let renderTask: any = null;
 
+  let isFullscreenSupported = $state(false);
+  let isFullscreen = $state(false);
+  let viewerContainer = $state<HTMLDivElement>();
+
   const DISPLAY_SCALE = 1;
   const QUALITY_SCALE = 2;
 
@@ -88,14 +92,34 @@
     }
   }
 
+  function toggleFullscreen() {
+    if (!viewerContainer) return;
+
+    if (!document.fullscreenElement) {
+      viewerContainer.requestFullscreen().catch((err) => {
+        console.error(`フルスクリーンエラー: ${err.message}`);
+      });
+    } else {
+      document.exitFullscreen();
+    }
+  }
+
+  function handleFullscreenChange() {
+    isFullscreen = !!document.fullscreenElement;
+  }
+
   onMount(() => {
     loadPdfLibrary();
 
     if (browser) {
+      isFullscreenSupported = !!document.documentElement.requestFullscreen;
+
       window.addEventListener("keydown", handleKeyDown);
+      document.addEventListener("fullscreenchange", handleFullscreenChange);
 
       return () => {
         window.removeEventListener("keydown", handleKeyDown);
+        document.removeEventListener("fullscreenchange", handleFullscreenChange);
       };
     }
   });
@@ -131,8 +155,27 @@
   {:else if error}
     <div class="alert alert-error">{error}</div>
   {:else}
-    <canvas bind:this={canvas} class="block !w-full !h-full rounded-md"
-    ></canvas>
+    <div
+      bind:this={viewerContainer}
+      class="group relative max-w-full bg-base-100 flex items-center justify-center rounded-md overflow-hidden"
+    >
+      <canvas bind:this={canvas} class="block !w-full !h-full rounded-md"></canvas>
+
+      {#if isFullscreenSupported}
+        <button
+          onclick={toggleFullscreen}
+          class="absolute bottom-4 right-4 p-3 bg-black/40 hover:bg-black/60 text-white rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+          aria-label={isFullscreen ? "全画面表示を終了" : "全画面表示"}
+        >
+          {#if isFullscreen}
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-fullscreen-exit" viewBox="0 0 16 16">  <path d="M5.5 0a.5.5 0 0 1 .5.5v4A1.5 1.5 0 0 1 4.5 6h-4a.5.5 0 0 1 0-1h4a.5.5 0 0 0 .5-.5v-4a.5.5 0 0 1 .5-.5m5 0a.5.5 0 0 1 .5.5v4a.5.5 0 0 0 .5.5h4a.5.5 0 0 1 0 1h-4A1.5 1.5 0 0 1 10 4.5v-4a.5.5 0 0 1 .5-.5M0 10.5a.5.5 0 0 1 .5-.5h4A1.5 1.5 0 0 1 6 11.5v4a.5.5 0 0 1-1 0v-4a.5.5 0 0 0-.5-.5h-4a.5.5 0 0 1-.5-.5m10 1a1.5 1.5 0 0 1 1.5-1.5h4a.5.5 0 0 1 0 1h-4a.5.5 0 0 0-.5.5v4a.5.5 0 0 1-1 0z"/></svg>
+          {:else}
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-arrows-fullscreen" viewBox="0 0 16 16">  <path fill-rule="evenodd" d="M5.828 10.172a.5.5 0 0 0-.707 0l-4.096 4.096V11.5a.5.5 0 0 0-1 0v3.975a.5.5 0 0 0 .5.5H4.5a.5.5 0 0 0 0-1H1.732l4.096-4.096a.5.5 0 0 0 0-.707m4.344 0a.5.5 0 0 1 .707 0l4.096 4.096V11.5a.5.5 0 1 1 1 0v3.975a.5.5 0 0 1-.5.5H11.5a.5.5 0 0 1 0-1h2.768l-4.096-4.096a.5.5 0 0 1 0-.707m0-4.344a.5.5 0 0 0 .707 0l4.096-4.096V4.5a.5.5 0 1 0 1 0V.525a.5.5 0 0 0-.5-.5H11.5a.5.5 0 0 0 0 1h2.768l-4.096 4.096a.5.5 0 0 0 0 .707m-4.344 0a.5.5 0 0 1-.707 0L1.025 1.732V4.5a.5.5 0 0 1-1 0V.525a.5.5 0 0 1 .5-.5H4.5a.5.5 0 0 1 0 1H1.732l4.096 4.096a.5.5 0 0 1 0 .707"/></svg>
+          {/if}
+        </button>
+      {/if}
+    </div>
+
     <div class="flex items-center gap-4 w-full justify-center">
       <button
         onclick={prevPage}
