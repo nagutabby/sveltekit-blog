@@ -25,6 +25,7 @@
     "dockerfile",
     "yaml",
     "java",
+    "tsx",
   ];
 
   let headingList = $state();
