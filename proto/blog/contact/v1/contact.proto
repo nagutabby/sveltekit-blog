@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package blog.contact.v1;
+
+option go_package = "github.com/nagutabby/sveltekit-blog/backend/gen/blog/contact/v1;contactv1";
+
+message SubmitContactRequest {
+  string name = 1;
+  string email = 2;
+  string text = 3;
+  bool im_robot = 4;
+}
+
+// SubmitContactResponse.errors is keyed by field name ("name", "email",
+// "text", "im_robot") and mirrors the validation messages shown to the
+// user. An empty errors map means the message was accepted and sent.
+message SubmitContactResponse {
+  map<string, string> errors = 1;
+}
+
+service ContactService {
+  rpc SubmitContact(SubmitContactRequest) returns (SubmitContactResponse) {}
+}

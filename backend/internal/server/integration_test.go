@@ -13,11 +13,11 @@ import (
 )
 
 // TestHealthServiceOverHTTP exercises the full stack: a real HTTP server
-// serving server.NewHandler(), hit by a Connect RPC client generated from
+// serving server.NewHandler(server.Config{}), hit by a Connect RPC client generated from
 // proto/blog/health/v1/health.proto. It exists to prove the buf-generated
 // Go client/server pipeline is wired correctly end to end.
 func TestHealthServiceOverHTTP(t *testing.T) {
-	srv := httptest.NewServer(server.NewHandler())
+	srv := httptest.NewServer(server.NewHandler(server.Config{}))
 	defer srv.Close()
 
 	client := healthv1connect.NewHealthServiceClient(srv.Client(), srv.URL)
