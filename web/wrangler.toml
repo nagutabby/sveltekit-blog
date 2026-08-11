@@ -12,5 +12,5 @@ enabled = true
 # 置き換えること。値が秘密情報ではないため[vars]で管理しているが、
 # 気になる場合は `wrangler secret put WEB_ORIGIN` 等に切り替えてよい。
 [vars]
-WEB_ORIGIN = "https://REPLACE-WITH-WEB-RAILWAY-URL"
+WEB_ORIGIN = "https://blog.nagutabby.uk"
 BACKEND_ORIGIN = "https://REPLACE-WITH-BACKEND-RAILWAY-URL"
