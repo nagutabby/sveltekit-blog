@@ -60,3 +60,21 @@ curl -X POST http://localhost:8080/blog.federationadmin.v1.FederationAdminServic
 ```
 
 `changeType`は`CHANGE_TYPE_CREATE` / `CHANGE_TYPE_UPDATE` / `CHANGE_TYPE_DELETE`。
+
+## デプロイ
+
+`web`と`backend`は別々のRailwayサービスとしてデプロイする(サービス間の通信は各サービスに設定する環境変数のURLで行う。Railwayのプライベートネットワーキングが使えるならそちらでもよい)。
+
+- `backend`: `backend/`をルートにしたRailwayサービス。`.env.example`の環境変数(`DATABASE_URL`, `SITE_BASE_URL`, `WEB_BASE_URL`, `ACTOR_PUBLIC_KEY_PEM`/`ACTOR_PRIVATE_KEY_PEM`, `EMAIL_API_TOKEN`等)を設定する。
+- `web`: `web/`をルートにしたRailwayサービス。`BACKEND_URL`をbackendサービスのURLに設定する。
+- 公開ドメイン(`blog.nagutabby.uk`)の手前にCloudflare Workerを置き、パスに応じて2つのRailwayサービスへ振り分ける(`web/src/lib/workers/router.ts`、詳細は`web/wrangler.toml`)。
+
+### 本番DBのbaseline
+
+本番のPostgresは既にPrismaが`Follower`/`RelayConnection`テーブルを作成済み。`db/migrations/00001_initial_schema.sql`は`CREATE TABLE IF NOT EXISTS`/`CREATE UNIQUE INDEX IF NOT EXISTS`で書いているため、既存スキーマと完全に一致する前提で`goose up`を実行してもエラーにならず、goose管理テーブルにバージョン1が記録されるだけで済む(実際に既存スキーマを再現したDBに対して確認済み)。
+
+```sh
+goose -dir db/migrations postgres "$DATABASE_URL" up
+```
+
+以後のスキーマ変更は通常のgooseマイグレーションとして追加する。Prisma側で新規マイグレーションを追加しないこと。

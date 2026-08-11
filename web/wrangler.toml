@@ -1,7 +1,16 @@
 compatibility_date = "2025-04-06"
 name = "sveltekit-blog-worker"
-main = "src/lib/workers/relayBlocker.ts"
+main = "src/lib/workers/router.ts"
 route = "blog.nagutabby.uk/*"
 
 [observability]
 enabled = true
+
+# web/backendはそれぞれ別のRailwayサービスとしてデプロイする。
+# このWorkerがパスに応じてどちらへプロキシするかを決めるため、
+# 実際にRailwayが割り当てた公開URL(またはカスタムドメイン)に
+# 置き換えること。値が秘密情報ではないため[vars]で管理しているが、
+# 気になる場合は `wrangler secret put WEB_ORIGIN` 等に切り替えてよい。
+[vars]
+WEB_ORIGIN = "https://REPLACE-WITH-WEB-RAILWAY-URL"
+BACKEND_ORIGIN = "https://REPLACE-WITH-BACKEND-RAILWAY-URL"
