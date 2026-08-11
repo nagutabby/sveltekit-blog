@@ -2,10 +2,17 @@ import { Stack, StackProps } from "aws-cdk-lib";
 import { AllowedMethods, CachePolicy, Distribution, OriginRequestPolicy, ViewerProtocolPolicy } from "aws-cdk-lib/aws-cloudfront";
 import { FunctionUrlOrigin } from "aws-cdk-lib/aws-cloudfront-origins";
 import { FunctionUrl } from "aws-cdk-lib/aws-lambda";
+import { ICertificate } from "aws-cdk-lib/aws-certificatemanager";
+import { ARecord, AaaaRecord, IHostedZone, RecordTarget } from "aws-cdk-lib/aws-route53";
+import { CloudFrontTarget } from "aws-cdk-lib/aws-route53-targets";
 import { Construct } from "constructs";
+
+const DOMAIN_NAME = "api.nagutabby.uk";
 
 export interface ApiDistributionStackProps extends StackProps {
   readonly functionUrl: FunctionUrl;
+  readonly hostedZone: IHostedZone;
+  readonly certificate: ICertificate;
 }
 
 // api.nagutabby.uk全体が同じLambda(ApiStack)への単純なパススルーであり、
@@ -17,7 +24,9 @@ export class ApiDistributionStack extends Stack {
 
     const backendOrigin = FunctionUrlOrigin.withOriginAccessControl(props.functionUrl);
 
-    new Distribution(this, "ApiDistribution", {
+    const distribution = new Distribution(this, "ApiDistribution", {
+      domainNames: [DOMAIN_NAME],
+      certificate: props.certificate,
       defaultBehavior: {
         origin: backendOrigin,
         viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
@@ -26,5 +35,9 @@ export class ApiDistributionStack extends Stack {
         originRequestPolicy: OriginRequestPolicy.ALL_VIEWER_EXCEPT_HOST_HEADER,
       },
     });
+
+    const aliasTarget = RecordTarget.fromAlias(new CloudFrontTarget(distribution));
+    new ARecord(this, "ApiAliasRecordV4", { zone: props.hostedZone, target: aliasTarget });
+    new AaaaRecord(this, "ApiAliasRecordV6", { zone: props.hostedZone, target: aliasTarget });
   }
 }

@@ -28,12 +28,19 @@ const apiStack = new ApiStack(app, "SveltekitBlogApiStack", {
   fromAddress,
   bccAddress,
 });
+// ゾーン/証明書はDistributionより先に作る必要がある(circularを避けるため、
+// エイリアスレコード自体はSiteStack/ApiDistributionStackが自分で作る。
+// dns-stack.tsのコメント参照)。
+const dnsStack = new DnsStack(app, "SveltekitBlogDnsStack", { env });
 new SiteStack(app, "SveltekitBlogSiteStack", {
   env,
   functionUrl: apiStack.functionUrl,
+  hostedZone: dnsStack.blog.hostedZone,
+  certificate: dnsStack.blog.certificate,
 });
 new ApiDistributionStack(app, "SveltekitBlogApiDistributionStack", {
   env,
   functionUrl: apiStack.functionUrl,
+  hostedZone: dnsStack.api.hostedZone,
+  certificate: dnsStack.api.certificate,
 });
-new DnsStack(app, "SveltekitBlogDnsStack", { env });

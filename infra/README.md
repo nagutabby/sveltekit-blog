@@ -10,9 +10,19 @@ AWS CDK(TypeScript)によるインフラ定義です。RailwayからAWS(Lambda +
 - `ApiStack`: Goバックエンドを動かすLambda + Function URL(`AWS_IAM`認証、CloudFrontのOrigin Access Control経由以外からは呼べない)、Secrets Manager(`migrate/13`)。
 - `SiteStack`: `blog.nagutabby.uk`向けS3(SSGビルド成果物)+ CloudFront。Federation関連パス(`/actor`, `/actor/*`, `/.well-known/*`, `/api/articles/*`)はビヘイビアで同じLambda Function URLへ振り分ける(`migrate/15`)。Actor識別子(`SITE_BASE_URL`)がこのドメインに紐づいているため、ホスト名は変更できない。
 - `ApiDistributionStack`: `api.nagutabby.uk`向けCloudFront。同じLambda Function URLを唯一のオリジンとする単純なパススルー(`migrate/16`)。現時点ではContactService(お問い合わせ)専用。CORSは(CloudFrontではなく)backend側`internal/server/cors.go`が`CORS_ALLOWED_ORIGIN`(=`https://blog.nagutabby.uk`)を許可することで実現している。
-- `DnsStack`: `blog.nagutabby.uk`/`api.nagutabby.uk`用のRoute 53ホストゾーンとACM証明書(`migrate/17`)。ゾーンはすべて新規作成であり、既存リソースの`fromLookup`は使わない(AWS認証情報なしでも`cdk synth`が通るようにするため)。
+- `DnsStack`: `blog.nagutabby.uk`/`api.nagutabby.uk`用のRoute 53ホストゾーンとACM証明書(`migrate/17`)。ゾーンはすべて新規作成であり、既存リソースの`fromLookup`は使わない(AWS認証情報なしでも`cdk synth`が通るようにするため)。CloudFront DistributionへのAレコード/AAAAレコード(エイリアス)自体は、証明書とDistributionの間の循環依存を避けるため`DnsStack`ではなく`SiteStack`/`ApiDistributionStack`がそれぞれ自分で作成する(`DnsStack`はゾーンと証明書を渡すだけ)。
 
-`nagutabby.uk`ゾーン自体はCloudflareに残る。`blog`と`api`サブドメインのみNSレコードでRoute 53に委任する(手順はPRの説明を参照)。
+`nagutabby.uk`ゾーン自体はCloudflareに残る。`blog`と`api`サブドメインのみNSレコードでRoute 53に委任する。
+
+## DNS委任の手順
+
+1. `SveltekitBlogDnsStack`をデプロイし、出力される`BlogNameServers`/`ApiNameServers`(Route 53が割り当てたネームサーバー)を確認する。
+2. `SiteStack`/`ApiDistributionStack`もデプロイし、CloudFront経由で疎通することを**委任前に**確認する。Route 53のネームサーバーに直接問い合わせれば、Cloudflareでの委任前でも動作確認できる。
+   ```sh
+   dig @<BlogNameServersの1つ> blog.nagutabby.uk
+   ```
+3. 疎通を確認できたら、Cloudflareの`nagutabby.uk`ゾーンに`blog`/`api`サブドメイン用のNSレコードを追加し、`BlogNameServers`/`ApiNameServers`の値を設定する(ゾーンapex・メール等の既存レコードには触れない)。
+4. 伝播後、`https://blog.nagutabby.uk`/`https://api.nagutabby.uk`への実際のアクセスで最終確認する。切り戻す場合はCloudflare側のNSレコードを削除する(TTL分の伝播遅延がある点に注意)。
 
 ## 開発
 

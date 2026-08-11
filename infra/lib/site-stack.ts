@@ -11,10 +11,17 @@ import {
 } from "aws-cdk-lib/aws-cloudfront";
 import { S3BucketOrigin, FunctionUrlOrigin } from "aws-cdk-lib/aws-cloudfront-origins";
 import { FunctionUrl } from "aws-cdk-lib/aws-lambda";
+import { ICertificate } from "aws-cdk-lib/aws-certificatemanager";
+import { ARecord, AaaaRecord, IHostedZone, RecordTarget } from "aws-cdk-lib/aws-route53";
+import { CloudFrontTarget } from "aws-cdk-lib/aws-route53-targets";
 import { Construct } from "constructs";
+
+const DOMAIN_NAME = "blog.nagutabby.uk";
 
 export interface SiteStackProps extends StackProps {
   readonly functionUrl: FunctionUrl;
+  readonly hostedZone: IHostedZone;
+  readonly certificate: ICertificate;
 }
 
 // 記事更新をブラウザ/CDNキャッシュ経由で遅延させない([[ssg_unify_rendering]]の
@@ -54,6 +61,8 @@ export class SiteStack extends Stack {
 
     const distribution = new Distribution(this, "SiteDistribution", {
       defaultRootObject: "index.html",
+      domainNames: [DOMAIN_NAME],
+      certificate: props.certificate,
       defaultBehavior: {
         origin: s3Origin,
         viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
@@ -63,6 +72,10 @@ export class SiteStack extends Stack {
         FEDERATION_PATH_PATTERNS.map((pattern) => [pattern, backendBehavior]),
       ),
     });
+
+    const aliasTarget = RecordTarget.fromAlias(new CloudFrontTarget(distribution));
+    new ARecord(this, "SiteAliasRecordV4", { zone: props.hostedZone, target: aliasTarget });
+    new AaaaRecord(this, "SiteAliasRecordV6", { zone: props.hostedZone, target: aliasTarget });
 
     new BucketDeployment(this, "SiteDeployment", {
       sources: [Source.asset(path.join(__dirname, "..", "..", "web", "build"))],
