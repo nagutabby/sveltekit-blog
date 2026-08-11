@@ -1,6 +1,7 @@
 import { defineConfig } from "vitest/config";
 import { sveltekit } from "@sveltejs/kit/vite";
 import { svelteTesting } from '@testing-library/svelte/vite';
+import tailwindcss from '@tailwindcss/vite';
 import path from 'path';
 import fs from 'fs/promises';
 import sharp from 'sharp';
@@ -83,10 +84,10 @@ async function optimizeImage(filePath: string, baseDir: string) {
 
 
 export default defineConfig({
-  plugins: [sveltekit(), svelteTesting(), imageOptimizer()],
+  plugins: [tailwindcss(), sveltekit(), svelteTesting(), imageOptimizer()],
 
   build: {
-    target: "ES2020",
+    target: "es2020",
   },
   test: {
     include: ['src/**/*.{test,spec}.{js,ts}'],
