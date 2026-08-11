@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/nagutabby/sveltekit-blog/backend/internal/contact"
+	"github.com/nagutabby/sveltekit-blog/backend/internal/content"
 	"github.com/nagutabby/sveltekit-blog/backend/internal/server"
 )
 
@@ -26,12 +27,20 @@ func run() error {
 		addr = ":8080"
 	}
 
+	contentDir := os.Getenv("CONTENT_DIR")
+	if contentDir == "" {
+		// PR6 moves the Markdown sources into backend/content; until then
+		// they still live under web/static/content.
+		contentDir = "../web/static/content"
+	}
+
 	cfg := server.Config{
 		Contact: contact.Config{
 			APIToken:    os.Getenv("EMAIL_API_TOKEN"),
 			FromAddress: os.Getenv("FROM_ADDRESS"),
 			BCCAddress:  os.Getenv("BCC_ADDRESS"),
 		},
+		Content: content.NewLoader(contentDir),
 	}
 
 	httpServer := &http.Server{
