@@ -7,6 +7,12 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 RUN pnpm install --frozen-lockfile
 
 FROM deps AS build
+# SSG化によりコンテンツ取得(backendへのConnect RPC)はビルド時にしか
+# 行われないため、BACKEND_URLはここでのみ必要。railway.internalの
+# private networkingはビルドステージからは到達できないため、backendの
+# public URL(wrangler.tomlのBACKEND_ORIGINと同じ値)を渡すこと。
+ARG BACKEND_URL
+ENV BACKEND_URL=$BACKEND_URL
 COPY . .
 RUN pnpm build
 
