@@ -32,7 +32,11 @@ func run() error {
 
 	addr := os.Getenv("BACKEND_ADDR")
 	if addr == "" {
-		addr = ":8080"
+		if port := os.Getenv("PORT"); port != "" {
+			addr = ":" + port
+		} else {
+			addr = ":8080"
+		}
 	}
 
 	contentDir := os.Getenv("CONTENT_DIR")
