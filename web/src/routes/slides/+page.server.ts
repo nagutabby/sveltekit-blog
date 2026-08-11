@@ -1,10 +1,13 @@
 import fs from 'fs';
 import path from 'path';
 import { error } from '@sveltejs/kit';
+import { dev } from '$app/environment';
 import type { PageServerLoad } from "./$types";
 
 export const load: PageServerLoad = async () => {
-  const slidesDir = path.join(process.cwd(), 'static/content/slides');
+  // adapter-nodeの本番実行時はstatic/がコンテナに存在せず、build時にコピーされる
+  // build/client/content/slidesを見る必要がある
+  const slidesDir = path.join(process.cwd(), dev ? 'static/content/slides' : 'build/client/content/slides');
 
   if (!fs.existsSync(slidesDir)) {
     throw error(500, 'スライドディレクトリが見つかりません');
