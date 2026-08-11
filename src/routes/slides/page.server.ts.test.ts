@@ -5,8 +5,29 @@ import path from 'path';
 import { error } from '@sveltejs/kit';
 
 // fsとpathモジュールをモック化
-vi.mock('fs');
-vi.mock('path');
+// vitest 4ではNode組み込みモジュールの単純な自動モック(vi.mock('fs')など)が
+// モック関数を生成しないため、明示的なファクトリでexistsSync/readdirSync/joinのみ差し替える
+vi.mock('fs', async (importOriginal) => {
+  const actual = (await importOriginal()) as typeof import('fs') & { default: typeof import('fs') };
+  return {
+    ...actual,
+    default: {
+      ...actual.default,
+      existsSync: vi.fn(),
+      readdirSync: vi.fn(),
+    },
+  };
+});
+vi.mock('path', async (importOriginal) => {
+  const actual = await importOriginal() as typeof import('path') & { default: typeof import('path') };
+  return {
+    ...actual,
+    default: {
+      ...actual.default,
+      join: vi.fn(),
+    },
+  };
+});
 vi.mock('@sveltejs/kit', () => ({
   error: vi.fn()
 }));
