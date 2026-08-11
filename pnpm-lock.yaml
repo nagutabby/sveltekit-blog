@@ -63,14 +63,14 @@ importers:
         specifier: ^4.1.2
         version: 4.1.2
       marked:
-        specifier: ^15.0.11
-        version: 15.0.11
+        specifier: ^18.0.9
+        version: 18.0.9
       marked-gfm-heading-id:
         specifier: ^4.1.1
-        version: 4.1.1(marked@15.0.11)
+        version: 4.1.1(marked@18.0.9)
       marked-katex-extension:
         specifier: ^5.1.6
-        version: 5.1.6(katex@0.16.27)(marked@15.0.11)
+        version: 5.1.6(katex@0.16.27)(marked@18.0.9)
       msw:
         specifier: ^2.7.3
         version: 2.7.3(@types/node@22.10.2)(typescript@5.8.3)
@@ -2155,9 +2155,9 @@ packages:
       katex: '>=0.16 <0.17'
       marked: '>=4 <18'
 
-  marked@15.0.11:
-    resolution: {integrity: sha512-1BEXAU2euRCG3xwgLVT1y0xbJEld1XOrmRJpUwRCcy7rxhSCwMrmEu9LXoPhHSCJG41V7YcQ2mjKRr5BA3ITIA==}
-    engines: {node: '>= 18'}
+  marked@18.0.9:
+    resolution: {integrity: sha512-/Sa4qiiHZxf0/FQdBBowr9q4r10krCwMvpK48FUBdXdUXScDxiQGR9zCPrFgRVR5LU3iySOiIjy09ZQvADir1w==}
+    engines: {node: '>= 20'}
     hasBin: true
 
   math-intrinsics@1.1.0:
@@ -4510,17 +4510,17 @@ snapshots:
     dependencies:
       '@jridgewell/sourcemap-codec': 1.5.0
 
-  marked-gfm-heading-id@4.1.1(marked@15.0.11):
+  marked-gfm-heading-id@4.1.1(marked@18.0.9):
     dependencies:
       github-slugger: 2.0.0
-      marked: 15.0.11
+      marked: 18.0.9
 
-  marked-katex-extension@5.1.6(katex@0.16.27)(marked@15.0.11):
+  marked-katex-extension@5.1.6(katex@0.16.27)(marked@18.0.9):
     dependencies:
       katex: 0.16.27
-      marked: 15.0.11
+      marked: 18.0.9
 
-  marked@15.0.11: {}
+  marked@18.0.9: {}
 
   math-intrinsics@1.1.0: {}
 
