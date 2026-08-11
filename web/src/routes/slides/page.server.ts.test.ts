@@ -31,9 +31,6 @@ vi.mock('path', async (importOriginal) => {
 vi.mock('@sveltejs/kit', () => ({
   error: vi.fn()
 }));
-vi.mock('$app/environment', () => ({
-  dev: true
-}));
 
 describe('スライド一覧', () => {
   // 各テストの前にモックをリセット
