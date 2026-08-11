@@ -48,3 +48,30 @@ jobs:
 
       - name: テストを実行
         run: go test ./...
+
+  test-infra:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: infra
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Node.jsを準備
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24.19.0
+
+      - name: pnpmを準備
+        uses: pnpm/action-setup@v6
+        with:
+          version: 11.21.0
+
+      - name: 依存関係をインストール
+        run: pnpm install
+
+      - name: 型チェック
+        run: pnpm run build
+
+      - name: cdk synth
+        run: pnpm run synth
