@@ -13,7 +13,11 @@
     "test": "pnpm test:unit run"
   },
   "devDependencies": {
+    "@bufbuild/protobuf": "^2.13.0",
+    "@bufbuild/protoc-gen-es": "^2.13.0",
     "@cloudflare/workers-types": "^5.20260811.1",
+    "@connectrpc/connect": "^2.1.2",
+    "@connectrpc/connect-web": "^2.1.2",
     "@idotj/mastodon-embed-timeline": "^4.8.2",
     "@prisma/adapter-pg": "^7.9.1",
     "@prisma/client": "^7.9.1",

@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package blog.health.v1;
+
+option go_package = "github.com/nagutabby/sveltekit-blog/backend/gen/blog/health/v1;healthv1";
+
+message CheckRequest {}
+
+message CheckResponse {
+  string status = 1;
+}
+
+// HealthService is used to smoke-test the Connect RPC pipeline between
+// web (SvelteKit) and backend (Go). Domain services (Contact, Content,
+// FederationAdmin) are added in later PRs.
+service HealthService {
+  rpc Check(CheckRequest) returns (CheckResponse) {}
+}
