@@ -9,15 +9,17 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 )
 
-// timestampLayout is RFC3339 with a fixed-width (zero-padded) nanosecond
+// TimestampLayout is RFC3339 with a fixed-width (zero-padded) nanosecond
 // component, so stored timestamps remain correctly sortable as plain
 // strings. time.RFC3339Nano trims trailing zeros, which would otherwise
 // misorder a timestamp landing exactly on a whole second against one with a
-// nonzero fraction later in the same second.
-const timestampLayout = "2006-01-02T15:04:05.000000000Z"
+// nonzero fraction later in the same second. Exported so tools that write
+// Follower/RelayConnection items directly (e.g. cmd/migrate-to-dynamo) format
+// timestamps the same way.
+const TimestampLayout = "2006-01-02T15:04:05.000000000Z"
 
 func nowTimestamp() string {
-	return time.Now().UTC().Format(timestampLayout)
+	return time.Now().UTC().Format(TimestampLayout)
 }
 
 // Client is the subset of *dynamodb.Client the Queries methods need,

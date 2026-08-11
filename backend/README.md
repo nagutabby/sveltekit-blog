@@ -6,6 +6,7 @@ Goバックエンド（Connect RPC）です。
 
 - `cmd/server`: エントリーポイント。`BACKEND_ADDR`(既定`:8080`)でHTTPサーバを起動する。
 - `cmd/create-tables`: ローカルの`dynamodb-local`にFollower/RelayConnectionテーブルを作成するワンショットコマンド(本番のテーブル定義は`infra/lib/dynamodb-stack.ts`のCDKで管理する)。
+- `cmd/migrate-to-dynamo`: 本番切替時に一度だけ実行する、既存Postgres(`Follower`/`RelayConnection`)の全行をDynamoDBへコピーするワンショットコマンド。`internal/db`のUpsert系メソッドは呼ばずPutItemで直接書き込む(Upsert系は常にFollowing/Connectedをtrueにするため、既にUnfollow/切断済みの行の状態を保持できない)。`DATABASE_URL`(移行元Postgres)と`FOLLOWER_TABLE_NAME`/`RELAY_CONNECTION_TABLE_NAME`/`DYNAMODB_ENDPOINT`(移行先、`cmd/server`と同じ変数)を使う。
 - `internal/server`: トップレベルのHTTPハンドラ。`/healthz`と各Connect RPCサービスをマウントする。
 - `internal/health`: `blog.health.v1.HealthService`の実装。web↔backend間のConnect RPC配線を検証するための最小サービス。
 - `internal/contact`: `blog.contact.v1.ContactService`の実装。お問い合わせフォームの入力検証とMailtrap呼び出し。

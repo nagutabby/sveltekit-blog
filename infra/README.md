@@ -14,6 +14,18 @@ AWS CDK(TypeScript)によるインフラ定義です。RailwayからAWS(Lambda +
 
 `nagutabby.uk`ゾーン自体はCloudflareに残る。`blog`と`api`サブドメインのみNSレコードでRoute 53に委任する。
 
+## 本番切替の全体手順
+
+1. `SveltekitBlogDynamoDbStack`と`SveltekitBlogApiStack`を`cdk deploy`する(DynamoDBテーブル作成、Lambda用意)。
+2. `aws secretsmanager put-secret-value`で`ActorKeysSecret`/`EmailApiTokenSecret`に実際の値を投入する(上述)。
+3. `backend/cmd/migrate-to-dynamo`を実行し、既存Postgresの全データをDynamoDBへコピーする(`DATABASE_URL`は移行元Postgres、`FOLLOWER_TABLE_NAME`等は移行先のテーブル名を指す)。
+   ```sh
+   DATABASE_URL="postgres://..." go run ./cmd/migrate-to-dynamo
+   ```
+4. `web/`で`PUBLIC_API_BASE_URL=https://api.nagutabby.uk`を指定して`pnpm build`し、`SveltekitBlogSiteStack`/`SveltekitBlogApiDistributionStack`/`SveltekitBlogDnsStack`を`cdk deploy`する。
+5. 下記「DNS委任の手順」でCloudFront経由の疎通を確認してからCloudflareのNSレコードを追加する。
+6. 動作確認後、Railway上のweb/backendサービスとCloudflare Workerを停止する(`migrate/19`)。
+
 ## DNS委任の手順
 
 1. `SveltekitBlogDnsStack`をデプロイし、出力される`BlogNameServers`/`ApiNameServers`(Route 53が割り当てたネームサーバー)を確認する。
