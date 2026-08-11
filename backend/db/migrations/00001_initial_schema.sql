@@ -1,5 +1,10 @@
 -- +goose Up
-CREATE TABLE "Follower" (
+-- IF NOT EXISTS lets this migration double as a production baseline:
+-- the existing prod DB already has these tables/indexes from Prisma
+-- (byte-identical names/types, see backend/README.md), so running
+-- `goose up` against it is a safe no-op that just records version 1 as
+-- applied, instead of failing on "relation already exists".
+CREATE TABLE IF NOT EXISTS "Follower" (
     "id" SERIAL PRIMARY KEY,
     "actorId" TEXT NOT NULL,
     "inbox" TEXT NOT NULL,
@@ -9,9 +14,9 @@ CREATE TABLE "Follower" (
     "updatedAt" TIMESTAMP(3) NOT NULL
 );
 
-CREATE UNIQUE INDEX "Follower_actorId_key" ON "Follower"("actorId");
+CREATE UNIQUE INDEX IF NOT EXISTS "Follower_actorId_key" ON "Follower"("actorId");
 
-CREATE TABLE "RelayConnection" (
+CREATE TABLE IF NOT EXISTS "RelayConnection" (
     "id" SERIAL PRIMARY KEY,
     "actorId" TEXT NOT NULL,
     "inbox" TEXT NOT NULL,
@@ -21,7 +26,7 @@ CREATE TABLE "RelayConnection" (
     "updatedAt" TIMESTAMP(3) NOT NULL
 );
 
-CREATE UNIQUE INDEX "RelayConnection_actorId_key" ON "RelayConnection"("actorId");
+CREATE UNIQUE INDEX IF NOT EXISTS "RelayConnection_actorId_key" ON "RelayConnection"("actorId");
 
 -- +goose Down
 DROP TABLE "RelayConnection";

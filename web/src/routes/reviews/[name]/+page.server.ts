@@ -1,5 +1,5 @@
 import type { Review } from "$lib/types/blog";
-import { getHTMLData } from "$lib/utils";
+import { getHTMLData } from "$lib/server/content";
 import type { PageServerLoad } from "./$types";
 
 export const load: PageServerLoad = async ({ params }) => {

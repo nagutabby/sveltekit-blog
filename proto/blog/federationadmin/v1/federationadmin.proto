@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package blog.federationadmin.v1;
+
+option go_package = "github.com/nagutabby/sveltekit-blog/backend/gen/blog/federationadmin/v1;federationadminv1";
+
+enum ChangeType {
+  CHANGE_TYPE_UNSPECIFIED = 0;
+  CHANGE_TYPE_CREATE = 1;
+  CHANGE_TYPE_UPDATE = 2;
+  CHANGE_TYPE_DELETE = 3;
+}
+
+message PublishArticleActivityRequest {
+  string article_id = 1;
+  ChangeType change_type = 2;
+}
+
+message PublishArticleActivityResponse {}
+
+// FederationAdminService broadcasts Create/Update/Delete activities for an
+// article to every connected relay. It is internal-only: web (or operator
+// tooling) calls it after publishing a content change. It is not part of
+// the public ActivityPub HTTP surface (see internal/federation), so it is
+// a regular Connect RPC service rather than a plain HTTP handler.
+service FederationAdminService {
+  rpc PublishArticleActivity(PublishArticleActivityRequest) returns (PublishArticleActivityResponse) {}
+}

@@ -1,4 +1,4 @@
-import { getAllRawData } from '$lib/utils';
+import { getAllRawData } from '$lib/server/content';
 import { redirect } from '@sveltejs/kit';
 import { convertMarkdownToHtml } from '$lib/markdown';
 import type { Article } from '$lib/types/blog';

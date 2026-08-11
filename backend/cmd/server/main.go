@@ -10,6 +10,13 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/jackc/pgx/v5/pgxpool"
+
+	"github.com/nagutabby/sveltekit-blog/backend/internal/contact"
+	"github.com/nagutabby/sveltekit-blog/backend/internal/content"
+	"github.com/nagutabby/sveltekit-blog/backend/internal/db"
+	"github.com/nagutabby/sveltekit-blog/backend/internal/federation"
+	"github.com/nagutabby/sveltekit-blog/backend/internal/federationadmin"
 	"github.com/nagutabby/sveltekit-blog/backend/internal/server"
 )
 
@@ -20,18 +27,59 @@ func main() {
 }
 
 func run() error {
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+
 	addr := os.Getenv("BACKEND_ADDR")
 	if addr == "" {
-		addr = ":8080"
+		if port := os.Getenv("PORT"); port != "" {
+			addr = ":" + port
+		} else {
+			addr = ":8080"
+		}
+	}
+
+	contentDir := os.Getenv("CONTENT_DIR")
+	if contentDir == "" {
+		contentDir = "content"
+	}
+
+	siteBaseURL := os.Getenv("SITE_BASE_URL")
+	if siteBaseURL == "" {
+		siteBaseURL = "https://blog.nagutabby.uk"
+	}
+
+	pool, err := pgxpool.New(ctx, os.Getenv("DATABASE_URL"))
+	if err != nil {
+		return err
+	}
+	defer pool.Close()
+
+	queries := db.New(pool)
+	contentLoader := content.NewLoader(contentDir)
+
+	federationCfg := federation.Config{
+		SiteBaseURL:        siteBaseURL,
+		WebBaseURL:         os.Getenv("WEB_BASE_URL"),
+		ActorPublicKeyPEM:  os.Getenv("ACTOR_PUBLIC_KEY_PEM"),
+		ActorPrivateKeyPEM: os.Getenv("ACTOR_PRIVATE_KEY_PEM"),
+	}
+
+	cfg := server.Config{
+		Contact: contact.Config{
+			APIToken:    os.Getenv("EMAIL_API_TOKEN"),
+			FromAddress: os.Getenv("FROM_ADDRESS"),
+			BCCAddress:  os.Getenv("BCC_ADDRESS"),
+		},
+		Content:         contentLoader,
+		Federation:      federation.NewHandlers(queries, queries, contentLoader, federationCfg),
+		FederationAdmin: federationadmin.NewService(contentLoader, queries, federationCfg),
 	}
 
 	httpServer := &http.Server{
 		Addr:    addr,
-		Handler: server.NewHandler(),
+		Handler: server.NewHandler(cfg),
 	}
-
-	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
-	defer stop()
 
 	errCh := make(chan error, 1)
 	go func() {

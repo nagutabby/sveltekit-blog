@@ -1,13 +1,13 @@
 import { GET } from './+server';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { getAllRawData } from '$lib/utils.js';
+import { getAllRawData } from '$lib/server/content.js';
 import { XMLParser } from 'fast-xml-parser';
 import type { Article } from '$lib/types/blog';
 
 beforeEach(() => {
   vi.resetAllMocks();
 
-  vi.mock('$lib/utils.js', () => ({
+  vi.mock('$lib/server/content.js', () => ({
     getAllRawData: vi.fn(),
   }));
 });
