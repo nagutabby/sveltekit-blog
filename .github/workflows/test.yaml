@@ -26,3 +26,25 @@ jobs:
 
       - name: テストを実行
         run: pnpm test
+
+  test-backend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Goを準備
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: backend/go.mod
+
+      - name: ビルド
+        run: go build ./...
+
+      - name: vet
+        run: go vet ./...
+
+      - name: テストを実行
+        run: go test ./...
