@@ -13,7 +13,7 @@
     "test": "pnpm test:unit run"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^4.20250409.0",
+    "@cloudflare/workers-types": "^5.20260811.1",
     "@idotj/mastodon-embed-timeline": "^4.8.2",
     "@prisma/client": "^6.6.0",
     "@sveltejs/adapter-node": "^5.2.12",
