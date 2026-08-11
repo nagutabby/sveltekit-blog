@@ -10,6 +10,7 @@ import (
 	"os"
 
 	awsconfig "github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 
@@ -30,7 +31,13 @@ func run() error {
 		endpoint = "http://localhost:8000"
 	}
 
-	awsCfg, err := awsconfig.LoadDefaultConfig(ctx)
+	// dynamodb-localのみを対象にするツールなので、実際のAWS認証情報解決
+	// (IMDS/SSO等)には頼らずダミー認証情報を直接使う。デフォルトの認証情報
+	// チェーンを辿ると、ローカル環境によっては解決に時間がかかることがある。
+	awsCfg, err := awsconfig.LoadDefaultConfig(ctx,
+		awsconfig.WithRegion("us-east-1"),
+		awsconfig.WithCredentialsProvider(credentials.NewStaticCredentialsProvider("dummy", "dummy", "")),
+	)
 	if err != nil {
 		return err
 	}

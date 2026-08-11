@@ -19,7 +19,7 @@
     "@connectrpc/connect": "^2.1.2",
     "@connectrpc/connect-web": "^2.1.2",
     "@idotj/mastodon-embed-timeline": "^4.8.2",
-    "@sveltejs/adapter-node": "^5.5.7",
+    "@sveltejs/adapter-static": "^3.0.10",
     "@sveltejs/kit": "^2.70.2",
     "@sveltejs/vite-plugin-svelte": "^7.3.0",
     "@tailwindcss/typography": "^0.5.20",

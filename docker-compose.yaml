@@ -4,9 +4,4 @@ services:
     restart: unless-stopped
     ports:
       - "${DYNAMODB_PORT:-8000}:8000"
-    command: ["-jar", "DynamoDBLocal.jar", "-sharedDb", "-dbPath", "/data"]
-    volumes:
-      - dynamodb-data:/data
-
-volumes:
-  dynamodb-data:
+    command: ["-jar", "DynamoDBLocal.jar", "-inMemory"]
