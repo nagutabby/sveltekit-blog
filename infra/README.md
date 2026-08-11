@@ -28,11 +28,20 @@ pnpm run synth   # cdk synth
 pnpm exec cdk bootstrap
 ```
 
-デプロイ/差分確認。
+デプロイ/差分確認。お問い合わせフォームの送信元/BCC先アドレスはリポジトリに書かず、`-c`でcontextとして渡す(`fromAddress`/`bccAddress`を省略した場合`cdk synth`は空文字列のまま通るが、`cdk deploy`前には必ず指定する)。
 
 ```sh
-pnpm run diff
-pnpm run deploy
+pnpm run diff -- -c fromAddress="no-reply@example.com" -c bccAddress="admin@example.com"
+pnpm run deploy -- -c fromAddress="no-reply@example.com" -c bccAddress="admin@example.com"
+```
+
+`ApiStack`が作る`ActorKeysSecret`/`EmailApiTokenSecret`は空のSecrets Managerシークレットとして作成されるだけで、実際の値は入らない。デプロイ後に一度だけ手動で投入する。
+
+```sh
+aws secretsmanager put-secret-value --secret-id <ActorKeysSecretのARN> \
+  --secret-string '{"ACTOR_PUBLIC_KEY_PEM":"...","ACTOR_PRIVATE_KEY_PEM":"..."}'
+aws secretsmanager put-secret-value --secret-id <EmailApiTokenSecretのARN> \
+  --secret-string "<Mailtrapのトークン>"
 ```
 
 ## 環境変数移行(Railway → AWS)
@@ -41,8 +50,10 @@ pnpm run deploy
 
 | 変数名 | 現在 | 移行先 |
 |---|---|---|
-| `ACTOR_PRIVATE_KEY_PEM` / `ACTOR_PUBLIC_KEY_PEM` / `EMAIL_API_TOKEN` | backend(機密) | Secrets Manager(`ApiStack`) |
-| `FROM_ADDRESS` / `BCC_ADDRESS` / `SITE_BASE_URL` / `WEB_BASE_URL` / `CONTENT_DIR` | backend(非機密) | Lambda環境変数(`ApiStack`)。`SITE_BASE_URL`/`WEB_BASE_URL`の値は`https://blog.nagutabby.uk`のまま変更しない |
+| `ACTOR_PRIVATE_KEY_PEM` / `ACTOR_PUBLIC_KEY_PEM` | backend(機密) | `ActorKeysSecret`(Secrets Manager)にJSONで格納。LambdaにはARNのみ`ACTOR_KEYS_SECRET_ARN`として渡す(`backend/internal/protectedconfig`が解決する) |
+| `EMAIL_API_TOKEN` | backend(機密) | `EmailApiTokenSecret`(Secrets Manager)。Lambdaには`EMAIL_API_TOKEN_SECRET_ARN`のみ渡す |
+| `FROM_ADDRESS` / `BCC_ADDRESS` | backend(非機密だが実際のアドレスは非公開) | `cdk deploy -c fromAddress=... -c bccAddress=...`経由でLambda環境変数に設定 |
+| `SITE_BASE_URL` / `WEB_BASE_URL` / `CONTENT_DIR` | backend(非機密) | Lambda環境変数(`ApiStack`)。`SITE_BASE_URL`/`WEB_BASE_URL`の値は`https://blog.nagutabby.uk`のまま変更しない |
 | `DATABASE_URL` / `BACKEND_ADDR` / `PORT` / `POSTGRES_PORT` | backend | 廃止(DynamoDB化・Lambda化に伴い不要) |
 | `BACKEND_URL` | web(SSGビルド時) | ビルドパイプラインの参照先を`api.nagutabby.uk`に更新 |
 | `WEB_ORIGIN` / `BACKEND_ORIGIN` | Cloudflare Worker | Worker撤去(`migrate/18`)に伴い削除 |

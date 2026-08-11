@@ -10,16 +10,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/aws/aws-sdk-go-v2/aws"
-	awsconfig "github.com/aws/aws-sdk-go-v2/config"
-	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
-
-	"github.com/nagutabby/sveltekit-blog/backend/internal/contact"
-	"github.com/nagutabby/sveltekit-blog/backend/internal/content"
-	"github.com/nagutabby/sveltekit-blog/backend/internal/db"
-	"github.com/nagutabby/sveltekit-blog/backend/internal/federation"
-	"github.com/nagutabby/sveltekit-blog/backend/internal/federationadmin"
-	"github.com/nagutabby/sveltekit-blog/backend/internal/server"
+	"github.com/nagutabby/sveltekit-blog/backend/internal/app"
 )
 
 func main() {
@@ -41,60 +32,14 @@ func run() error {
 		}
 	}
 
-	contentDir := os.Getenv("CONTENT_DIR")
-	if contentDir == "" {
-		contentDir = "content"
-	}
-
-	siteBaseURL := os.Getenv("SITE_BASE_URL")
-	if siteBaseURL == "" {
-		siteBaseURL = "https://blog.nagutabby.uk"
-	}
-
-	followerTable := os.Getenv("FOLLOWER_TABLE_NAME")
-	if followerTable == "" {
-		followerTable = "Follower"
-	}
-	relayConnectionTable := os.Getenv("RELAY_CONNECTION_TABLE_NAME")
-	if relayConnectionTable == "" {
-		relayConnectionTable = "RelayConnection"
-	}
-
-	awsCfg, err := awsconfig.LoadDefaultConfig(ctx)
+	handler, err := app.NewHandler(ctx)
 	if err != nil {
 		return err
-	}
-	dynamoClient := dynamodb.NewFromConfig(awsCfg, func(o *dynamodb.Options) {
-		// dynamodb-localでのローカル開発用。本番ではDYNAMODB_ENDPOINTを設定しない。
-		if endpoint := os.Getenv("DYNAMODB_ENDPOINT"); endpoint != "" {
-			o.BaseEndpoint = aws.String(endpoint)
-		}
-	})
-
-	queries := db.New(dynamoClient, followerTable, relayConnectionTable)
-	contentLoader := content.NewLoader(contentDir)
-
-	federationCfg := federation.Config{
-		SiteBaseURL:        siteBaseURL,
-		WebBaseURL:         os.Getenv("WEB_BASE_URL"),
-		ActorPublicKeyPEM:  os.Getenv("ACTOR_PUBLIC_KEY_PEM"),
-		ActorPrivateKeyPEM: os.Getenv("ACTOR_PRIVATE_KEY_PEM"),
-	}
-
-	cfg := server.Config{
-		Contact: contact.Config{
-			APIToken:    os.Getenv("EMAIL_API_TOKEN"),
-			FromAddress: os.Getenv("FROM_ADDRESS"),
-			BCCAddress:  os.Getenv("BCC_ADDRESS"),
-		},
-		Content:         contentLoader,
-		Federation:      federation.NewHandlers(queries, queries, contentLoader, federationCfg),
-		FederationAdmin: federationadmin.NewService(contentLoader, queries, federationCfg),
 	}
 
 	httpServer := &http.Server{
 		Addr:    addr,
-		Handler: server.NewHandler(cfg),
+		Handler: handler,
 	}
 
 	errCh := make(chan error, 1)

@@ -15,8 +15,19 @@ const env = {
 
 const app = new App();
 
-new DynamoDbStack(app, "SveltekitBlogDynamoDbStack", { env });
-new ApiStack(app, "SveltekitBlogApiStack", { env });
+// `cdk deploy -c fromAddress=... -c bccAddress=...`で渡す。cdk synthだけなら
+// 未指定でも空文字列のまま通る(実際のメールアドレスをリポジトリに書かないため)。
+const fromAddress = (app.node.tryGetContext("fromAddress") as string | undefined) ?? "";
+const bccAddress = (app.node.tryGetContext("bccAddress") as string | undefined) ?? "";
+
+const dynamoDbStack = new DynamoDbStack(app, "SveltekitBlogDynamoDbStack", { env });
+new ApiStack(app, "SveltekitBlogApiStack", {
+  env,
+  followerTable: dynamoDbStack.followerTable,
+  relayConnectionTable: dynamoDbStack.relayConnectionTable,
+  fromAddress,
+  bccAddress,
+});
 new SiteStack(app, "SveltekitBlogSiteStack", { env });
 new ApiDistributionStack(app, "SveltekitBlogApiDistributionStack", { env });
 new DnsStack(app, "SveltekitBlogDnsStack", { env });

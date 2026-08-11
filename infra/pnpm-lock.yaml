@@ -8,6 +8,9 @@ importers:
 
   .:
     devDependencies:
+      '@aws-cdk/aws-lambda-go-alpha':
+        specifier: ^2.264.0-alpha.0
+        version: 2.264.0-alpha.0(aws-cdk-lib@2.264.0(constructs@10.8.1))(constructs@10.8.1)
       '@types/node':
         specifier: ^24.0.0
         version: 24.13.3
@@ -34,6 +37,13 @@ packages:
 
   '@aws-cdk/asset-node-proxy-agent-v6@2.1.2':
     resolution: {integrity: sha512-pDiuqH+qY3zM9lhhLjbKJ1tnKOHzQ2V4Wr/3qsxyKeKAkuPMI/BVGvZG1PbrikUw949cGVTfVEt4ETKKYnrj0Q==}
+
+  '@aws-cdk/aws-lambda-go-alpha@2.264.0-alpha.0':
+    resolution: {integrity: sha512-KSKTNtyYAHLfXp8UONyysFXkQzuDT0Ce5J3og7iXk0xbHaDNd+2VMu/OBuVGoNirBYrWxJGggNngv/oAV/+l1A==}
+    engines: {node: '>= 20.0.0'}
+    peerDependencies:
+      aws-cdk-lib: ^2.264.0
+      constructs: ^10.5.0
 
   '@aws-cdk/cloud-assembly-schema@54.17.0':
     resolution: {integrity: sha512-wV1GmMM5AvDkiJIenb9aJcBiGTa5KwX/C/mIjFZCsWsB5b1rEMLnwMageqrOpL2mWKicpxqS8ofF/Yte4Lm3Dg==}
@@ -376,6 +386,11 @@ snapshots:
   '@aws-cdk/asset-awscli-v1@2.2.282': {}
 
   '@aws-cdk/asset-node-proxy-agent-v6@2.1.2': {}
+
+  '@aws-cdk/aws-lambda-go-alpha@2.264.0-alpha.0(aws-cdk-lib@2.264.0(constructs@10.8.1))(constructs@10.8.1)':
+    dependencies:
+      aws-cdk-lib: 2.264.0(constructs@10.8.1)
+      constructs: 10.8.1
 
   '@aws-cdk/cloud-assembly-schema@54.17.0': {}
 

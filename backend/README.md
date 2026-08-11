@@ -21,7 +21,9 @@ Goバックエンド（Connect RPC）です。
 
 ## 環境変数
 
-`SITE_BASE_URL`(既定`https://blog.nagutabby.uk`。ActivityPub Actor識別子の起点になるため値を変更しない), `WEB_BASE_URL`(`/actor/outbox`が`/atom.xml`を取得するweb側のURL。未設定時は`SITE_BASE_URL`と同じ), `ACTOR_PUBLIC_KEY_PEM`/`ACTOR_PRIVATE_KEY_PEM`(改行は`\n`エスケープ可), `FOLLOWER_TABLE_NAME`(既定`Follower`), `RELAY_CONNECTION_TABLE_NAME`(既定`RelayConnection`), `DYNAMODB_ENDPOINT`(`dynamodb-local`向けのエンドポイント上書き。本番では未設定のままにする)。AWS認証情報/リージョンはSDKのデフォルト解決(環境変数・IAMロール等、[aws-sdk-go-v2/config](https://pkg.go.dev/github.com/aws/aws-sdk-go-v2/config)に従う)。詳細は`.env.example`を参照。
+`SITE_BASE_URL`(既定`https://blog.nagutabby.uk`。ActivityPub Actor識別子の起点になるため値を変更しない), `WEB_BASE_URL`(`/actor/outbox`が`/atom.xml`を取得するweb側のURL。未設定時は`SITE_BASE_URL`と同じ), `FOLLOWER_TABLE_NAME`(既定`Follower`), `RELAY_CONNECTION_TABLE_NAME`(既定`RelayConnection`), `DYNAMODB_ENDPOINT`(`dynamodb-local`向けのエンドポイント上書き。本番では未設定のままにする)。AWS認証情報/リージョンはSDKのデフォルト解決(環境変数・IAMロール等、[aws-sdk-go-v2/config](https://pkg.go.dev/github.com/aws/aws-sdk-go-v2/config)に従う)。詳細は`.env.example`を参照。
+
+機密情報(`ACTOR_PUBLIC_KEY_PEM`/`ACTOR_PRIVATE_KEY_PEM`, `EMAIL_API_TOKEN`)は`internal/protectedconfig`経由で解決する。Lambda上では`ACTOR_KEYS_SECRET_ARN`/`EMAIL_API_TOKEN_SECRET_ARN`(CDKの`ApiStack`が設定)からSecrets Managerを読む。これらのARN環境変数が未設定の場合(Railway/ローカル)は、`ACTOR_PUBLIC_KEY_PEM`/`ACTOR_PRIVATE_KEY_PEM`(改行は`\n`エスケープ可)/`EMAIL_API_TOKEN`を直接読む従来の挙動にフォールバックする。
 
 ## 開発
 
