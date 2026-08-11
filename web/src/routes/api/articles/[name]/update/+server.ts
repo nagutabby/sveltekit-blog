@@ -1,7 +1,7 @@
 import type { RequestHandler } from '@sveltejs/kit';
 import { signActivity } from '$lib/signRequest';
 import { PRIVATE_KEY } from '$env/static/private';
-import { getHTMLData } from '$lib/utils';
+import { getHTMLData } from '$lib/server/content';
 import type { Article } from '$lib/types/blog';
 
 export const GET: RequestHandler = async ({ params }) => {

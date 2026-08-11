@@ -1,7 +1,6 @@
 import { marked } from 'marked';
 import { Renderer } from 'marked';
 import { gfmHeadingId } from "marked-gfm-heading-id";
-import path from 'path';
 import { getWebpPath } from '$lib/utils';
 import memoize from 'lodash.memoize';
 import markedKatex from 'marked-katex-extension';
@@ -28,11 +27,3 @@ const options = {
 marked.use(markedKatex(options));
 
 export const convertMarkdownToHtml = memoize((content: string) => marked(content));
-
-export const transformImagePath = (imagePath: string, type: "articles" | "reviews"): string => {
-  if (imagePath && typeof imagePath === 'string' && imagePath.startsWith('images/')) {
-    const fileName = path.basename(imagePath);
-    return `/content/${type}/images/${fileName}`;
-  }
-  return imagePath;
-};
