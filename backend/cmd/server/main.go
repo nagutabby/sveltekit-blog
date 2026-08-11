@@ -10,7 +10,9 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	awsconfig "github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 
 	"github.com/nagutabby/sveltekit-blog/backend/internal/contact"
 	"github.com/nagutabby/sveltekit-blog/backend/internal/content"
@@ -49,13 +51,27 @@ func run() error {
 		siteBaseURL = "https://blog.nagutabby.uk"
 	}
 
-	pool, err := pgxpool.New(ctx, os.Getenv("DATABASE_URL"))
+	followerTable := os.Getenv("FOLLOWER_TABLE_NAME")
+	if followerTable == "" {
+		followerTable = "Follower"
+	}
+	relayConnectionTable := os.Getenv("RELAY_CONNECTION_TABLE_NAME")
+	if relayConnectionTable == "" {
+		relayConnectionTable = "RelayConnection"
+	}
+
+	awsCfg, err := awsconfig.LoadDefaultConfig(ctx)
 	if err != nil {
 		return err
 	}
-	defer pool.Close()
+	dynamoClient := dynamodb.NewFromConfig(awsCfg, func(o *dynamodb.Options) {
+		// dynamodb-localでのローカル開発用。本番ではDYNAMODB_ENDPOINTを設定しない。
+		if endpoint := os.Getenv("DYNAMODB_ENDPOINT"); endpoint != "" {
+			o.BaseEndpoint = aws.String(endpoint)
+		}
+	})
 
-	queries := db.New(pool)
+	queries := db.New(dynamoClient, followerTable, relayConnectionTable)
 	contentLoader := content.NewLoader(contentDir)
 
 	federationCfg := federation.Config{

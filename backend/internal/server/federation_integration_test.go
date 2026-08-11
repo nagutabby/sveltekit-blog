@@ -5,23 +5,25 @@ import (
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/x509"
-	"database/sql"
 	"encoding/pem"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
 
-	_ "github.com/jackc/pgx/v5/stdlib"
+	awsconfig "github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/credentials"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
+	tcdynamodb "github.com/testcontainers/testcontainers-go/modules/dynamodb"
 
-	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/pressly/goose/v3"
-	tcpostgres "github.com/testcontainers/testcontainers-go/modules/postgres"
-
-	migrations "github.com/nagutabby/sveltekit-blog/backend/db"
 	"github.com/nagutabby/sveltekit-blog/backend/internal/db"
 	"github.com/nagutabby/sveltekit-blog/backend/internal/federation"
 	"github.com/nagutabby/sveltekit-blog/backend/internal/server"
+)
+
+const (
+	followerTable        = "Follower"
+	relayConnectionTable = "RelayConnection"
 )
 
 func generateTestActorPrivateKeyPEM(t *testing.T) string {
@@ -44,46 +46,43 @@ func generateTestActorPrivateKeyPEM(t *testing.T) string {
 func TestFederationFollowOverHTTP(t *testing.T) {
 	ctx := context.Background()
 
-	container, err := tcpostgres.Run(ctx, "postgres:17-alpine",
-		tcpostgres.WithDatabase("sveltekit_blog_test"),
-		tcpostgres.WithUsername("sveltekit_blog_test"),
-		tcpostgres.WithPassword("sveltekit_blog_test"),
-		tcpostgres.BasicWaitStrategies(),
-	)
+	container, err := tcdynamodb.Run(ctx, "amazon/dynamodb-local:2.6.1")
 	if err != nil {
-		t.Fatalf("failed to start postgres container: %v", err)
+		t.Fatalf("failed to start dynamodb-local container: %v", err)
 	}
 	t.Cleanup(func() {
 		if err := container.Terminate(context.Background()); err != nil {
-			t.Logf("failed to terminate postgres container: %v", err)
+			t.Logf("failed to terminate dynamodb-local container: %v", err)
 		}
 	})
 
-	connString, err := container.ConnectionString(ctx, "sslmode=disable")
+	hostPort, err := container.ConnectionString(ctx)
 	if err != nil {
 		t.Fatalf("failed to get connection string: %v", err)
 	}
+	endpoint := "http://" + hostPort
 
-	migrationDB, err := sql.Open("pgx", connString)
+	awsCfg, err := awsconfig.LoadDefaultConfig(ctx,
+		awsconfig.WithRegion("us-east-1"),
+		awsconfig.WithCredentialsProvider(credentials.NewStaticCredentialsProvider("dummy", "dummy", "")),
+	)
 	if err != nil {
-		t.Fatalf("failed to open migration connection: %v", err)
+		t.Fatalf("failed to load AWS config: %v", err)
 	}
-	defer migrationDB.Close()
+	client := dynamodb.NewFromConfig(awsCfg, func(o *dynamodb.Options) {
+		o.BaseEndpoint = &endpoint
+	})
 
-	goose.SetBaseFS(migrations.FS)
-	if err := goose.SetDialect("postgres"); err != nil {
-		t.Fatalf("failed to set goose dialect: %v", err)
-	}
-	if err := goose.Up(migrationDB, "migrations"); err != nil {
-		t.Fatalf("failed to apply migrations: %v", err)
+	for _, def := range []*dynamodb.CreateTableInput{
+		db.FollowerTableDefinition(followerTable),
+		db.RelayConnectionTableDefinition(relayConnectionTable),
+	} {
+		if _, err := client.CreateTable(ctx, def); err != nil {
+			t.Fatalf("failed to create table %s: %v", *def.TableName, err)
+		}
 	}
 
-	pool, err := pgxpool.New(ctx, connString)
-	if err != nil {
-		t.Fatalf("failed to open pgx pool: %v", err)
-	}
-	t.Cleanup(pool.Close)
-	queries := db.New(pool)
+	queries := db.New(client, followerTable, relayConnectionTable)
 
 	// Fake remote Mastodon actor + inbox. inboxURL is filled in once the
 	// server is listening, since the actor document needs to advertise

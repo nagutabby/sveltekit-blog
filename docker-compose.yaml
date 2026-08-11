@@ -1,20 +1,12 @@
 services:
-  postgres:
-    image: postgres:17-alpine
+  dynamodb-local:
+    image: amazon/dynamodb-local:2.6.1
     restart: unless-stopped
-    environment:
-      POSTGRES_USER: sveltekit_blog
-      POSTGRES_PASSWORD: sveltekit_blog
-      POSTGRES_DB: sveltekit_blog
     ports:
-      - "${POSTGRES_PORT:-5432}:5432"
+      - "${DYNAMODB_PORT:-8000}:8000"
+    command: ["-jar", "DynamoDBLocal.jar", "-sharedDb", "-dbPath", "/data"]
     volumes:
-      - postgres-data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U sveltekit_blog"]
-      interval: 5s
-      timeout: 5s
-      retries: 10
+      - dynamodb-data:/data
 
 volumes:
-  postgres-data:
+  dynamodb-data:

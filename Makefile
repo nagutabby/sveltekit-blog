@@ -6,6 +6,10 @@ generate:
 db-up:
 	docker compose up -d
 
+.PHONY: db-init
+db-init:
+	cd backend && go run ./cmd/create-tables
+
 .PHONY: db-down
 db-down:
 	docker compose down -v

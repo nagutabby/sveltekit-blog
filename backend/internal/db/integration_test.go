@@ -2,67 +2,65 @@ package db_test
 
 import (
 	"context"
-	"database/sql"
 	"testing"
 	"time"
 
-	_ "github.com/jackc/pgx/v5/stdlib"
+	awsconfig "github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/credentials"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
+	tcdynamodb "github.com/testcontainers/testcontainers-go/modules/dynamodb"
 
-	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/pressly/goose/v3"
-	tcpostgres "github.com/testcontainers/testcontainers-go/modules/postgres"
-
-	migrations "github.com/nagutabby/sveltekit-blog/backend/db"
 	db "github.com/nagutabby/sveltekit-blog/backend/internal/db"
 )
 
-// setupDB starts a disposable Postgres container, applies the goose
-// migrations embedded in backend/db, and returns sqlc Queries backed by it.
+const (
+	followerTable        = "Follower"
+	relayConnectionTable = "RelayConnection"
+)
+
+// setupDB starts a disposable dynamodb-local container, creates the
+// Follower/RelayConnection tables, and returns Queries backed by it.
 func setupDB(t *testing.T) *db.Queries {
 	t.Helper()
 	ctx := context.Background()
 
-	container, err := tcpostgres.Run(ctx, "postgres:17-alpine",
-		tcpostgres.WithDatabase("sveltekit_blog_test"),
-		tcpostgres.WithUsername("sveltekit_blog_test"),
-		tcpostgres.WithPassword("sveltekit_blog_test"),
-		tcpostgres.BasicWaitStrategies(),
-	)
+	container, err := tcdynamodb.Run(ctx, "amazon/dynamodb-local:2.6.1")
 	if err != nil {
-		t.Fatalf("failed to start postgres container: %v", err)
+		t.Fatalf("failed to start dynamodb-local container: %v", err)
 	}
 	t.Cleanup(func() {
 		if err := container.Terminate(context.Background()); err != nil {
-			t.Logf("failed to terminate postgres container: %v", err)
+			t.Logf("failed to terminate dynamodb-local container: %v", err)
 		}
 	})
 
-	connString, err := container.ConnectionString(ctx, "sslmode=disable")
+	hostPort, err := container.ConnectionString(ctx)
 	if err != nil {
 		t.Fatalf("failed to get connection string: %v", err)
 	}
+	endpoint := "http://" + hostPort
 
-	migrationDB, err := sql.Open("pgx", connString)
+	awsCfg, err := awsconfig.LoadDefaultConfig(ctx,
+		awsconfig.WithRegion("us-east-1"),
+		awsconfig.WithCredentialsProvider(credentials.NewStaticCredentialsProvider("dummy", "dummy", "")),
+	)
 	if err != nil {
-		t.Fatalf("failed to open migration connection: %v", err)
+		t.Fatalf("failed to load AWS config: %v", err)
 	}
-	defer migrationDB.Close()
+	client := dynamodb.NewFromConfig(awsCfg, func(o *dynamodb.Options) {
+		o.BaseEndpoint = &endpoint
+	})
 
-	goose.SetBaseFS(migrations.FS)
-	if err := goose.SetDialect("postgres"); err != nil {
-		t.Fatalf("failed to set goose dialect: %v", err)
-	}
-	if err := goose.Up(migrationDB, "migrations"); err != nil {
-		t.Fatalf("failed to apply migrations: %v", err)
+	for _, def := range []*dynamodb.CreateTableInput{
+		db.FollowerTableDefinition(followerTable),
+		db.RelayConnectionTableDefinition(relayConnectionTable),
+	} {
+		if _, err := client.CreateTable(ctx, def); err != nil {
+			t.Fatalf("failed to create table %s: %v", *def.TableName, err)
+		}
 	}
 
-	pool, err := pgxpool.New(ctx, connString)
-	if err != nil {
-		t.Fatalf("failed to open pgx pool: %v", err)
-	}
-	t.Cleanup(pool.Close)
-
-	return db.New(pool)
+	return db.New(client, followerTable, relayConnectionTable)
 }
 
 func TestFollowerLifecycle(t *testing.T) {
@@ -100,8 +98,11 @@ func TestFollowerLifecycle(t *testing.T) {
 	if err != nil {
 		t.Fatalf("UpsertFollower (update) returned error: %v", err)
 	}
-	if updated.ID != created.ID {
-		t.Fatalf("UpsertFollower created a new row: got id %d, want %d", updated.ID, created.ID)
+	if updated.ActorId != created.ActorId {
+		t.Fatalf("UpsertFollower changed the key: got %q, want %q", updated.ActorId, created.ActorId)
+	}
+	if updated.CreatedAt != created.CreatedAt {
+		t.Fatalf("UpsertFollower created a new row: CreatedAt changed from %q to %q", created.CreatedAt, updated.CreatedAt)
 	}
 	if updated.PublicKeyPem != "PEM-2" {
 		t.Fatalf("PublicKeyPem = %q, want %q", updated.PublicKeyPem, "PEM-2")
@@ -174,7 +175,7 @@ func TestRelayConnectionLifecycle(t *testing.T) {
 	if !first.Connected {
 		t.Fatalf("Connected = false, want true")
 	}
-	if !first.LastAcceptedAt.Valid {
+	if first.LastAcceptedAt == "" {
 		t.Fatalf("LastAcceptedAt is not set")
 	}
 
@@ -187,11 +188,14 @@ func TestRelayConnectionLifecycle(t *testing.T) {
 	if err != nil {
 		t.Fatalf("UpsertRelayConnectionAccepted (re-accept) returned error: %v", err)
 	}
-	if second.ID != first.ID {
-		t.Fatalf("UpsertRelayConnectionAccepted created a new row: got id %d, want %d", second.ID, first.ID)
+	if second.ActorId != first.ActorId {
+		t.Fatalf("UpsertRelayConnectionAccepted changed the key: got %q, want %q", second.ActorId, first.ActorId)
 	}
-	if !second.LastAcceptedAt.Time.After(first.LastAcceptedAt.Time) {
-		t.Fatalf("LastAcceptedAt did not advance on re-accept: first=%v second=%v", first.LastAcceptedAt.Time, second.LastAcceptedAt.Time)
+	if second.CreatedAt != first.CreatedAt {
+		t.Fatalf("UpsertRelayConnectionAccepted created a new row: CreatedAt changed from %q to %q", first.CreatedAt, second.CreatedAt)
+	}
+	if second.LastAcceptedAt <= first.LastAcceptedAt {
+		t.Fatalf("LastAcceptedAt did not advance on re-accept: first=%v second=%v", first.LastAcceptedAt, second.LastAcceptedAt)
 	}
 
 	list, err := queries.ListRelayConnections(ctx)
