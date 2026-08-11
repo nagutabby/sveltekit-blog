@@ -12,8 +12,8 @@ importers:
         specifier: ^4.20250409.0
         version: 4.20250409.0
       '@idotj/mastodon-embed-timeline':
-        specifier: ^4.7.0
-        version: 4.7.0
+        specifier: ^4.8.2
+        version: 4.8.2
       '@prisma/client':
         specifier: ^6.6.0
         version: 6.6.0(prisma@6.6.0(typescript@5.8.3))(typescript@5.8.3)
@@ -548,8 +548,8 @@ packages:
     resolution: {integrity: sha512-vBZP4NlzfOlerQTnba4aqZoMhE/a9HY7HRqoOPaETQcSQuWEIyZMHGfVu6w9wGtGK5fED5qRs2DteVCjOH60sA==}
     engines: {node: '>=14'}
 
-  '@idotj/mastodon-embed-timeline@4.7.0':
-    resolution: {integrity: sha512-2vVH9KXykw9xv1pSIS/ay4e5cKYI8JUc+qkM1/5Y2S2MnR5XpFPk5eXddv9fasbnmrDV1IL6y5njzuq8qJsEeA==}
+  '@idotj/mastodon-embed-timeline@4.8.2':
+    resolution: {integrity: sha512-d2lPzxkSG8p4lThv5YP/q4BlvV+L7w9sXfrZQUDwsWuw0qq+87D3tYcInCX0h3tl6VmV+KsI5Bb3Q8lhctfP+g==}
 
   '@img/sharp-darwin-arm64@0.33.5':
     resolution: {integrity: sha512-UT4p+iz/2H4twwAoLCqfA9UH5pI6DggwKEGuaPy7nCVQ8ZsiY5PIcrRvD1DzuY3qYL07NtIQcWnBSY/heikIFQ==}
@@ -3039,7 +3039,7 @@ snapshots:
 
   '@fastify/busboy@2.1.1': {}
 
-  '@idotj/mastodon-embed-timeline@4.7.0': {}
+  '@idotj/mastodon-embed-timeline@4.8.2': {}
 
   '@img/sharp-darwin-arm64@0.33.5':
     optionalDependencies:
