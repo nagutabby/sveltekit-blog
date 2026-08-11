@@ -8,9 +8,27 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
+	"time"
 
+	"github.com/nagutabby/sveltekit-blog/backend/internal/content"
 	"github.com/nagutabby/sveltekit-blog/backend/internal/db"
 )
+
+type fakeArticleStore struct {
+	articles map[string]content.Article
+	err      error
+}
+
+func (f *fakeArticleStore) GetArticle(id string) (content.Article, error) {
+	if f.err != nil {
+		return content.Article{}, f.err
+	}
+	article, ok := f.articles[id]
+	if !ok {
+		return content.Article{}, content.ErrNotFound
+	}
+	return article, nil
+}
 
 type fakeFollowerStore struct {
 	upsertFollowerCalls []db.UpsertFollowerParams
@@ -70,7 +88,7 @@ func testConfig(t *testing.T) Config {
 }
 
 func TestWebfinger(t *testing.T) {
-	h := NewHandlers(&fakeFollowerStore{}, &fakeRelayStore{}, testConfig(t))
+	h := NewHandlers(&fakeFollowerStore{}, &fakeRelayStore{}, &fakeArticleStore{}, testConfig(t))
 
 	t.Run("valid resource", func(t *testing.T) {
 		req := httptest.NewRequest(http.MethodGet, "/.well-known/webfinger?resource=acct:article@blog.nagutabby.uk", nil)
@@ -118,7 +136,7 @@ func TestWebfinger(t *testing.T) {
 }
 
 func TestActor(t *testing.T) {
-	h := NewHandlers(&fakeFollowerStore{}, &fakeRelayStore{}, testConfig(t))
+	h := NewHandlers(&fakeFollowerStore{}, &fakeRelayStore{}, &fakeArticleStore{}, testConfig(t))
 
 	req := httptest.NewRequest(http.MethodGet, "/actor", nil)
 	rec := httptest.NewRecorder()
@@ -152,7 +170,7 @@ func TestActor(t *testing.T) {
 
 func TestFollowers(t *testing.T) {
 	followers := &fakeFollowerStore{followerCount: 42}
-	h := NewHandlers(followers, &fakeRelayStore{}, testConfig(t))
+	h := NewHandlers(followers, &fakeRelayStore{}, &fakeArticleStore{}, testConfig(t))
 
 	req := httptest.NewRequest(http.MethodGet, "/actor/followers", nil)
 	rec := httptest.NewRecorder()
@@ -169,7 +187,7 @@ func TestFollowers(t *testing.T) {
 
 func TestFollowersDBError(t *testing.T) {
 	followers := &fakeFollowerStore{countErr: context.DeadlineExceeded}
-	h := NewHandlers(followers, &fakeRelayStore{}, testConfig(t))
+	h := NewHandlers(followers, &fakeRelayStore{}, &fakeArticleStore{}, testConfig(t))
 
 	req := httptest.NewRequest(http.MethodGet, "/actor/followers", nil)
 	rec := httptest.NewRecorder()
@@ -181,7 +199,7 @@ func TestFollowersDBError(t *testing.T) {
 }
 
 func TestFollowing(t *testing.T) {
-	h := NewHandlers(&fakeFollowerStore{}, &fakeRelayStore{}, testConfig(t))
+	h := NewHandlers(&fakeFollowerStore{}, &fakeRelayStore{}, &fakeArticleStore{}, testConfig(t))
 
 	req := httptest.NewRequest(http.MethodGet, "/actor/following", nil)
 	rec := httptest.NewRecorder()
@@ -204,7 +222,7 @@ func TestOutbox(t *testing.T) {
 
 	cfg := testConfig(t)
 	cfg.WebBaseURL = atomServer.URL
-	h := NewHandlers(&fakeFollowerStore{}, &fakeRelayStore{}, cfg)
+	h := NewHandlers(&fakeFollowerStore{}, &fakeRelayStore{}, &fakeArticleStore{}, cfg)
 
 	req := httptest.NewRequest(http.MethodGet, "/actor/outbox", nil)
 	rec := httptest.NewRecorder()
@@ -227,7 +245,7 @@ func TestOutboxUpstreamError(t *testing.T) {
 
 	cfg := testConfig(t)
 	cfg.WebBaseURL = atomServer.URL
-	h := NewHandlers(&fakeFollowerStore{}, &fakeRelayStore{}, cfg)
+	h := NewHandlers(&fakeFollowerStore{}, &fakeRelayStore{}, &fakeArticleStore{}, cfg)
 
 	req := httptest.NewRequest(http.MethodGet, "/actor/outbox", nil)
 	rec := httptest.NewRecorder()
@@ -281,7 +299,7 @@ func TestInboxFollow(t *testing.T) {
 	defer actorServer.Close()
 
 	followers := &fakeFollowerStore{}
-	h := NewHandlers(followers, &fakeRelayStore{}, testConfig(t))
+	h := NewHandlers(followers, &fakeRelayStore{}, &fakeArticleStore{}, testConfig(t))
 
 	activityBody := `{"@context":"https://www.w3.org/ns/activitystreams","type":"Follow","actor":"` + actorServer.URL + `/users/alice","object":"https://blog.nagutabby.uk/actor"}`
 	req := httptest.NewRequest(http.MethodPost, "/actor/inbox", strings.NewReader(activityBody))
@@ -331,7 +349,7 @@ func TestInboxUndo(t *testing.T) {
 	defer actorServer.Close()
 
 	followers := &fakeFollowerStore{}
-	h := NewHandlers(followers, &fakeRelayStore{}, testConfig(t))
+	h := NewHandlers(followers, &fakeRelayStore{}, &fakeArticleStore{}, testConfig(t))
 
 	activityBody := `{"@context":"https://www.w3.org/ns/activitystreams","type":"Undo","actor":"` + actorServer.URL + `/users/alice","object":{"type":"Follow"}}`
 	req := httptest.NewRequest(http.MethodPost, "/actor/inbox", strings.NewReader(activityBody))
@@ -363,7 +381,7 @@ func TestInboxUndoWrongObjectType(t *testing.T) {
 	defer actorServer.Close()
 
 	followers := &fakeFollowerStore{}
-	h := NewHandlers(followers, &fakeRelayStore{}, testConfig(t))
+	h := NewHandlers(followers, &fakeRelayStore{}, &fakeArticleStore{}, testConfig(t))
 
 	activityBody := `{"@context":"x","type":"Undo","actor":"` + actorServer.URL + `/users/alice","object":{"type":"Like"}}`
 	req := httptest.NewRequest(http.MethodPost, "/actor/inbox", strings.NewReader(activityBody))
@@ -390,7 +408,7 @@ func TestInboxAccept(t *testing.T) {
 	defer actorServer.Close()
 
 	relays := &fakeRelayStore{}
-	h := NewHandlers(&fakeFollowerStore{}, relays, testConfig(t))
+	h := NewHandlers(&fakeFollowerStore{}, relays, &fakeArticleStore{}, testConfig(t))
 
 	activityBody := `{"@context":"x","type":"Accept","actor":"` + actorServer.URL + `/users/relay","object":{"type":"Follow"}}`
 	req := httptest.NewRequest(http.MethodPost, "/actor/inbox", strings.NewReader(activityBody))
@@ -409,7 +427,7 @@ func TestInboxAccept(t *testing.T) {
 }
 
 func TestInboxMissingRequiredFields(t *testing.T) {
-	h := NewHandlers(&fakeFollowerStore{}, &fakeRelayStore{}, testConfig(t))
+	h := NewHandlers(&fakeFollowerStore{}, &fakeRelayStore{}, &fakeArticleStore{}, testConfig(t))
 
 	req := httptest.NewRequest(http.MethodPost, "/actor/inbox", strings.NewReader(`{"type":"Follow"}`))
 	rec := httptest.NewRecorder()
@@ -428,7 +446,7 @@ func TestInboxUnsupportedType(t *testing.T) {
 	actorServer := httptest.NewServer(mux)
 	defer actorServer.Close()
 
-	h := NewHandlers(&fakeFollowerStore{}, &fakeRelayStore{}, testConfig(t))
+	h := NewHandlers(&fakeFollowerStore{}, &fakeRelayStore{}, &fakeArticleStore{}, testConfig(t))
 
 	activityBody := `{"@context":"x","type":"Like","actor":"` + actorServer.URL + `/users/alice","object":"y"}`
 	req := httptest.NewRequest(http.MethodPost, "/actor/inbox", strings.NewReader(activityBody))
@@ -441,7 +459,7 @@ func TestInboxUnsupportedType(t *testing.T) {
 }
 
 func TestInboxActorFetchFailure(t *testing.T) {
-	h := NewHandlers(&fakeFollowerStore{}, &fakeRelayStore{}, testConfig(t))
+	h := NewHandlers(&fakeFollowerStore{}, &fakeRelayStore{}, &fakeArticleStore{}, testConfig(t))
 
 	activityBody := `{"@context":"x","type":"Follow","actor":"http://127.0.0.1:0/nonexistent","object":"y"}`
 	req := httptest.NewRequest(http.MethodPost, "/actor/inbox", strings.NewReader(activityBody))
@@ -453,5 +471,60 @@ func TestInboxActorFetchFailure(t *testing.T) {
 	}
 	if rec.Body.String() != "Could not fetch actor information" {
 		t.Fatalf("body = %q", rec.Body.String())
+	}
+}
+
+func TestArticleNote(t *testing.T) {
+	articles := &fakeArticleStore{articles: map[string]content.Article{
+		"my-article": {
+			Title:       "タイトル",
+			PublishedAt: time.Date(2025, 6, 15, 0, 0, 0, 0, time.UTC),
+		},
+	}}
+	h := &Handlers{articles: articles, cfg: testConfig(t)}
+
+	req := httptest.NewRequest(http.MethodGet, "/api/articles/my-article", nil)
+	req.SetPathValue("name", "my-article")
+	rec := httptest.NewRecorder()
+	h.ArticleNote(rec, req)
+
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status = %d, want 200, body=%s", rec.Code, rec.Body.String())
+	}
+	if got := rec.Header().Get("Content-Type"); got != "application/activity+json" {
+		t.Fatalf("Content-Type = %q", got)
+	}
+	if got := rec.Header().Get("Cache-Control"); got != "" {
+		t.Fatalf("Cache-Control = %q, want empty (unlike other actor endpoints)", got)
+	}
+
+	var body map[string]any
+	if err := json.Unmarshal(rec.Body.Bytes(), &body); err != nil {
+		t.Fatalf("failed to decode body: %v", err)
+	}
+	if _, hasContext := body["@context"]; hasContext {
+		t.Fatal("bare article Note should not include @context, matching the original SvelteKit endpoint")
+	}
+	if body["id"] != "https://blog.nagutabby.uk/api/articles/my-article" {
+		t.Fatalf("id = %v", body["id"])
+	}
+	if body["name"] != "タイトル" {
+		t.Fatalf("name = %v", body["name"])
+	}
+	if body["published"] != "2025-06-15T00:00:00.000Z" {
+		t.Fatalf("published = %v", body["published"])
+	}
+}
+
+func TestArticleNoteNotFound(t *testing.T) {
+	h := &Handlers{articles: &fakeArticleStore{}, cfg: testConfig(t)}
+
+	req := httptest.NewRequest(http.MethodGet, "/api/articles/missing", nil)
+	req.SetPathValue("name", "missing")
+	rec := httptest.NewRecorder()
+	h.ArticleNote(rec, req)
+
+	if rec.Code != http.StatusNotFound {
+		t.Fatalf("status = %d, want 404", rec.Code)
 	}
 }

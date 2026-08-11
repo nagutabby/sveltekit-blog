@@ -41,7 +41,7 @@ func generateTestKeyPair(t *testing.T) (*rsa.PrivateKey, string, string) {
 func TestParseRSAPrivateKeyAcceptsPKCS1AndPKCS8(t *testing.T) {
 	original, pkcs1, pkcs8 := generateTestKeyPair(t)
 
-	fromPKCS1, err := parseRSAPrivateKey(pkcs1)
+	fromPKCS1, err := ParseRSAPrivateKey(pkcs1)
 	if err != nil {
 		t.Fatalf("parsing PKCS1: %v", err)
 	}
@@ -49,7 +49,7 @@ func TestParseRSAPrivateKeyAcceptsPKCS1AndPKCS8(t *testing.T) {
 		t.Fatal("PKCS1-parsed key does not match original")
 	}
 
-	fromPKCS8, err := parseRSAPrivateKey(pkcs8)
+	fromPKCS8, err := ParseRSAPrivateKey(pkcs8)
 	if err != nil {
 		t.Fatalf("parsing PKCS8: %v", err)
 	}
@@ -59,7 +59,7 @@ func TestParseRSAPrivateKeyAcceptsPKCS1AndPKCS8(t *testing.T) {
 }
 
 func TestParseRSAPrivateKeyRejectsGarbage(t *testing.T) {
-	if _, err := parseRSAPrivateKey("not a pem"); err == nil {
+	if _, err := ParseRSAPrivateKey("not a pem"); err == nil {
 		t.Fatal("expected an error for a non-PEM string, got nil")
 	}
 }
@@ -72,9 +72,9 @@ func TestSignHTTPRequestProducesVerifiableSignature(t *testing.T) {
 	targetURL := "https://mastodon.example/users/alice/inbox"
 	keyID := "https://blog.nagutabby.uk/actor#main-key"
 
-	headers, err := signHTTPRequest(targetURL, "POST", body, keyID, pkcsWithEscapedNewlines)
+	headers, err := SignHTTPRequest(targetURL, "POST", body, keyID, pkcsWithEscapedNewlines)
 	if err != nil {
-		t.Fatalf("signHTTPRequest returned error: %v", err)
+		t.Fatalf("SignHTTPRequest returned error: %v", err)
 	}
 
 	if !strings.HasPrefix(headers.Digest, "SHA-256=") {
