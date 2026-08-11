@@ -1,7 +1,7 @@
 import * as path from "node:path";
-import { Duration, RemovalPolicy, Stack, StackProps } from "aws-cdk-lib";
+import { CfnOutput, Duration, RemovalPolicy, Stack, StackProps } from "aws-cdk-lib";
 import { GoFunction } from "@aws-cdk/aws-lambda-go-alpha";
-import { Architecture, FunctionUrlAuthType, Runtime } from "aws-cdk-lib/aws-lambda";
+import { Architecture, FunctionUrl, FunctionUrlAuthType, Runtime } from "aws-cdk-lib/aws-lambda";
 import { Secret } from "aws-cdk-lib/aws-secretsmanager";
 import { ITable } from "aws-cdk-lib/aws-dynamodb";
 import { Construct } from "constructs";
@@ -20,7 +20,7 @@ export interface ApiStackProps extends StackProps {
 const HANDLER_TIMEOUT = Duration.seconds(30);
 
 export class ApiStack extends Stack {
-  readonly functionUrl: string;
+  readonly functionUrl: FunctionUrl;
 
   constructor(scope: Construct, id: string, props: ApiStackProps) {
     super(scope, id, props);
@@ -59,11 +59,16 @@ export class ApiStack extends Stack {
     actorKeys.grantRead(handler);
     emailApiToken.grantRead(handler);
 
-    // migrate/14でCloudFrontをFunction URLの手前に置くまでの検証用。
-    // 認証なしで公開する(webfinger/actor/inbox等は元々認証なしの公開エンドポイントのため)。
-    const fnUrl = handler.addFunctionUrl({
-      authType: FunctionUrlAuthType.NONE,
+    // AWS_IAMにして、CloudFront(migrate/15のOAC)経由以外からの直接アクセスを
+    // 拒否する。Function URL自体を公開する必要はない(webfinger/actor/inbox等は
+    // 元々認証なしの公開エンドポイントだが、それはCloudFront側で担保する)。
+    this.functionUrl = handler.addFunctionUrl({
+      authType: FunctionUrlAuthType.AWS_IAM,
     });
-    this.functionUrl = fnUrl.url;
+
+    new CfnOutput(this, "FunctionUrlOutput", {
+      description: "デバッグ用参照。AWS_IAM認証のためcurlでは直接叩けない(SigV4署名が必要)",
+      value: this.functionUrl.url,
+    });
   }
 }

@@ -21,13 +21,16 @@ const fromAddress = (app.node.tryGetContext("fromAddress") as string | undefined
 const bccAddress = (app.node.tryGetContext("bccAddress") as string | undefined) ?? "";
 
 const dynamoDbStack = new DynamoDbStack(app, "SveltekitBlogDynamoDbStack", { env });
-new ApiStack(app, "SveltekitBlogApiStack", {
+const apiStack = new ApiStack(app, "SveltekitBlogApiStack", {
   env,
   followerTable: dynamoDbStack.followerTable,
   relayConnectionTable: dynamoDbStack.relayConnectionTable,
   fromAddress,
   bccAddress,
 });
-new SiteStack(app, "SveltekitBlogSiteStack", { env });
+new SiteStack(app, "SveltekitBlogSiteStack", {
+  env,
+  functionUrl: apiStack.functionUrl,
+});
 new ApiDistributionStack(app, "SveltekitBlogApiDistributionStack", { env });
 new DnsStack(app, "SveltekitBlogDnsStack", { env });
