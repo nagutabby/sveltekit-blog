@@ -5,6 +5,7 @@ go 1.26.5
 require (
 	connectrpc.com/connect v1.20.0
 	github.com/google/uuid v1.6.0
+	github.com/gowebpki/jcs v1.0.1
 	github.com/jackc/pgx/v5 v5.10.0
 	github.com/pressly/goose/v3 v3.27.3
 	github.com/testcontainers/testcontainers-go/modules/postgres v0.44.0

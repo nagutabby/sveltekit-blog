@@ -16,6 +16,7 @@ import (
 	"github.com/nagutabby/sveltekit-blog/backend/internal/content"
 	"github.com/nagutabby/sveltekit-blog/backend/internal/db"
 	"github.com/nagutabby/sveltekit-blog/backend/internal/federation"
+	"github.com/nagutabby/sveltekit-blog/backend/internal/federationadmin"
 	"github.com/nagutabby/sveltekit-blog/backend/internal/server"
 )
 
@@ -51,6 +52,14 @@ func run() error {
 	defer pool.Close()
 
 	queries := db.New(pool)
+	contentLoader := content.NewLoader(contentDir)
+
+	federationCfg := federation.Config{
+		SiteBaseURL:        siteBaseURL,
+		WebBaseURL:         os.Getenv("WEB_BASE_URL"),
+		ActorPublicKeyPEM:  os.Getenv("ACTOR_PUBLIC_KEY_PEM"),
+		ActorPrivateKeyPEM: os.Getenv("ACTOR_PRIVATE_KEY_PEM"),
+	}
 
 	cfg := server.Config{
 		Contact: contact.Config{
@@ -58,13 +67,9 @@ func run() error {
 			FromAddress: os.Getenv("FROM_ADDRESS"),
 			BCCAddress:  os.Getenv("BCC_ADDRESS"),
 		},
-		Content: content.NewLoader(contentDir),
-		Federation: federation.NewHandlers(queries, queries, federation.Config{
-			SiteBaseURL:        siteBaseURL,
-			WebBaseURL:         os.Getenv("WEB_BASE_URL"),
-			ActorPublicKeyPEM:  os.Getenv("ACTOR_PUBLIC_KEY_PEM"),
-			ActorPrivateKeyPEM: os.Getenv("ACTOR_PRIVATE_KEY_PEM"),
-		}),
+		Content:         contentLoader,
+		Federation:      federation.NewHandlers(queries, queries, contentLoader, federationCfg),
+		FederationAdmin: federationadmin.NewService(contentLoader, queries, federationCfg),
 	}
 
 	httpServer := &http.Server{

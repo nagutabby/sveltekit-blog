@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"encoding/xml"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -12,22 +13,24 @@ import (
 
 	"github.com/google/uuid"
 
+	"github.com/nagutabby/sveltekit-blog/backend/internal/content"
 	"github.com/nagutabby/sveltekit-blog/backend/internal/db"
 )
 
 // Handlers implements the public ActivityPub HTTP surface previously
-// served by web/src/routes/{.well-known/webfinger,actor,actor/*}. These
-// stay plain net/http (not Connect RPC) because external federation
-// partners (Mastodon, relays) speak ActivityPub JSON-LD over HTTP, not
-// Connect.
+// served by web/src/routes/{.well-known/webfinger,actor,actor/*,
+// api/articles/[name]}. These stay plain net/http (not Connect RPC)
+// because external federation partners (Mastodon, relays) speak
+// ActivityPub JSON-LD over HTTP, not Connect.
 type Handlers struct {
 	followers FollowerStore
 	relays    RelayStore
+	articles  ArticleStore
 	cfg       Config
 }
 
-func NewHandlers(followers FollowerStore, relays RelayStore, cfg Config) *Handlers {
-	return &Handlers{followers: followers, relays: relays, cfg: cfg}
+func NewHandlers(followers FollowerStore, relays RelayStore, articles ArticleStore, cfg Config) *Handlers {
+	return &Handlers{followers: followers, relays: relays, articles: articles, cfg: cfg}
 }
 
 const activityJSONContentType = "application/activity+json"
@@ -76,7 +79,7 @@ func (h *Handlers) Actor(w http.ResponseWriter, r *http.Request) {
 		"publicKey": map[string]string{
 			"id":           h.cfg.actorKeyID(),
 			"owner":        h.cfg.actorURL(),
-			"publicKeyPem": normalizePEM(h.cfg.ActorPublicKeyPEM),
+			"publicKeyPem": NormalizePEM(h.cfg.ActorPublicKeyPEM),
 		},
 		"icon": map[string]string{
 			"type":      "Image",
@@ -113,6 +116,45 @@ func (h *Handlers) Following(w http.ResponseWriter, r *http.Request) {
 		"totalItems": 0,
 		"first":      followingURL + "?page=1",
 		"last":       followingURL + "?page=1",
+	})
+}
+
+// ArticleNote renders a bare ActivityPub Note representation of an
+// article, mirroring web's api/articles/[name]/+server.ts. Activities
+// built by internal/federationadmin reference this URL as the object's
+// id/url, so other AP servers dereference it here.
+func (h *Handlers) ArticleNote(w http.ResponseWriter, r *http.Request) {
+	name := r.PathValue("name")
+	if name == "" {
+		writePlainText(w, http.StatusNotFound, "Article not found")
+		return
+	}
+
+	article, err := h.articles.GetArticle(name)
+	if err != nil {
+		if errors.Is(err, content.ErrNotFound) {
+			writePlainText(w, http.StatusNotFound, "Article not found")
+			return
+		}
+		writePlainText(w, http.StatusInternalServerError, "Internal Server Error")
+		return
+	}
+
+	articleURL := fmt.Sprintf("%s/api/articles/%s", h.cfg.SiteBaseURL, name)
+
+	w.Header().Set("Content-Type", activityJSONContentType)
+	_ = json.NewEncoder(w).Encode(map[string]any{
+		"id":           articleURL,
+		"type":         "Note",
+		"attributedTo": h.cfg.actorURL(),
+		"name":         article.Title,
+		"content": fmt.Sprintf(
+			`<p>%s</p><a href="%s/articles/%s" target="_blank">%s/articles/%s</a>`,
+			article.Title, h.cfg.SiteBaseURL, name, h.cfg.SiteBaseURL, name,
+		),
+		"published": article.PublishedAt.UTC().Format("2006-01-02T15:04:05.000") + "Z",
+		"url":       articleURL,
+		"to":        []string{"https://www.w3.org/ns/activitystreams#Public"},
 	})
 }
 
@@ -293,7 +335,7 @@ func (h *Handlers) sendAccept(ctx context.Context, activity json.RawMessage, tar
 		return err
 	}
 
-	headers, err := signHTTPRequest(targetInbox, http.MethodPost, string(body), h.cfg.actorKeyID(), h.cfg.ActorPrivateKeyPEM)
+	headers, err := SignHTTPRequest(targetInbox, http.MethodPost, string(body), h.cfg.actorKeyID(), h.cfg.ActorPrivateKeyPEM)
 	if err != nil {
 		return err
 	}

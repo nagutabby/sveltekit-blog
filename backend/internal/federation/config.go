@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/nagutabby/sveltekit-blog/backend/internal/content"
 	"github.com/nagutabby/sveltekit-blog/backend/internal/db"
 )
 
@@ -47,9 +48,9 @@ func (c Config) actorKeyID() string {
 	return c.actorURL() + "#main-key"
 }
 
-// normalizePEM undoes the literal "\n" escaping commonly used when storing a
+// NormalizePEM undoes the literal "\n" escaping commonly used when storing a
 // multi-line PEM in a single-line environment variable.
-func normalizePEM(pem string) string {
+func NormalizePEM(pem string) string {
 	return strings.ReplaceAll(pem, `\n`, "\n")
 }
 
@@ -65,4 +66,12 @@ type FollowerStore interface {
 // relay Accept bookkeeping.
 type RelayStore interface {
 	UpsertRelayConnectionAccepted(ctx context.Context, arg db.UpsertRelayConnectionAcceptedParams) (db.RelayConnection, error)
+}
+
+// ArticleStore is the subset of *content.Loader the ArticleNote handler
+// needs to render a bare ActivityPub Note representation of an article,
+// mirroring web's api/articles/[name]/+server.ts. Other AP servers
+// dereference an activity's object.id/url at this URL.
+type ArticleStore interface {
+	GetArticle(id string) (content.Article, error)
 }

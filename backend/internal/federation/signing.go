@@ -16,10 +16,10 @@ import (
 	"time"
 )
 
-// parseRSAPrivateKey accepts both PKCS#1 ("BEGIN RSA PRIVATE KEY") and
+// ParseRSAPrivateKey accepts both PKCS#1 ("BEGIN RSA PRIVATE KEY") and
 // PKCS#8 ("BEGIN PRIVATE KEY") PEM encodings, mirroring what Node's
 // crypto.sign() accepts transparently.
-func parseRSAPrivateKey(pemStr string) (*rsa.PrivateKey, error) {
+func ParseRSAPrivateKey(pemStr string) (*rsa.PrivateKey, error) {
 	block, _ := pem.Decode([]byte(pemStr))
 	if block == nil {
 		return nil, errors.New("federation: failed to decode PEM block")
@@ -40,24 +40,24 @@ func parseRSAPrivateKey(pemStr string) (*rsa.PrivateKey, error) {
 	return rsaKey, nil
 }
 
-// signedRequestHeaders is the Go equivalent of web's signRequest() in
+// SignedRequestHeaders is the Go equivalent of web's signRequest() in
 // src/lib/signRequest.ts: an HTTP Signature (draft-cavage) over
 // (request-target), host, date and digest.
-type signedRequestHeaders struct {
+type SignedRequestHeaders struct {
 	Date      string
 	Digest    string
 	Signature string
 }
 
-func signHTTPRequest(targetURL, method, body, keyID, privateKeyPEM string) (signedRequestHeaders, error) {
+func SignHTTPRequest(targetURL, method, body, keyID, privateKeyPEM string) (SignedRequestHeaders, error) {
 	parsed, err := url.Parse(targetURL)
 	if err != nil {
-		return signedRequestHeaders{}, fmt.Errorf("federation: parsing target URL: %w", err)
+		return SignedRequestHeaders{}, fmt.Errorf("federation: parsing target URL: %w", err)
 	}
 
-	key, err := parseRSAPrivateKey(normalizePEM(privateKeyPEM))
+	key, err := ParseRSAPrivateKey(NormalizePEM(privateKeyPEM))
 	if err != nil {
-		return signedRequestHeaders{}, err
+		return SignedRequestHeaders{}, err
 	}
 
 	date := time.Now().UTC().Format(http.TimeFormat)
@@ -73,7 +73,7 @@ func signHTTPRequest(targetURL, method, body, keyID, privateKeyPEM string) (sign
 	hashed := sha256.Sum256([]byte(signString))
 	sigBytes, err := rsa.SignPKCS1v15(rand.Reader, key, crypto.SHA256, hashed[:])
 	if err != nil {
-		return signedRequestHeaders{}, fmt.Errorf("federation: signing request: %w", err)
+		return SignedRequestHeaders{}, fmt.Errorf("federation: signing request: %w", err)
 	}
 
 	signature := fmt.Sprintf(
@@ -81,5 +81,5 @@ func signHTTPRequest(targetURL, method, body, keyID, privateKeyPEM string) (sign
 		keyID, base64.StdEncoding.EncodeToString(sigBytes),
 	)
 
-	return signedRequestHeaders{Date: date, Digest: digest, Signature: signature}, nil
+	return SignedRequestHeaders{Date: date, Digest: digest, Signature: signature}, nil
 }

@@ -5,10 +5,12 @@ import (
 
 	"github.com/nagutabby/sveltekit-blog/backend/gen/blog/contact/v1/contactv1connect"
 	"github.com/nagutabby/sveltekit-blog/backend/gen/blog/content/v1/contentv1connect"
+	"github.com/nagutabby/sveltekit-blog/backend/gen/blog/federationadmin/v1/federationadminv1connect"
 	"github.com/nagutabby/sveltekit-blog/backend/gen/blog/health/v1/healthv1connect"
 	"github.com/nagutabby/sveltekit-blog/backend/internal/contact"
 	"github.com/nagutabby/sveltekit-blog/backend/internal/content"
 	"github.com/nagutabby/sveltekit-blog/backend/internal/federation"
+	"github.com/nagutabby/sveltekit-blog/backend/internal/federationadmin"
 	"github.com/nagutabby/sveltekit-blog/backend/internal/health"
 )
 
@@ -16,9 +18,10 @@ import (
 // Content and Federation are optional; when nil, the corresponding routes
 // are not mounted (used by tests that only care about other services).
 type Config struct {
-	Contact    contact.Config
-	Content    *content.Loader
-	Federation *federation.Handlers
+	Contact         contact.Config
+	Content         *content.Loader
+	Federation      *federation.Handlers
+	FederationAdmin *federationadmin.Service
 }
 
 // NewHandler builds the top-level HTTP handler for the backend server.
@@ -46,6 +49,12 @@ func NewHandler(cfg Config) http.Handler {
 		mux.HandleFunc("GET /actor/following", cfg.Federation.Following)
 		mux.HandleFunc("GET /actor/outbox", cfg.Federation.Outbox)
 		mux.HandleFunc("POST /actor/inbox", cfg.Federation.Inbox)
+		mux.HandleFunc("GET /api/articles/{name}", cfg.Federation.ArticleNote)
+	}
+
+	if cfg.FederationAdmin != nil {
+		federationAdminPath, federationAdminHandler := federationadminv1connect.NewFederationAdminServiceHandler(cfg.FederationAdmin)
+		mux.Handle(federationAdminPath, federationAdminHandler)
 	}
 
 	return mux

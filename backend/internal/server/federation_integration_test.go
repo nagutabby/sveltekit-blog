@@ -103,7 +103,7 @@ func TestFederationFollowOverHTTP(t *testing.T) {
 	inboxURL = remote.URL + "/users/alice/inbox"
 
 	cfg := server.Config{
-		Federation: federation.NewHandlers(queries, queries, federation.Config{
+		Federation: federation.NewHandlers(queries, queries, nil, federation.Config{
 			SiteBaseURL:        "https://blog.nagutabby.uk",
 			ActorPrivateKeyPEM: generateTestActorPrivateKeyPEM(t),
 		}),
