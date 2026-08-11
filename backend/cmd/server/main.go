@@ -10,6 +10,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/nagutabby/sveltekit-blog/backend/internal/contact"
 	"github.com/nagutabby/sveltekit-blog/backend/internal/server"
 )
 
@@ -25,9 +26,17 @@ func run() error {
 		addr = ":8080"
 	}
 
+	cfg := server.Config{
+		Contact: contact.Config{
+			APIToken:    os.Getenv("EMAIL_API_TOKEN"),
+			FromAddress: os.Getenv("FROM_ADDRESS"),
+			BCCAddress:  os.Getenv("BCC_ADDRESS"),
+		},
+	}
+
 	httpServer := &http.Server{
 		Addr:    addr,
-		Handler: server.NewHandler(),
+		Handler: server.NewHandler(cfg),
 	}
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
