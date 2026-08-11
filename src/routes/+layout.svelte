@@ -1,5 +1,5 @@
 <script lang="ts">
-  import "$lib/assets/stylesheets/app.scss";
+  import "$lib/assets/stylesheets/app.css";
   import Footer from "$lib/components/Footer.svelte";
   import { onNavigate } from "$app/navigation";
 
