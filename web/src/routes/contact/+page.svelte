@@ -1,17 +1,49 @@
 <script lang="ts">
-  import { enhance } from "$app/forms";
-  import type { ActionData } from "./$types";
   import Header from "$lib/components/Header.svelte";
   import OpenGraph from "$lib/components/OpenGraph.svelte";
+  import { createBackendClient } from "$lib/client/backendClient";
+  import { ContactService } from "$lib/gen/blog/contact/v1/contact_pb";
 
-  const { form }: { form: ActionData } = $props();
+  const contactClient = createBackendClient(ContactService);
 
   let isLoading = $state(false);
+  let errors = $state<Record<string, string> | null>(null);
+  let succeeded = $state(false);
 
   const url =
     "/images/Microsoft-Fluentui-Emoji-3d-Cat-3d.1024.png";
   const title = "お問い合わせ";
   const description = "お気軽にお問い合わせください";
+
+  async function handleSubmit(event: SubmitEvent) {
+    event.preventDefault();
+
+    const form = event.currentTarget as HTMLFormElement;
+    const formData = new FormData(form);
+    const name = formData.get("name") as string;
+    const email = formData.get("email") as string;
+    const text = formData.get("text") as string;
+    const imRobot = formData.get("im-robot") === "true";
+
+    isLoading = true;
+    errors = null;
+    succeeded = false;
+
+    try {
+      const response = await contactClient.submitContact({ name, email, text, imRobot });
+
+      if (Object.keys(response.errors).length > 0) {
+        errors = response.errors;
+      } else {
+        succeeded = true;
+        form.reset();
+      }
+    } catch {
+      errors = { general: "送信に失敗しました。しばらくしてから再度お試しください。" };
+    } finally {
+      isLoading = false;
+    }
+  }
 </script>
 
 <OpenGraph {url} {title} body={description}></OpenGraph>
@@ -19,21 +51,11 @@
 <Header {url} {title}></Header>
 
 <main class="container px-3 lg:px-12 py-10 mx-auto">
-  <form
-    method="POST"
-    id="form"
-    use:enhance={() => {
-      isLoading = true;
-      return async ({ update }) => {
-        await update();
-        isLoading = false;
-      };
-    }}
-  >
+  <form id="form" onsubmit={handleSubmit}>
     <div
       class="flex flex-col gap-y-7 lg:flex-row lg:flex-wrap justify-center lg:w-[80%] mx-auto"
     >
-      {#if form?.errors && Object.keys(form.errors).length > 0}
+      {#if errors && Object.keys(errors).length > 0}
         <div role="alert" class="alert alert-error">
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -49,12 +71,12 @@
             />
           </svg>
           <ul>
-            {#each Object.values(form.errors) as error}
+            {#each Object.values(errors) as error}
               <li>{error}</li>
             {/each}
           </ul>
         </div>
-      {:else if form}
+      {:else if succeeded}
         <div role="alert" class="alert alert-success">
           <svg
             xmlns="http://www.w3.org/2000/svg"

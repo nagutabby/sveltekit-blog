@@ -1,6 +1,8 @@
 import type { Article, Review } from '$lib/types/blog.js';
 import { getAllRawData } from '$lib/server/content.js';
 
+export const prerender = true;
+
 function createEntry(path: string, lastmod: Date, type: "articles" | "reviews") {
   return `<url>
     <loc>${new URL(`${type}/${path}`, "https://blog.nagutabby.uk").href}</loc>

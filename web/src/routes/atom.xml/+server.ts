@@ -2,6 +2,8 @@ import type { Article, Review } from "$lib/types/blog.js";
 import { generateDescriptionFromText } from "$lib/utils";
 import { getAllHTMLData } from "$lib/server/content";
 
+export const prerender = true;
+
 export async function GET({ setHeaders }) {
   setHeaders({
     'Content-Type': 'application/xml'

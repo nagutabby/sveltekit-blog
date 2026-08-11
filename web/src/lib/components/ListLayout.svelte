@@ -16,11 +16,13 @@
     items: Item[] | undefined;
     urlPrefix: string;
     pagination?: {
+      currentPage: number;
       totalPages: number;
     };
+    hrefFor?: (pageNumber: number) => string;
   }
 
-  const { items, urlPrefix, pagination }: Props = $props();
+  const { items, urlPrefix, pagination, hrefFor }: Props = $props();
 </script>
 
 <OpenGraph url={page.data.image} title={page.data.title} body={page.data.body} />
@@ -45,7 +47,7 @@
       <Timeline />
     </div>
   </div>
-  {#if pagination}
-    <Pagination totalPages={pagination.totalPages} />
+  {#if pagination && hrefFor}
+    <Pagination totalPages={pagination.totalPages} currentPage={pagination.currentPage} {hrefFor} />
   {/if}
 </main>

@@ -1,10 +1,15 @@
 import { defineConfig } from "vitest/config";
+import { loadEnv } from "vite";
 import { sveltekit } from "@sveltejs/kit/vite";
 import { svelteTesting } from '@testing-library/svelte/vite';
 import tailwindcss from '@tailwindcss/vite';
 import path from 'path';
 import fs from 'fs/promises';
 import sharp from 'sharp';
+
+// 本番はCloudflare Workerが/blog.contact.v1.ContactServiceをbackendへ
+// 転送するが、開発サーバーの手前にはWorkerがいないため同じ転送をここで行う。
+const CONTACT_SERVICE_PATH = '/blog.contact.v1.ContactService';
 
 // 画像最適化プラグイン
 const imageOptimizer = () => {
@@ -83,14 +88,32 @@ async function optimizeImage(filePath: string, baseDir: string) {
 }
 
 
-export default defineConfig({
-  plugins: [tailwindcss(), sveltekit(), svelteTesting(), imageOptimizer()],
+export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, process.cwd(), '');
+  const backendProxy = {
+    target: env.BACKEND_URL ?? 'http://localhost:8080',
+    changeOrigin: true
+  };
 
-  build: {
-    target: "es2020",
-  },
-  test: {
-    include: ['src/**/*.{test,spec}.{js,ts}'],
-    environment: 'jsdom'
-  }
+  return {
+    plugins: [tailwindcss(), sveltekit(), svelteTesting(), imageOptimizer()],
+
+    build: {
+      target: "es2020",
+    },
+    server: {
+      proxy: {
+        [CONTACT_SERVICE_PATH]: backendProxy
+      }
+    },
+    preview: {
+      proxy: {
+        [CONTACT_SERVICE_PATH]: backendProxy
+      }
+    },
+    test: {
+      include: ['src/**/*.{test,spec}.{js,ts}'],
+      environment: 'jsdom'
+    }
+  };
 });

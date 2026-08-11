@@ -14,8 +14,14 @@ export interface Env {
 }
 
 // Paths served by backend's public ActivityPub HTTP surface
-// (internal/federation). Everything else is web's.
-const BACKEND_PATH_PREFIXES = ['/actor', '/.well-known/webfinger', '/api/articles'];
+// (internal/federation), plus Connect RPC services the browser calls
+// directly (e.g. the contact form). Everything else is web's.
+const BACKEND_PATH_PREFIXES = [
+  '/actor',
+  '/.well-known/webfinger',
+  '/api/articles',
+  '/blog.contact.v1.ContactService'
+];
 
 export function isBackendPath(pathname: string): boolean {
   return BACKEND_PATH_PREFIXES.some(
@@ -52,6 +58,16 @@ function forbiddenRelayResponse(pathname: string, userAgent: string): Response {
   );
 }
 
+// web is fully statically prerendered (SSG); we never want the browser or
+// any CDN in front of this worker to cache a stale copy of a page/asset.
+// backend's own responses (federation, contact RPC) are left untouched.
+function withNoStore(response: Response): Response {
+  const noStoreResponse = new Response(response.body, response);
+  noStoreResponse.headers.set('Cache-Control', 'no-store');
+  noStoreResponse.headers.set('Pragma', 'no-cache');
+  return noStoreResponse;
+}
+
 function internalErrorResponse(): Response {
   return new Response(
     JSON.stringify({
@@ -86,7 +102,9 @@ export default {
 
       const targetOrigin = resolveOrigin(pathname, env);
       const targetURL = new URL(pathname + url.search, targetOrigin);
-      return fetch(new Request(targetURL, request));
+      const response = await fetch(new Request(targetURL, request));
+
+      return isBackendPath(pathname) ? response : withNoStore(response);
     } catch {
       return internalErrorResponse();
     }
