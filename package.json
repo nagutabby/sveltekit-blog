@@ -36,7 +36,7 @@
     "marked-katex-extension": "^5.1.6",
     "msw": "^2.7.3",
     "pdfjs-dist": "^5.1.91",
-    "postcss": "^8.5.3",
+    "postcss": "^8.5.26",
     "prisma": "^6.6.0",
     "sass": "^1.86.3",
     "sharp": "^0.34.2",
