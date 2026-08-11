@@ -84,7 +84,7 @@
 
     loading = true;
     try {
-      const loadingTask = pdfjs.getDocument(url);
+      const loadingTask = pdfjs.getDocument({ url });
       pdfDoc = await loadingTask.promise;
       totalPages = pdfDoc.numPages;
 
