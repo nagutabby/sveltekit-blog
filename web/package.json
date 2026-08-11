@@ -38,6 +38,7 @@
     "msw": "^2.15.0",
     "pdfjs-dist": "^6.2.108",
     "postcss": "^8.5.26",
+    "sass-embedded": "^1.100.0",
     "sharp": "^0.35.3",
     "shiki": "^4.4.3",
     "svelte": "^5.56.8",
@@ -50,14 +51,5 @@
     "wrangler": "^4.120.1"
   },
   "type": "module",
-  "packageManager": "pnpm@10.11.1",
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "@parcel/watcher",
-      "esbuild",
-      "msw",
-      "sharp",
-      "workerd"
-    ]
-  }
+  "packageManager": "pnpm@11.21.0"
 }

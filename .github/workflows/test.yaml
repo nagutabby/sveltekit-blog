@@ -19,7 +19,7 @@ jobs:
       - name: pnpmを準備
         uses: pnpm/action-setup@v6
         with:
-          version: 10.11.1
+          version: 11.21.0
 
       - name: 依存関係をインストール
         run: pnpm install
