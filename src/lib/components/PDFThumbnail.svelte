@@ -18,7 +18,7 @@
 
         pdfjs.GlobalWorkerOptions.workerSrc = workerUrl;
 
-        const pdf = await pdfjs.getDocument(url).promise;
+        const pdf = await pdfjs.getDocument({ url }).promise;
         const page = await pdf.getPage(1);
         const viewport = page.getViewport({ scale: 1 });
 
@@ -29,6 +29,7 @@
         if (!context) throw new Error("Canvas context is null");
 
         await page.render({
+          canvas: null,
           canvasContext: context,
           viewport: viewport,
         }).promise;
