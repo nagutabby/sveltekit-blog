@@ -34,7 +34,7 @@
     "marked": "^18.0.9",
     "marked-gfm-heading-id": "^4.1.4",
     "marked-katex-extension": "^5.1.10",
-    "msw": "^2.7.3",
+    "msw": "^2.15.0",
     "pdfjs-dist": "^6.2.108",
     "postcss": "^8.5.26",
     "prisma": "^6.6.0",
