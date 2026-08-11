@@ -6,15 +6,15 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Node.jsを準備
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
-          node-version: 22.12.0
+          node-version: 24.19.0
 
       - name: pnpmを準備
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@v6
 
       - name: 依存関係をインストール
         run: pnpm install
