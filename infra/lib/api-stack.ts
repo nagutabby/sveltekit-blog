@@ -51,6 +51,9 @@ export class ApiStack extends Stack {
         EMAIL_API_TOKEN_SECRET_ARN: emailApiToken.secretArn,
         FROM_ADDRESS: props.fromAddress,
         BCC_ADDRESS: props.bccAddress,
+        // ContactServiceはapi.nagutabby.uk(migrate/16)経由でblog.nagutabby.uk
+        // (静的サイト)から別オリジン呼び出しされるためCORSを許可する。
+        CORS_ALLOWED_ORIGIN: "https://blog.nagutabby.uk",
       },
     });
 

@@ -84,6 +84,7 @@ func NewHandler(ctx context.Context) (http.Handler, error) {
 		Content:         contentLoader,
 		Federation:      federation.NewHandlers(queries, queries, contentLoader, federationCfg),
 		FederationAdmin: federationadmin.NewService(contentLoader, queries, federationCfg),
+		AllowedOrigin:   os.Getenv("CORS_ALLOWED_ORIGIN"),
 	}
 
 	return server.NewHandler(cfg), nil

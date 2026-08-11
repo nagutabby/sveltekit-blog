@@ -22,6 +22,10 @@ type Config struct {
 	Content         *content.Loader
 	Federation      *federation.Handlers
 	FederationAdmin *federationadmin.Service
+	// AllowedOrigin is the browser origin allowed to call ContactService
+	// cross-origin (blog.nagutabby.uk calling api.nagutabby.uk). Empty
+	// disables CORS handling (same-origin deployments don't need it).
+	AllowedOrigin string
 }
 
 // NewHandler builds the top-level HTTP handler for the backend server.
@@ -35,6 +39,9 @@ func NewHandler(cfg Config) http.Handler {
 	mux.Handle(healthPath, healthHandler)
 
 	contactPath, contactHandler := contactv1connect.NewContactServiceHandler(contact.NewService(cfg.Contact))
+	if cfg.AllowedOrigin != "" {
+		contactHandler = withCORS(cfg.AllowedOrigin, contactHandler)
+	}
 	mux.Handle(contactPath, contactHandler)
 
 	if cfg.Content != nil {

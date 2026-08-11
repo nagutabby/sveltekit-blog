@@ -32,5 +32,8 @@ new SiteStack(app, "SveltekitBlogSiteStack", {
   env,
   functionUrl: apiStack.functionUrl,
 });
-new ApiDistributionStack(app, "SveltekitBlogApiDistributionStack", { env });
+new ApiDistributionStack(app, "SveltekitBlogApiDistributionStack", {
+  env,
+  functionUrl: apiStack.functionUrl,
+});
 new DnsStack(app, "SveltekitBlogDnsStack", { env });
