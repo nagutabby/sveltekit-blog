@@ -13,4 +13,4 @@ enabled = true
 # 気になる場合は `wrangler secret put WEB_ORIGIN` 等に切り替えてよい。
 [vars]
 WEB_ORIGIN = "https://blog.nagutabby.uk"
-BACKEND_ORIGIN = "https://REPLACE-WITH-BACKEND-RAILWAY-URL"
+BACKEND_ORIGIN = "https://backend-production-701bf.up.railway.app"
