@@ -26,7 +26,7 @@
     "@types/highlightjs": "^9.12.6",
     "@types/lodash.memoize": "^4.1.9",
     "canonicalize": "^3.0.0",
-    "daisyui": "^5.0.17",
+    "daisyui": "^5.7.16",
     "fast-xml-parser": "^5.10.1",
     "gray-matter": "^4.0.3",
     "jsdom": "^30.0.1",
