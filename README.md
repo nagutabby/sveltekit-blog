@@ -1,6 +1,6 @@
 # sveltekit-blog
 
-SvelteKitで構築されたブログのリポジトリです。
+SvelteKit(`web/`)とGoバックエンド(`backend/`)で構築されたブログのリポジトリです。
 このプロジェクトの成果物には、用途に応じて以下の異なるライセンスが適用されます。
 
 ## License / ライセンスについて
@@ -12,5 +12,5 @@ SvelteKitで構築されたブログのリポジトリです。
 詳細な許諾条件は[LICENSE-MIT](LICENSE-MIT)をご確認ください。
 
 ### 2. 記事・コンテンツ (Articles & Contents)
-`static/content/`配下のコンテンツはクリエイティブ・コモンズ 表示 4.0 国際ライセンス（CC BY 4.0）のもとで公開されています。
+`web/static/content/`配下のコンテンツはクリエイティブ・コモンズ 表示 4.0 国際ライセンス（CC BY 4.0）のもとで公開されています。
 詳細な許諾条件は[LICENSE-CC-BY-4.0](LICENSE-CC-BY-4.0)をご確認ください。

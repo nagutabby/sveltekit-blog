@@ -3,8 +3,11 @@ on:
   push:
 
 jobs:
-  test:
+  test-web:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
     steps:
       - uses: actions/checkout@v7
 
@@ -15,6 +18,8 @@ jobs:
 
       - name: pnpmを準備
         uses: pnpm/action-setup@v6
+        with:
+          version: 10.11.1
 
       - name: 依存関係をインストール
         run: pnpm install
