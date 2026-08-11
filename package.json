@@ -25,7 +25,7 @@
     "@testing-library/svelte": "^5.2.7",
     "@types/highlightjs": "^9.12.6",
     "@types/lodash.memoize": "^4.1.9",
-    "canonicalize": "^2.1.0",
+    "canonicalize": "^3.0.0",
     "daisyui": "^5.0.17",
     "fast-xml-parser": "^5.10.1",
     "gray-matter": "^4.0.3",
