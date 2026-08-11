@@ -9,12 +9,18 @@ Goバックエンド（Connect RPC + sqlc）です。
 - `internal/health`: `blog.health.v1.HealthService`の実装。web↔backend間のConnect RPC配線を検証するための最小サービス。
 - `internal/contact`: `blog.contact.v1.ContactService`の実装。お問い合わせフォームの入力検証とMailtrap呼び出し。
 - `internal/content`: `blog.content.v1.ContentService`の実装。記事/レビューのMarkdown+frontmatterを読み込み、raw bodyのまま返す(HTML変換はwebのmarked/KaTeXパイプラインに残す)。`CONTENT_DIR`(既定`content`)を読む。スライドはfrontmatterを持たない静的PDFのため対象外(webに残す)。
+- `internal/federation`: ActivityPub連携の公開HTTPエンドポイント(`webfinger`, `actor`, `actor/followers`, `actor/following`, `actor/inbox`, `actor/outbox`)。外部のMastodon/リレーサーバーはJSON-LD/HTTPしか話せないため、Connect RPCではなくプレーンな`net/http`ハンドラとして実装する。HTTP Signature(`signRequest.ts`相当)の署名・検証、Follower/RelayConnectionのDB更新(sqlc経由)、リモートactorのfetch、署名済みAcceptの送達を行う。
 - `content/`: 記事/レビューのMarkdownソース(コミット対象)。画像等の静的アセットは`web/static/content/**/images`に残る。
 - `gen/`: `proto/`から`buf generate`で生成したコード(コミット対象)。
 - `db/migrations`: [goose](https://github.com/pressly/goose)のSQLマイグレーション。`db/migrations.go`で`embed`し、goose CLIとGoテストの両方から使う。
 - `db/queries`, `sqlc.yaml`, `internal/db`: [sqlc](https://sqlc.dev/)によるDBアクセス層(`internal/db`は生成コード)。
 - `internal/db/integration_test.go`: [testcontainers-go](https://golang.testcontainers.org/)で使い捨てのPostgresを起動し、goose migrateしてからsqlcクエリを検証する統合テスト。
 - `internal/content/realcontent_test.go`: `content/`配下の実データを実際に読み込み、frontmatterが壊れていないかを検証する回帰テスト。
+- `internal/server/federation_integration_test.go`: testcontainers-goの実Postgres + 実HTTPサーバー + 偽のリモートMastodon actorを使い、Followの受信→DB反映→署名付きAcceptの送達までを検証する統合テスト。
+
+## 環境変数
+
+`DATABASE_URL`, `SITE_BASE_URL`(既定`https://blog.nagutabby.uk`), `WEB_BASE_URL`(`/actor/outbox`が`/atom.xml`を取得するweb側のURL。未設定時は`SITE_BASE_URL`と同じ), `ACTOR_PUBLIC_KEY_PEM`/`ACTOR_PRIVATE_KEY_PEM`(改行は`\n`エスケープ可)。詳細は`.env.example`を参照。
 
 ## 開発
 
