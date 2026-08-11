@@ -1,6 +1,6 @@
 import type { Article, Review } from "$lib/types/blog.js";
 import { generateDescriptionFromText } from "$lib/utils";
-import { getAllHTMLData } from "$lib/utils";
+import { getAllHTMLData } from "$lib/server/content";
 
 export async function GET({ setHeaders }) {
   setHeaders({

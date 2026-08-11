@@ -1,5 +1,5 @@
 import type { Article, Review } from '$lib/types/blog.js';
-import { getAllRawData } from '$lib/utils.js';
+import { getAllRawData } from '$lib/server/content.js';
 
 function createEntry(path: string, lastmod: Date, type: "articles" | "reviews") {
   return `<url>

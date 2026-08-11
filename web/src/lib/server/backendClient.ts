@@ -1,4 +1,5 @@
-import { createClient, type DescService } from "@connectrpc/connect";
+import type { DescService } from "@bufbuild/protobuf";
+import { createClient } from "@connectrpc/connect";
 import { createConnectTransport } from "@connectrpc/connect-web";
 import { env } from "$env/dynamic/private";
 

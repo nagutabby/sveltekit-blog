@@ -1,12 +1,18 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { GET } from './+server';
 import { XMLParser } from 'fast-xml-parser';
-import { generateDescriptionFromText, getAllHTMLData } from '$lib/utils';
+import { generateDescriptionFromText } from '$lib/utils';
+import { getAllHTMLData } from '$lib/server/content';
 
 // モックのインポートをセットアップ
 vi.mock('$lib/utils', () => {
   return {
-    generateDescriptionFromText: vi.fn((text) => `Description for: ${text.substring(0, 50)}...`),
+    generateDescriptionFromText: vi.fn((text) => `Description for: ${text.substring(0, 50)}...`)
+  };
+});
+
+vi.mock('$lib/server/content', () => {
+  return {
     getAllHTMLData: vi.fn()
   };
 });

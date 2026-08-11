@@ -1,5 +1,5 @@
 
-import { getAllHTMLData } from '$lib/utils';
+import { getAllHTMLData } from '$lib/server/content';
 import { redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from "./$types";
 import type { Article } from '$lib/types/blog';

@@ -8,11 +8,13 @@ Goバックエンド（Connect RPC + sqlc）です。
 - `internal/server`: トップレベルのHTTPハンドラ。`/healthz`と各Connect RPCサービスをマウントする。
 - `internal/health`: `blog.health.v1.HealthService`の実装。web↔backend間のConnect RPC配線を検証するための最小サービス。
 - `internal/contact`: `blog.contact.v1.ContactService`の実装。お問い合わせフォームの入力検証とMailtrap呼び出し。
-- `internal/content`: `blog.content.v1.ContentService`の実装。記事/レビューのMarkdown+frontmatterを読み込み、raw bodyのまま返す(HTML変換はwebのmarked/KaTeXパイプラインに残す)。`CONTENT_DIR`(既定`../web/static/content`。PR6で`backend/content`に変わる)を読む。スライドはfrontmatterを持たない静的PDFのため対象外(webに残す)。
+- `internal/content`: `blog.content.v1.ContentService`の実装。記事/レビューのMarkdown+frontmatterを読み込み、raw bodyのまま返す(HTML変換はwebのmarked/KaTeXパイプラインに残す)。`CONTENT_DIR`(既定`content`)を読む。スライドはfrontmatterを持たない静的PDFのため対象外(webに残す)。
+- `content/`: 記事/レビューのMarkdownソース(コミット対象)。画像等の静的アセットは`web/static/content/**/images`に残る。
 - `gen/`: `proto/`から`buf generate`で生成したコード(コミット対象)。
 - `db/migrations`: [goose](https://github.com/pressly/goose)のSQLマイグレーション。`db/migrations.go`で`embed`し、goose CLIとGoテストの両方から使う。
 - `db/queries`, `sqlc.yaml`, `internal/db`: [sqlc](https://sqlc.dev/)によるDBアクセス層(`internal/db`は生成コード)。
 - `internal/db/integration_test.go`: [testcontainers-go](https://golang.testcontainers.org/)で使い捨てのPostgresを起動し、goose migrateしてからsqlcクエリを検証する統合テスト。
+- `internal/content/realcontent_test.go`: `content/`配下の実データを実際に読み込み、frontmatterが壊れていないかを検証する回帰テスト。
 
 ## 開発
 

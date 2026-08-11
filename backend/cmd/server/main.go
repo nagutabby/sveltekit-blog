@@ -29,9 +29,7 @@ func run() error {
 
 	contentDir := os.Getenv("CONTENT_DIR")
 	if contentDir == "" {
-		// PR6 moves the Markdown sources into backend/content; until then
-		// they still live under web/static/content.
-		contentDir = "../web/static/content"
+		contentDir = "content"
 	}
 
 	cfg := server.Config{
