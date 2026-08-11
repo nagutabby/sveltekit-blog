@@ -3,6 +3,19 @@ import path from 'path';
 import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from "./$types";
 
+export function entries() {
+  const slidesDir = path.join(process.cwd(), 'static/content/slides');
+
+  if (!fs.existsSync(slidesDir)) {
+    return [];
+  }
+
+  return fs
+    .readdirSync(slidesDir)
+    .filter((file) => file.endsWith('.pdf'))
+    .map((file) => ({ name: file.replace('.pdf', '') }));
+}
+
 export const load: PageServerLoad = async ({ params }) => {
   const fileName = `${params.name}.pdf`;
 

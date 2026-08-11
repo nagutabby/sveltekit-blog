@@ -12,6 +12,7 @@ describe('isBackendPath', () => {
     ['/actor/followers', true],
     ['/.well-known/webfinger', true],
     ['/api/articles/my-article', true],
+    ['/blog.contact.v1.ContactService/SubmitContact', true],
     ['/', false],
     ['/articles/my-article', false],
     ['/atom.xml', false],
@@ -75,6 +76,20 @@ describe('default.fetch (worker entry point)', () => {
     expect(proxied.url).toBe('https://web.example/articles/my-article');
   });
 
+  it('forces Cache-Control: no-store on responses proxied to WEB_ORIGIN', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response('<html></html>', { headers: { 'Cache-Control': 'public, max-age=3600' } })
+    );
+    vi.stubGlobal('fetch', fetchMock);
+
+    const router = await setup();
+    const request = new Request('https://blog.nagutabby.uk/articles/my-article');
+    const response = await router.fetch(request, env);
+
+    expect(response.headers.get('Cache-Control')).toBe('no-store');
+    expect(response.headers.get('Pragma')).toBe('no-cache');
+  });
+
   it('proxies /actor to BACKEND_ORIGIN', async () => {
     const fetchMock = vi.fn().mockResolvedValue(new Response('ok'));
     vi.stubGlobal('fetch', fetchMock);
@@ -85,6 +100,34 @@ describe('default.fetch (worker entry point)', () => {
 
     const proxied = fetchMock.mock.calls[0][0] as Request;
     expect(proxied.url).toBe('https://backend.example/actor');
+  });
+
+  it('proxies /blog.contact.v1.ContactService to BACKEND_ORIGIN', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(new Response('ok'));
+    vi.stubGlobal('fetch', fetchMock);
+
+    const router = await setup();
+    const request = new Request(
+      'https://blog.nagutabby.uk/blog.contact.v1.ContactService/SubmitContact',
+      { method: 'POST', body: '{}' }
+    );
+    await router.fetch(request, env);
+
+    const proxied = fetchMock.mock.calls[0][0] as Request;
+    expect(proxied.url).toBe('https://backend.example/blog.contact.v1.ContactService/SubmitContact');
+  });
+
+  it('does not rewrite Cache-Control on responses proxied to BACKEND_ORIGIN', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response('{}', { headers: { 'Cache-Control': 'public, max-age=3600' } })
+    );
+    vi.stubGlobal('fetch', fetchMock);
+
+    const router = await setup();
+    const request = new Request('https://blog.nagutabby.uk/actor');
+    const response = await router.fetch(request, env);
+
+    expect(response.headers.get('Cache-Control')).toBe('public, max-age=3600');
   });
 
   it('proxies a relay Accept to /actor/inbox instead of blocking it', async () => {
