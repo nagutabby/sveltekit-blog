@@ -22,7 +22,7 @@ const mailtrapSendURL = "https://send.api.mailtrap.io/api/send"
 // Config holds the secrets and addressing needed to send contact-form
 // notifications through the Mailtrap API.
 type Config struct {
-	APIToken   string
+	APIToken    string
 	FromAddress string
 	BCCAddress  string
 }
