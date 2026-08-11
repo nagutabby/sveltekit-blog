@@ -5,7 +5,7 @@
   "scripts": {
     "prepare": "svelte-kit sync",
     "dev": "vite dev",
-    "build": "prisma generate && vite build",
+    "build": "vite build",
     "preview": "vite preview",
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
@@ -19,8 +19,6 @@
     "@connectrpc/connect": "^2.1.2",
     "@connectrpc/connect-web": "^2.1.2",
     "@idotj/mastodon-embed-timeline": "^4.8.2",
-    "@prisma/adapter-pg": "^7.9.1",
-    "@prisma/client": "^7.9.1",
     "@sveltejs/adapter-node": "^5.5.7",
     "@sveltejs/kit": "^2.70.2",
     "@sveltejs/vite-plugin-svelte": "^7.3.0",
@@ -30,9 +28,7 @@
     "@testing-library/svelte": "^5.4.2",
     "@types/highlightjs": "^9.12.6",
     "@types/lodash.memoize": "^4.1.9",
-    "@types/pg": "^8.21.0",
     "daisyui": "^5.7.16",
-    "dotenv": "^17.4.2",
     "fast-xml-parser": "^5.10.1",
     "jsdom": "^30.0.1",
     "lodash.memoize": "^4.1.2",
@@ -41,9 +37,7 @@
     "marked-katex-extension": "^5.1.10",
     "msw": "^2.15.0",
     "pdfjs-dist": "^6.2.108",
-    "pg": "^8.23.0",
     "postcss": "^8.5.26",
-    "prisma": "^7.9.1",
     "sharp": "^0.35.3",
     "shiki": "^4.4.3",
     "svelte": "^5.56.8",
@@ -60,11 +54,8 @@
   "pnpm": {
     "onlyBuiltDependencies": [
       "@parcel/watcher",
-      "@prisma/client",
-      "@prisma/engines",
       "esbuild",
       "msw",
-      "prisma",
       "sharp",
       "workerd"
     ]
