@@ -3,8 +3,3 @@ allowBuilds:
   esbuild: true
   msw: true
   sharp: true
-  workerd: true
-minimumReleaseAgeExclude:
-  - '@cloudflare/workers-types@5.20260811.1'
-  - miniflare@5.20260804.0-alpha
-  - wrangler@4.120.1

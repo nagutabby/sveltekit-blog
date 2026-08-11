@@ -64,12 +64,6 @@ curl -X POST http://localhost:8080/blog.federationadmin.v1.FederationAdminServic
 
 ## デプロイ
 
-`web`と`backend`は別々のRailwayサービスとしてデプロイする(サービス間の通信は各サービスに設定する環境変数のURLで行う。Railwayのプライベートネットワーキングが使えるならそちらでもよい)。ビルド・デプロイ設定はRailwayの[Config as Code](https://docs.railway.com/guides/config-as-code)機能で`backend/railway.json` / `web/railway.json`にコミットしている(`Dockerfile`をビルダーに指定し、`/healthz`へのヘルスチェックと再起動ポリシーを定義)。
+backendはAWS Lambda上で動作する(`cmd/lambda`)。インフラ(Lambda/DynamoDB/CloudFront/Route 53)はすべて`infra/`のAWS CDKで管理する。デプロイ手順・環境変数の対応表・本番切替の全体手順は[`infra/README.md`](../infra/README.md)を参照。
 
-**この構成はAWS(Lambda + S3 + CloudFront + DynamoDB, `infra/`のCDK管理)への移行中の中間状態であり、最終形ではない。** `migrate/12`時点ではストレージだけをDynamoDBに切り替え、コンピュートはRailwayに残したままにしている(変更を一度に1軸だけ進めることで問題発生時の切り戻しを容易にするため)。詳細は`infra/README.md`を参照。
-
-同じリポジトリを指す2つのRailwayサービスをダッシュボードで作成し、それぞれ以下を設定する。
-
-- `backend`サービス: Settings > Root Directory を`backend`に設定する(Config-as-code file pathはリポジトリルート基準で`backend/railway.json`)。環境変数は`.env.example`を参照(`SITE_BASE_URL`, `WEB_BASE_URL`, `ACTOR_PUBLIC_KEY_PEM`/`ACTOR_PRIVATE_KEY_PEM`, `EMAIL_API_TOKEN`, `FOLLOWER_TABLE_NAME`, `RELAY_CONNECTION_TABLE_NAME`, AWS認証情報等)。`PORT`はRailwayが自動で注入し、`cmd/server/main.go`がそれを`BACKEND_ADDR`未設定時のリスンポートとして使う(明示的に固定したい場合のみ`BACKEND_ADDR`を設定する)。**このサービスにデプロイする前に、対象AWSアカウントで`FollowerTable`/`RelayConnectionTable`が作成済み(`infra`で`cdk deploy`済み)かつ既存データが移行済みであることを確認すること。**
-- `web`サービス: Settings > Root Directory を`web`に設定する(Config-as-code file pathは`web/railway.json`)。`BACKEND_URL`をbackendサービスの公開URL(またはRailwayプライベートネットワーキングのURL)に設定する。
-- 公開ドメイン(`blog.nagutabby.uk`)の手前にCloudflare Workerを置き、パスに応じて2つのRailwayサービスへ振り分ける(`web/src/lib/workers/router.ts`、詳細は`web/wrangler.toml`の`WEB_ORIGIN`/`BACKEND_ORIGIN`)。`BACKEND_URL`(web用)と`BACKEND_ORIGIN`(Worker用)は同じbackendサービスのURLを指す。
+以前はRailway(`backend`/`web`を別サービス)+Cloudflare Worker(パスベースルーティング)で運用していたが、`migrate/11`〜`migrate/19`でAWSへ全面移行した。`cmd/server`はローカル開発用の通常HTTPサーバーとして残している(`go run ./cmd/server`)。
