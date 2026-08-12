@@ -1,5 +1,0 @@
-node_modules
-cdk.out
-.cdk.staging
-*.d.ts
-*.js
