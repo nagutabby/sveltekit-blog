@@ -1,48 +1,58 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, afterAll } from 'vitest';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
 
-const listArticles = vi.fn();
-const getArticle = vi.fn();
-const listReviews = vi.fn();
-const getReview = vi.fn();
+// content.ts reads CONTENT_DIR once at module load, so the fixture
+// directory must exist and the env var must be set *before* the dynamic
+// import below runs (a top-level `beforeAll` would run too late).
+const contentDir = fs.mkdtempSync(path.join(os.tmpdir(), 'content-test-'));
+process.env.CONTENT_DIR = contentDir;
 
-vi.mock('$lib/server/backendClient', () => ({
-  createBackendClient: () => ({ listArticles, getArticle, listReviews, getReview })
-}));
+const writeArticle = (id: string, frontmatter: Record<string, unknown>, body: string) => {
+  const yaml = Object.entries(frontmatter)
+    .map(([key, value]) => `${key}: ${value}`)
+    .join('\n');
+  fs.writeFileSync(path.join(contentDir, 'articles', `${id}.md`), `---\n${yaml}\n---\n${body}`);
+};
+
+const writeReview = (id: string, frontmatter: Record<string, unknown>, body: string) => {
+  const yaml = Object.entries(frontmatter)
+    .map(([key, value]) => `${key}: ${value}`)
+    .join('\n');
+  fs.writeFileSync(path.join(contentDir, 'reviews', `${id}.md`), `---\n${yaml}\n---\n${body}`);
+};
+
+fs.mkdirSync(path.join(contentDir, 'articles'), { recursive: true });
+fs.mkdirSync(path.join(contentDir, 'reviews'), { recursive: true });
+
+writeArticle(
+  'my-article',
+  { title: 'タイトル', image: 'images/foo.png', publishedAt: '2025-06-15', updatedAt: '2025-06-16' },
+  '# 見出し'
+);
+writeReview(
+  'my-review',
+  {
+    title: '本のタイトル',
+    description: 'あらすじ',
+    jp_e_code: '"1234567890123"',
+    image: 'images/foo.jpg',
+    rating: 5,
+    publishedAt: '2025-03-01',
+    updatedAt: '2025-03-02'
+  },
+  '## 概要'
+);
+
+afterAll(() => {
+  fs.rmSync(contentDir, { recursive: true, force: true });
+});
 
 const { getAllRawData, getAllHTMLData, getHTMLData } = await import('./content');
 
-const articlePb = (overrides: Partial<Record<string, unknown>> = {}) => ({
-  id: 'my-article',
-  title: 'タイトル',
-  image: '/content/articles/images/foo.png',
-  body: '# 見出し',
-  publishedAt: '2025-06-15T00:00:00Z',
-  updatedAt: '2025-06-16T00:00:00Z',
-  ...overrides
-});
-
-const reviewPb = (overrides: Partial<Record<string, unknown>> = {}) => ({
-  id: 'my-review',
-  title: '本のタイトル',
-  description: 'あらすじ',
-  jpECode: '1234567890123',
-  image: '/content/reviews/images/foo.jpg',
-  rating: 5,
-  body: '## 概要',
-  publishedAt: '2025-03-01T00:00:00Z',
-  updatedAt: '2025-03-02T00:00:00Z',
-  ...overrides
-});
-
 describe('getAllRawData', () => {
-  beforeEach(() => {
-    listArticles.mockReset();
-    listReviews.mockReset();
-  });
-
   it('記事一覧をArticle型にマッピングする', async () => {
-    listArticles.mockResolvedValue({ articles: [articlePb()] });
-
     const result = await getAllRawData('articles');
 
     expect(result).toEqual([
@@ -51,15 +61,13 @@ describe('getAllRawData', () => {
         body: '# 見出し',
         title: 'タイトル',
         image: '/content/articles/images/foo.png',
-        publishedAt: new Date('2025-06-15T00:00:00Z'),
-        updatedAt: new Date('2025-06-16T00:00:00Z')
+        publishedAt: new Date('2025-06-15'),
+        updatedAt: new Date('2025-06-16')
       }
     ]);
   });
 
-  it('レビュー一覧をReview型にマッピングする(jpECode -> jp_e_code)', async () => {
-    listReviews.mockResolvedValue({ reviews: [reviewPb()] });
-
+  it('レビュー一覧をReview型にマッピングする', async () => {
     const result = await getAllRawData('reviews');
 
     expect(result).toEqual([
@@ -71,8 +79,8 @@ describe('getAllRawData', () => {
         jp_e_code: '1234567890123',
         image: '/content/reviews/images/foo.jpg',
         rating: 5,
-        publishedAt: new Date('2025-03-01T00:00:00Z'),
-        updatedAt: new Date('2025-03-02T00:00:00Z')
+        publishedAt: new Date('2025-03-01'),
+        updatedAt: new Date('2025-03-02')
       }
     ]);
   });
@@ -80,8 +88,6 @@ describe('getAllRawData', () => {
 
 describe('getAllHTMLData', () => {
   it('bodyをMarkdownからHTMLへ変換する', async () => {
-    listArticles.mockResolvedValue({ articles: [articlePb({ body: '# hello' })] });
-
     const [result] = await getAllHTMLData('articles');
 
     expect(result.body).toContain('<h1');
@@ -89,14 +95,7 @@ describe('getAllHTMLData', () => {
 });
 
 describe('getHTMLData', () => {
-  beforeEach(() => {
-    getArticle.mockReset();
-    getReview.mockReset();
-  });
-
   it('記事をHTML変換済みのArticleとして返す', async () => {
-    getArticle.mockResolvedValue({ article: articlePb({ body: '# hello' }) });
-
     const result = await getHTMLData('my-article', 'articles');
 
     expect(result.title).toBe('タイトル');
@@ -104,15 +103,15 @@ describe('getHTMLData', () => {
   });
 
   it('存在しない記事は404を投げる', async () => {
-    const { ConnectError, Code } = await import('@connectrpc/connect');
-    getArticle.mockRejectedValue(new ConnectError('not found', Code.NotFound));
-
     await expect(getHTMLData('missing', 'articles')).rejects.toMatchObject({ status: 404 });
   });
 
-  it('バックエンドのエラーは500を投げる', async () => {
-    getArticle.mockRejectedValue(new Error('boom'));
+  it('frontmatterが壊れている記事は500を投げる', async () => {
+    fs.writeFileSync(
+      path.join(contentDir, 'articles', 'broken.md'),
+      '---\ntitle: ["unterminated\n---\nbody'
+    );
 
-    await expect(getHTMLData('my-article', 'articles')).rejects.toMatchObject({ status: 500 });
+    await expect(getHTMLData('broken', 'articles')).rejects.toMatchObject({ status: 500 });
   });
 });

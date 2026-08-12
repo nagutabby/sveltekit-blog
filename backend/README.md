@@ -8,7 +8,7 @@ Goバックエンド（Connect RPC + sqlc）です。
 - `internal/server`: トップレベルのHTTPハンドラ。`/healthz`と各Connect RPCサービスをマウントする。
 - `internal/health`: `blog.health.v1.HealthService`の実装。web↔backend間のConnect RPC配線を検証するための最小サービス。
 - `internal/contact`: `blog.contact.v1.ContactService`の実装。お問い合わせフォームの入力検証とMailtrap呼び出し。
-- `internal/content`: `blog.content.v1.ContentService`の実装。記事/レビューのMarkdown+frontmatterを読み込み、raw bodyのまま返す(HTML変換はwebのmarked/KaTeXパイプラインに残す)。`CONTENT_DIR`(既定`content`)を読む。スライドはfrontmatterを持たない静的PDFのため対象外(webに残す)。
+- `internal/content`: `Loader`が記事/レビューのMarkdown+frontmatterを読み込む(`internal/federation`/`internal/federationadmin`が直接使う)。`CONTENT_DIR`(既定`content`)を読む。スライドはfrontmatterを持たない静的PDFのため対象外(webに残す)。かつて存在した`blog.content.v1.ContentService`(Connect RPC)は撤去済み: SvelteKitのビルド時コンテンツ取得は`web/src/lib/server/content.ts`が`content/`を直接読むように変更されており、ネットワーク越しに呼ぶ必要がなくなったため。
 - `internal/federation`: ActivityPub連携の公開HTTPエンドポイント(`webfinger`, `actor`, `actor/followers`, `actor/following`, `actor/inbox`, `actor/outbox`, `api/articles/{name}`)。外部のMastodon/リレーサーバーはJSON-LD/HTTPしか話せないため、Connect RPCではなくプレーンな`net/http`ハンドラとして実装する。HTTP Signature(`signRequest.ts`相当)の署名・検証、Follower/RelayConnectionのDB更新(sqlc経由)、リモートactorのfetch、署名済みAcceptの送達を行う。
 - `internal/federationadmin`: `blog.federationadmin.v1.FederationAdminService`の実装(内部専用のConnect RPC)。記事のCreate/Update/Delete Activityを組み立て、LD-Signature(`signActivity`相当、RFC 8785のJSON Canonicalizationで署名)を付けて、DB上の全リレーへHTTP Signature付きで配送する。公開のActivityPub HTTPエンドポイントではないため`internal/federation`とは別パッケージ。**公開トリガーの仕組みはこのリポジトリの外にある想定**(元のSvelteKit実装の`/api/activitypub/sender`も認証なしの手動/外部トリガー呼び出しだったため、そのまま踏襲している)。呼び出し例は本ファイル末尾を参照。
 - `content/`: 記事/レビューのMarkdownソース(コミット対象)。画像等の静的アセットは`web/static/content/**/images`に残る。
