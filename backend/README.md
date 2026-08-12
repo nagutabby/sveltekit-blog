@@ -22,7 +22,7 @@ Goバックエンド（Connect RPC + sqlc）です。
 
 ## 環境変数
 
-`SITE_BASE_URL`(既定`https://blog.nagutabby.uk`), `WEB_BASE_URL`(`/actor/outbox`が`/atom.xml`を取得するweb側のURL。未設定時は`SITE_BASE_URL`と同じ), `ACTOR_PUBLIC_KEY_PEM`/`ACTOR_PRIVATE_KEY_PEM`(改行は`\n`エスケープ可)。詳細は`.env.example`を参照。
+`SITE_BASE_URL`(既定`https://blog.nagutabby.uk`), `WEB_BASE_URL`(`/actor/outbox`が`/atom.xml`を取得するweb側のURL。未設定時は`SITE_BASE_URL`と同じ), `ACTOR_PUBLIC_KEY_PEM`/`ACTOR_PRIVATE_KEY_PEM`(改行は`\n`エスケープ可), `FEDERATION_ADMIN_TOKEN`(`FederationAdminService`を保護する共有シークレット。未設定だと同サービスは常に401を返す)。詳細は`.env.example`を参照。
 
 DBは`CLOUDFLARE_ACCOUNT_ID`/`CLOUDFLARE_D1_DATABASE_ID`/`CLOUDFLARE_D1_API_TOKEN`が3つとも設定されていればCloudflare D1(HTTP query API経由)に接続する。1つでも欠けていれば`SQLITE_PATH`(既定`backend.db`)のローカルSQLiteファイルにフォールバックする。
 
@@ -42,11 +42,12 @@ DBスキーマを変更したら`sqlc generate`でクエリコードを再生成
 
 ## 記事公開時にFederation通知を送る
 
-`FederationAdminService.PublishArticleActivity`はConnectのJSON+HTTPフォールバックでも呼べるため、`curl`で直接叩ける。
+`FederationAdminService.PublishArticleActivity`はConnectのJSON+HTTPフォールバックでも呼べるため、`curl`で直接叩ける。`FEDERATION_ADMIN_TOKEN`環境変数と同じ値を`Authorization: Bearer`で渡す必要がある(未設定・不一致の場合は401)。**このトークンによる保護はPRで新規に追加したもの。このリポジトリ外にある既存の呼び出し元(記事公開フローのトリガー)にも同時に`Authorization`ヘッダーを追加すること。**
 
 ```sh
 curl -X POST http://localhost:8080/blog.federationadmin.v1.FederationAdminService/PublishArticleActivity \
   -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $FEDERATION_ADMIN_TOKEN" \
   -d '{"articleId": "goodbye-microcms", "changeType": "CHANGE_TYPE_CREATE"}'
 ```
 

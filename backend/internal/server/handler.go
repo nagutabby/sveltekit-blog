@@ -22,6 +22,13 @@ type Config struct {
 	Content         *content.Loader
 	Federation      *federation.Handlers
 	FederationAdmin *federationadmin.Service
+
+	// FederationAdminToken guards FederationAdmin: requests must send
+	// "Authorization: Bearer <FederationAdminToken>". Required (and
+	// non-empty) once FederationAdmin is exposed publicly rather than
+	// reached only from localhost/a private network, since this service
+	// can trigger signed ActivityPub deliveries to every relay.
+	FederationAdminToken string
 }
 
 // NewHandler builds the top-level HTTP handler for the backend server.
@@ -54,10 +61,24 @@ func NewHandler(cfg Config) http.Handler {
 
 	if cfg.FederationAdmin != nil {
 		federationAdminPath, federationAdminHandler := federationadminv1connect.NewFederationAdminServiceHandler(cfg.FederationAdmin)
-		mux.Handle(federationAdminPath, federationAdminHandler)
+		mux.Handle(federationAdminPath, requireBearerToken(cfg.FederationAdminToken, federationAdminHandler))
 	}
 
 	return mux
+}
+
+// requireBearerToken rejects any request whose Authorization header isn't
+// "Bearer <token>". An empty token always rejects (fail closed) rather
+// than leaving the route open, since an unset token most likely means
+// misconfiguration rather than "no auth needed".
+func requireBearerToken(token string, next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if token == "" || r.Header.Get("Authorization") != "Bearer "+token {
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			return
+		}
+		next.ServeHTTP(w, r)
+	})
 }
 
 func handleHealthz(w http.ResponseWriter, r *http.Request) {
