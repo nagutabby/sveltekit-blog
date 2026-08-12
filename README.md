@@ -16,11 +16,10 @@ SvelteKit(`web/`)とGoバックエンド(`backend/`, Connect RPC + sqlc)で構�
    /api/articles/*
               │                               │
               ▼                               ▼
-   backend (Go, Railway)  ◀── Connect RPC ──  web (SvelteKit, Railway)
+   backend (Go, Railway)                      web (SvelteKit, Railway)
    - ContactService                            - SSR/レンダリング
-   - ContentService                            - marked/KaTeXでMarkdown→HTML
-   - FederationAdminService(内部専用)
-   - ActivityPub公開HTTPエンドポイント
+   - FederationAdminService(内部専用)           - marked/KaTeXでMarkdown→HTML
+   - ActivityPub公開HTTPエンドポイント           - ビルド時にbackend/content/を直接読む
               │
               ▼
            Postgres

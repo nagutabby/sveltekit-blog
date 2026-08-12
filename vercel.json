@@ -1,0 +1,32 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "services": {
+    "web": {
+      "root": "web/",
+      "framework": "sveltekit",
+      "outputDirectory": "build",
+      "headers": [
+        {
+          "source": "/(.*)",
+          "headers": [
+            { "key": "Cache-Control", "value": "no-store" },
+            { "key": "Pragma", "value": "no-cache" }
+          ]
+        }
+      ]
+    },
+    "backend": {
+      "root": "backend/",
+      "framework": "go"
+    }
+  },
+  "rewrites": [
+    { "source": "/actor", "destination": { "service": "backend" } },
+    { "source": "/actor/(.*)", "destination": { "service": "backend" } },
+    { "source": "/.well-known/webfinger", "destination": { "service": "backend" } },
+    { "source": "/api/articles/(.*)", "destination": { "service": "backend" } },
+    { "source": "/blog.contact.v1.ContactService/(.*)", "destination": { "service": "backend" } },
+    { "source": "/blog.federationadmin.v1.FederationAdminService/(.*)", "destination": { "service": "backend" } },
+    { "source": "/(.*)", "destination": { "service": "web" } }
+  ]
+}
