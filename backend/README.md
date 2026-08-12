@@ -55,26 +55,14 @@ curl -X POST http://localhost:8080/blog.federationadmin.v1.FederationAdminServic
 
 ## デプロイ
 
-`web`と`backend`は別々のRailwayサービスとしてデプロイする(サービス間の通信は各サービスに設定する環境変数のURLで行う。Railwayのプライベートネットワーキングが使えるならそちらでもよい)。ビルド・デプロイ設定はRailwayの[Config as Code](https://docs.railway.com/guides/config-as-code)機能で`backend/railway.json` / `web/railway.json`にコミットしている(`Dockerfile`をビルダーに指定し、`/healthz`へのヘルスチェックと再起動ポリシーを定義)。
+`web`(SvelteKit adapter-static)と`backend`(Go)は1つのVercelプロジェクト内の別サービスとしてデプロイする。ルートの[`vercel.json`](../vercel.json)の`services`で両サービスを定義し、`rewrites`でパスに応じて振り分ける(`/actor*`, `/.well-known/webfinger`, `/api/articles/*`, `/blog.contact.v1.ContactService/*`, `/blog.federationadmin.v1.FederationAdminService/*`は`backend`へ、それ以外は`web`へ)。
 
-同じリポジトリを指す2つのRailwayサービスをダッシュボードで作成し、それぞれ以下を設定する。
-
-- `backend`サービス: Settings > Root Directory を`backend`に設定する(Config-as-code file pathはリポジトリルート基準で`backend/railway.json`)。環境変数は`.env.example`を参照(`DATABASE_URL`, `SITE_BASE_URL`, `WEB_BASE_URL`, `ACTOR_PUBLIC_KEY_PEM`/`ACTOR_PRIVATE_KEY_PEM`, `EMAIL_API_TOKEN`等)。`PORT`はRailwayが自動で注入し、`cmd/server/main.go`がそれを`BACKEND_ADDR`未設定時のリスンポートとして使う(明示的に固定したい場合のみ`BACKEND_ADDR`を設定する)。
-- `web`サービス: Settings > Root Directory を`web`に設定する(Config-as-code file pathは`web/railway.json`)。`BACKEND_URL`をbackendサービスの公開URL(またはRailwayプライベートネットワーキングのURL)に設定する。
-- 公開ドメイン(`blog.nagutabby.uk`)の手前にCloudflare Workerを置き、パスに応じて2つのRailwayサービスへ振り分ける(`web/src/lib/workers/router.ts`、詳細は`web/wrangler.toml`の`WEB_ORIGIN`/`BACKEND_ORIGIN`)。`BACKEND_URL`(web用)と`BACKEND_ORIGIN`(Worker用)は同じbackendサービスのURLを指す。
+Vercelダッシュボードで環境変数を設定する(`backend`サービス向け): `SITE_BASE_URL`, `WEB_BASE_URL`, `ACTOR_PUBLIC_KEY_PEM`/`ACTOR_PRIVATE_KEY_PEM`, `EMAIL_API_TOKEN`, `FROM_ADDRESS`, `BCC_ADDRESS`, `FEDERATION_ADMIN_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`/`CLOUDFLARE_D1_DATABASE_ID`/`CLOUDFLARE_D1_API_TOKEN`。`PORT`はVercelのGo runtimeが自動で注入する。
 
 ### 本番DB(Cloudflare D1)のセットアップ
 
 1. `wrangler d1 create <db-name>`でD1データベースを作成する。
 2. `wrangler d1 migrations apply <db-name> --remote`で`db/migrations`を適用する。
-3. 既存のNeon(PostgreSQL)から実データを移行する場合は`cmd/migrate-to-d1`を使う。デフォルトはdry-run(何が移行されるかを表示するだけ)なので、内容を確認してから`-apply`を付けて実行する。
-
-   ```sh
-   SOURCE_DATABASE_URL="<Neonの接続文字列>" \
-   CLOUDFLARE_ACCOUNT_ID="<CloudflareアカウントID>" \
-   CLOUDFLARE_D1_DATABASE_ID="<D1データベースID>" \
-   CLOUDFLARE_D1_API_TOKEN="<D1書き込み権限を持つAPIトークン>" \
-   go run ./cmd/migrate-to-d1 -apply
-   ```
+3. 既存のNeon(PostgreSQL)からの実データ移行は、一度限りの移行スクリプト(`cmd/migrate-to-d1`、移行完了に伴い本リポジトリからは削除済み)で実施した。同様の移行が再度必要な場合はgit履歴から復元すること。
 
    `actorId`をキーにした冪等なupsertなので、何度実行しても安全。本番のbackendの環境変数を`CLOUDFLARE_ACCOUNT_ID`/`CLOUDFLARE_D1_DATABASE_ID`/`CLOUDFLARE_D1_API_TOKEN`に切り替えるタイミングと合わせて実行すること。移行が完了し切り戻しの必要がなくなったら`cmd/migrate-to-d1`は削除してよい(このコマンドは一度限りの用途で、以後は使われない)。
