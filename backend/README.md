@@ -72,4 +72,14 @@ wrangler d1 create sveltekit-blog-db  # 出力されたdatabase_idをwrangler.js
 wrangler d1 migrations apply sveltekit-blog-db --remote  # db/migrationsを適用
 ```
 
-既存のNeon(PostgreSQL)からの実データ移行手順は別途追加する移行スクリプトを参照。
+既存のNeon(PostgreSQL)から実データを移行する場合は`cmd/migrate-to-d1`を使う。デフォルトはdry-run(何が移行されるかを表示するだけ)なので、内容を確認してから`-apply`を付けて実行する。
+
+```sh
+SOURCE_DATABASE_URL="<Neonの接続文字列>" \
+CLOUDFLARE_ACCOUNT_ID="<CloudflareアカウントID>" \
+CLOUDFLARE_D1_DATABASE_ID="<D1データベースID>" \
+CLOUDFLARE_D1_API_TOKEN="<D1書き込み権限を持つAPIトークン>" \
+go run ./cmd/migrate-to-d1 -apply
+```
+
+`actorId`をキーにした冪等なupsertなので、何度実行しても安全。本番のbackendの環境変数を`CLOUDFLARE_ACCOUNT_ID`/`CLOUDFLARE_D1_DATABASE_ID`/`CLOUDFLARE_D1_API_TOKEN`に切り替えるタイミングと合わせて実行すること。移行が完了し切り戻しの必要がなくなったら`cmd/migrate-to-d1`は削除してよい(このコマンドは一度限りの用途で、以後は使われない)。
