@@ -61,8 +61,22 @@ Vercelダッシュボードで環境変数を設定する(`backend`サービス�
 
 ### 本番DB(Cloudflare D1)のセットアップ
 
-1. `wrangler d1 create sveltekit-blog-db`でD1データベースを作成する。
-2. `wrangler d1 migrations apply sveltekit-blog-db --remote`で`db/migrations`を適用する。
-3. 既存のNeon(PostgreSQL)からの実データ移行は、一度限りの移行スクリプト(`cmd/migrate-to-d1`、移行完了に伴い本リポジトリからは削除済み)で実施した。同様の移行が再度必要な場合はgit履歴から復元すること。
+`wrangler`コマンドは`backend/wrangler.jsonc`(`d1_databases`バインディングと`migrations_dir: "db/migrations"`を定義)を使うため、**このディレクトリ(`backend/`)で実行する**。このファイルはD1の作成・マイグレーション適用専用で、backend自体はVercel Functions(Go runtime)で動かすためWorkerとしてdeployすることはない。
 
-   `actorId`をキーにした冪等なupsertなので、何度実行しても安全。本番のbackendの環境変数を`CLOUDFLARE_ACCOUNT_ID`/`CLOUDFLARE_D1_DATABASE_ID`/`CLOUDFLARE_D1_API_TOKEN`に切り替えるタイミングと合わせて実行すること。移行が完了し切り戻しの必要がなくなったら`cmd/migrate-to-d1`は削除してよい(このコマンドは一度限りの用途で、以後は使われない)。
+```sh
+cd backend
+wrangler d1 create sveltekit-blog-db  # 出力されたdatabase_idをwrangler.jsoncに設定する
+wrangler d1 migrations apply sveltekit-blog-db --remote  # db/migrationsを適用
+```
+
+既存のNeon(PostgreSQL)から実データを移行する場合は`cmd/migrate-to-d1`を使う。デフォルトはdry-run(何が移行されるかを表示するだけ)なので、内容を確認してから`-apply`を付けて実行する。
+
+```sh
+SOURCE_DATABASE_URL="<Neonの接続文字列>" \
+CLOUDFLARE_ACCOUNT_ID="<CloudflareアカウントID>" \
+CLOUDFLARE_D1_DATABASE_ID="<D1データベースID>" \
+CLOUDFLARE_D1_API_TOKEN="<D1書き込み権限を持つAPIトークン>" \
+go run ./cmd/migrate-to-d1 -apply
+```
+
+`actorId`をキーにした冪等なupsertなので、何度実行しても安全。本番のbackendの環境変数を`CLOUDFLARE_ACCOUNT_ID`/`CLOUDFLARE_D1_DATABASE_ID`/`CLOUDFLARE_D1_API_TOKEN`に切り替えるタイミングと合わせて実行すること。移行が完了し切り戻しの必要がなくなったら`cmd/migrate-to-d1`は削除してよい(このコマンドは一度限りの用途で、以後は使われない)。
