@@ -6,8 +6,8 @@ import type { PageServerLoad } from "./$types";
 export const load: PageServerLoad = async () => {
   // このページはprerender(SSG)対象なのでloadはビルド時にしか実行されない。
   // ビルドはソースツリー上で行われるため常にstatic/を見ればよく、
-  // adapter-nodeが本番コンテナ用にコピーするbuild/client/はビルド中は
-  // まだ存在しない(以前ここをdev判定でbuild/client/を見るようにしていたが、
+  // アダプターが出力するbuild/client/はビルド中はまだ存在しない
+  // (以前ここをdev判定でbuild/client/を見るようにしていたが、
   // ビルド時に404/500になり/slidesがprerenderされない原因になっていた)。
   const slidesDir = path.join(process.cwd(), 'static/content/slides');
 

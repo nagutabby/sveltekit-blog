@@ -16,15 +16,9 @@ ENV BACKEND_URL=$BACKEND_URL
 COPY . .
 RUN pnpm build
 
-FROM base AS prod-deps
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
-RUN pnpm install --frozen-lockfile --prod --ignore-scripts
+FROM nginx:1.29-alpine AS runtime
+COPY --from=build /app/build /usr/share/nginx/html
+COPY nginx.conf.template /etc/nginx/templates/default.conf.template
 
-FROM base AS runtime
-ENV NODE_ENV=production
-COPY --from=prod-deps /app/node_modules ./node_modules
-COPY --from=build /app/build ./build
-COPY --from=build /app/package.json ./package.json
-
+ENV PORT=3000
 EXPOSE 3000
-CMD ["node", "build/index.js"]
