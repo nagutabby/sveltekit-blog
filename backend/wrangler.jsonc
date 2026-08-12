@@ -1,0 +1,19 @@
+{
+  // wrangler d1 create/migrations専用の設定。backendサービス自体はVercel
+  // Functions(Go runtime, ../vercel.json)で動かすため、Workerとしてdeployする
+  // ことはない。D1データベースの作成・マイグレーション適用のためだけに、
+  // このディレクトリ(backend/)でwranglerコマンドを実行する。
+  "$schema": "https://unpkg.com/wrangler@latest/config-schema.json",
+  "name": "sveltekit-blog-backend",
+  "compatibility_date": "2026-01-01",
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "sveltekit-blog-db",
+      // `wrangler d1 create sveltekit-blog-db`の出力に表示されるdatabase_idを
+      // ここに設定する。
+      "database_id": "<wrangler d1 createの出力から設定する>",
+      "migrations_dir": "db/migrations"
+    }
+  ]
+}

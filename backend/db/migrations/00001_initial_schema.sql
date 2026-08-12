@@ -23,6 +23,9 @@ CREATE TABLE IF NOT EXISTS "RelayConnection" (
 
 CREATE UNIQUE INDEX IF NOT EXISTS "RelayConnection_actorId_key" ON "RelayConnection"("actorId");
 
--- +goose Down
-DROP TABLE "RelayConnection";
-DROP TABLE "Follower";
+-- Deliberately no goose Down annotation/section below this line.
+-- wrangler's "d1 migrations apply" (used to apply this same file to
+-- production D1) has no rollback concept and just executes the whole
+-- file verbatim, so a Down section here would DROP both tables
+-- immediately after creating them in production. goose itself works
+-- fine with a migration that has no Down section.
