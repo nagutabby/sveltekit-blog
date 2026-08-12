@@ -426,6 +426,58 @@ func TestInboxAccept(t *testing.T) {
 	}
 }
 
+func TestInboxRejectsRelayNonAccept(t *testing.T) {
+	relays := &fakeRelayStore{}
+	followers := &fakeFollowerStore{}
+	h := NewHandlers(followers, relays, &fakeArticleStore{}, testConfig(t))
+
+	activityBody := `{"@context":"x","type":"Follow","actor":"https://relay.example/actor","object":"https://blog.nagutabby.uk/actor"}`
+	req := httptest.NewRequest(http.MethodPost, "/actor/inbox", strings.NewReader(activityBody))
+	req.Header.Set("User-Agent", "SomeRelay/1.0")
+	rec := httptest.NewRecorder()
+	h.Inbox(rec, req)
+
+	if rec.Code != http.StatusForbidden {
+		t.Fatalf("status = %d, want 403, body=%s", rec.Code, rec.Body.String())
+	}
+	if len(followers.upsertFollowerCalls) != 0 {
+		t.Fatalf("UpsertFollower called %d times, want 0", len(followers.upsertFollowerCalls))
+	}
+
+	var respBody map[string]any
+	if err := json.Unmarshal(rec.Body.Bytes(), &respBody); err != nil {
+		t.Fatalf("failed to decode response: %v", err)
+	}
+	if respBody["error"] != "Forbidden" {
+		t.Fatalf("error = %v, want Forbidden", respBody["error"])
+	}
+}
+
+func TestInboxAllowsRelayAccept(t *testing.T) {
+	mux := http.NewServeMux()
+	mux.HandleFunc("/users/relay", func(w http.ResponseWriter, r *http.Request) {
+		_, _ = w.Write([]byte(`{"inbox": "https://relay.example/inbox", "publicKey": {"publicKeyPem": "RELAY-PUBLIC-KEY"}}`))
+	})
+	actorServer := httptest.NewServer(mux)
+	defer actorServer.Close()
+
+	relays := &fakeRelayStore{}
+	h := NewHandlers(&fakeFollowerStore{}, relays, &fakeArticleStore{}, testConfig(t))
+
+	activityBody := `{"@context":"x","type":"Accept","actor":"` + actorServer.URL + `/users/relay","object":{"type":"Follow"}}`
+	req := httptest.NewRequest(http.MethodPost, "/actor/inbox", strings.NewReader(activityBody))
+	req.Header.Set("User-Agent", "SomeRelay/1.0")
+	rec := httptest.NewRecorder()
+	h.Inbox(rec, req)
+
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status = %d, want 200, body=%s", rec.Code, rec.Body.String())
+	}
+	if len(relays.upsertCalls) != 1 {
+		t.Fatalf("UpsertRelayConnectionAccepted called %d times, want 1", len(relays.upsertCalls))
+	}
+}
+
 func TestInboxMissingRequiredFields(t *testing.T) {
 	h := NewHandlers(&fakeFollowerStore{}, &fakeRelayStore{}, &fakeArticleStore{}, testConfig(t))
 

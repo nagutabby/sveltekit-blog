@@ -11,6 +11,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -230,6 +231,16 @@ func (h *Handlers) Inbox(w http.ResponseWriter, r *http.Request) {
 	}
 	activity.raw = body
 
+	// Relay servers may only deliver the Accept that completes our own
+	// Follow/Subscribe to them; they must not push arbitrary activities
+	// into /actor/inbox. Previously enforced at the edge by the
+	// Cloudflare Worker router (now gone); ported here.
+	userAgent := r.Header.Get("User-Agent")
+	if isRelayUserAgent(userAgent) && activity.Type != "Accept" {
+		writeForbiddenRelayResponse(w, r.URL.Path, userAgent)
+		return
+	}
+
 	if activity.Context == nil || activity.Type == "" || activity.Actor == "" {
 		writeJSONError(w, http.StatusBadRequest, "Invalid activity: missing required fields")
 		return
@@ -396,6 +407,23 @@ func writePlainText(w http.ResponseWriter, status int, message string) {
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	w.WriteHeader(status)
 	_, _ = w.Write([]byte(message))
+}
+
+func isRelayUserAgent(userAgent string) bool {
+	return strings.Contains(strings.ToLower(userAgent), "relay")
+}
+
+func writeForbiddenRelayResponse(w http.ResponseWriter, path, userAgent string) {
+	writeActivityJSON(w, http.StatusForbidden, map[string]any{
+		"error":   "Forbidden",
+		"status":  http.StatusForbidden,
+		"message": "Relay server access is not permitted",
+		"details": map[string]string{
+			"reason":    "This server does not accept requests from relay servers",
+			"path":      path,
+			"userAgent": userAgent,
+		},
+	})
 }
 
 func hostOf(rawURL string) string {

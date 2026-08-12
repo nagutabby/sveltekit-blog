@@ -72,9 +72,10 @@ func run() error {
 			FromAddress: os.Getenv("FROM_ADDRESS"),
 			BCCAddress:  os.Getenv("BCC_ADDRESS"),
 		},
-		Content:         contentLoader,
-		Federation:      federation.NewHandlers(queries, queries, contentLoader, federationCfg),
-		FederationAdmin: federationadmin.NewService(contentLoader, queries, federationCfg),
+		Content:              contentLoader,
+		Federation:           federation.NewHandlers(queries, queries, contentLoader, federationCfg),
+		FederationAdmin:      federationadmin.NewService(contentLoader, queries, federationCfg),
+		FederationAdminToken: os.Getenv("FEDERATION_ADMIN_TOKEN"),
 	}
 
 	httpServer := &http.Server{
