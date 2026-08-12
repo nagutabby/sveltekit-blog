@@ -119,6 +119,15 @@ func (c *Client) exec(ctx context.Context, stmt string, params []any) ([]map[str
 	return parsed.Result[0].Results, nil
 }
 
+// Exec runs an arbitrary SQL statement against D1 and returns its result
+// rows. Exported for one-off operational tooling (e.g. cmd/migrate-to-d1)
+// that needs to bypass db.Querier's upsert semantics — which force
+// following/connected to true, appropriate for a live Follow/Accept but
+// not for replaying historical rows that may have following=false.
+func (c *Client) Exec(ctx context.Context, stmt string, params []any) ([]map[string]any, error) {
+	return c.exec(ctx, stmt, params)
+}
+
 // execOne runs stmt and returns its first result row, or sql.ErrNoRows if
 // it returned none, matching the :one semantics sqlc generates elsewhere.
 func (c *Client) execOne(ctx context.Context, stmt string, params []any) (map[string]any, error) {
