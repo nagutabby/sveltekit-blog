@@ -1,5 +1,5 @@
 // Package migrations embeds the goose SQL migrations that define the
-// backend's Postgres schema, so they can be applied both by the goose CLI
+// backend's SQLite/D1 schema, so they can be applied both by the goose CLI
 // (pointed at this directory) and programmatically in tests.
 package migrations
 

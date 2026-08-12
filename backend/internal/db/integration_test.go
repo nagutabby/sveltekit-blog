@@ -3,66 +3,47 @@ package db_test
 import (
 	"context"
 	"database/sql"
+	"fmt"
+	"path/filepath"
 	"testing"
 	"time"
 
-	_ "github.com/jackc/pgx/v5/stdlib"
+	_ "modernc.org/sqlite"
 
-	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/pressly/goose/v3"
-	tcpostgres "github.com/testcontainers/testcontainers-go/modules/postgres"
 
 	migrations "github.com/nagutabby/sveltekit-blog/backend/db"
 	db "github.com/nagutabby/sveltekit-blog/backend/internal/db"
 )
 
-// setupDB starts a disposable Postgres container, applies the goose
-// migrations embedded in backend/db, and returns sqlc Queries backed by it.
+// nowTimestamp mirrors internal/federation's nowTimestamp: the schema
+// stores TEXT timestamps as RFC3339 with nanosecond precision.
+func nowTimestamp() string {
+	return time.Now().UTC().Format(time.RFC3339Nano)
+}
+
+// setupDB creates a disposable SQLite file (D1's on-disk format), applies
+// the goose migrations embedded in backend/db, and returns sqlc Queries
+// backed by it.
 func setupDB(t *testing.T) *db.Queries {
 	t.Helper()
-	ctx := context.Background()
 
-	container, err := tcpostgres.Run(ctx, "postgres:17-alpine",
-		tcpostgres.WithDatabase("sveltekit_blog_test"),
-		tcpostgres.WithUsername("sveltekit_blog_test"),
-		tcpostgres.WithPassword("sveltekit_blog_test"),
-		tcpostgres.BasicWaitStrategies(),
-	)
+	dbPath := filepath.Join(t.TempDir(), fmt.Sprintf("test-%d.db", time.Now().UnixNano()))
+	sqlDB, err := sql.Open("sqlite", dbPath)
 	if err != nil {
-		t.Fatalf("failed to start postgres container: %v", err)
+		t.Fatalf("failed to open sqlite database: %v", err)
 	}
-	t.Cleanup(func() {
-		if err := container.Terminate(context.Background()); err != nil {
-			t.Logf("failed to terminate postgres container: %v", err)
-		}
-	})
-
-	connString, err := container.ConnectionString(ctx, "sslmode=disable")
-	if err != nil {
-		t.Fatalf("failed to get connection string: %v", err)
-	}
-
-	migrationDB, err := sql.Open("pgx", connString)
-	if err != nil {
-		t.Fatalf("failed to open migration connection: %v", err)
-	}
-	defer migrationDB.Close()
+	t.Cleanup(func() { sqlDB.Close() })
 
 	goose.SetBaseFS(migrations.FS)
-	if err := goose.SetDialect("postgres"); err != nil {
+	if err := goose.SetDialect("sqlite3"); err != nil {
 		t.Fatalf("failed to set goose dialect: %v", err)
 	}
-	if err := goose.Up(migrationDB, "migrations"); err != nil {
+	if err := goose.Up(sqlDB, "migrations"); err != nil {
 		t.Fatalf("failed to apply migrations: %v", err)
 	}
 
-	pool, err := pgxpool.New(ctx, connString)
-	if err != nil {
-		t.Fatalf("failed to open pgx pool: %v", err)
-	}
-	t.Cleanup(pool.Close)
-
-	return db.New(pool)
+	return db.New(sqlDB)
 }
 
 func TestFollowerLifecycle(t *testing.T) {
@@ -75,6 +56,8 @@ func TestFollowerLifecycle(t *testing.T) {
 		ActorId:      actorID,
 		Inbox:        "https://mastodon.example/users/alice/inbox",
 		PublicKeyPem: "PEM-1",
+		CreatedAt:    nowTimestamp(),
+		UpdatedAt:    nowTimestamp(),
 	})
 	if err != nil {
 		t.Fatalf("UpsertFollower (create) returned error: %v", err)
@@ -96,6 +79,8 @@ func TestFollowerLifecycle(t *testing.T) {
 		ActorId:      actorID,
 		Inbox:        "https://mastodon.example/users/alice/inbox",
 		PublicKeyPem: "PEM-2",
+		CreatedAt:    nowTimestamp(),
+		UpdatedAt:    nowTimestamp(),
 	})
 	if err != nil {
 		t.Fatalf("UpsertFollower (update) returned error: %v", err)
@@ -119,6 +104,7 @@ func TestFollowerLifecycle(t *testing.T) {
 		ActorId:      actorID,
 		Inbox:        "https://mastodon.example/users/alice/inbox",
 		PublicKeyPem: "PEM-2",
+		UpdatedAt:    nowTimestamp(),
 	})
 	if err != nil {
 		t.Fatalf("UnfollowByActorID returned error: %v", err)
@@ -152,6 +138,7 @@ func TestUnfollowByActorIDWithoutExistingFollowerFails(t *testing.T) {
 		ActorId:      "https://mastodon.example/users/never-followed",
 		Inbox:        "https://mastodon.example/users/never-followed/inbox",
 		PublicKeyPem: "PEM",
+		UpdatedAt:    nowTimestamp(),
 	})
 	if err == nil {
 		t.Fatal("expected an error unfollowing an actor that never followed, got nil")
@@ -164,9 +151,13 @@ func TestRelayConnectionLifecycle(t *testing.T) {
 
 	const actorID = "https://relay.example/actor"
 
+	firstAcceptedAt := nowTimestamp()
 	first, err := queries.UpsertRelayConnectionAccepted(ctx, db.UpsertRelayConnectionAcceptedParams{
-		ActorId: actorID,
-		Inbox:   "https://relay.example/inbox",
+		ActorId:        actorID,
+		Inbox:          "https://relay.example/inbox",
+		LastAcceptedAt: sql.NullString{String: firstAcceptedAt, Valid: true},
+		CreatedAt:      firstAcceptedAt,
+		UpdatedAt:      firstAcceptedAt,
 	})
 	if err != nil {
 		t.Fatalf("UpsertRelayConnectionAccepted (create) returned error: %v", err)
@@ -180,9 +171,13 @@ func TestRelayConnectionLifecycle(t *testing.T) {
 
 	time.Sleep(10 * time.Millisecond)
 
+	secondAcceptedAt := nowTimestamp()
 	second, err := queries.UpsertRelayConnectionAccepted(ctx, db.UpsertRelayConnectionAcceptedParams{
-		ActorId: actorID,
-		Inbox:   "https://relay.example/inbox",
+		ActorId:        actorID,
+		Inbox:          "https://relay.example/inbox",
+		LastAcceptedAt: sql.NullString{String: secondAcceptedAt, Valid: true},
+		CreatedAt:      secondAcceptedAt,
+		UpdatedAt:      secondAcceptedAt,
 	})
 	if err != nil {
 		t.Fatalf("UpsertRelayConnectionAccepted (re-accept) returned error: %v", err)
@@ -190,8 +185,16 @@ func TestRelayConnectionLifecycle(t *testing.T) {
 	if second.ID != first.ID {
 		t.Fatalf("UpsertRelayConnectionAccepted created a new row: got id %d, want %d", second.ID, first.ID)
 	}
-	if !second.LastAcceptedAt.Time.After(first.LastAcceptedAt.Time) {
-		t.Fatalf("LastAcceptedAt did not advance on re-accept: first=%v second=%v", first.LastAcceptedAt.Time, second.LastAcceptedAt.Time)
+	firstTime, err := time.Parse(time.RFC3339Nano, first.LastAcceptedAt.String)
+	if err != nil {
+		t.Fatalf("failed to parse first.LastAcceptedAt: %v", err)
+	}
+	secondTime, err := time.Parse(time.RFC3339Nano, second.LastAcceptedAt.String)
+	if err != nil {
+		t.Fatalf("failed to parse second.LastAcceptedAt: %v", err)
+	}
+	if !secondTime.After(firstTime) {
+		t.Fatalf("LastAcceptedAt did not advance on re-accept: first=%v second=%v", firstTime, secondTime)
 	}
 
 	list, err := queries.ListRelayConnections(ctx)

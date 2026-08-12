@@ -7,16 +7,17 @@ import (
 	"crypto/x509"
 	"database/sql"
 	"encoding/pem"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
-	_ "github.com/jackc/pgx/v5/stdlib"
+	_ "modernc.org/sqlite"
 
-	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/pressly/goose/v3"
-	tcpostgres "github.com/testcontainers/testcontainers-go/modules/postgres"
 
 	migrations "github.com/nagutabby/sveltekit-blog/backend/db"
 	"github.com/nagutabby/sveltekit-blog/backend/internal/db"
@@ -44,46 +45,22 @@ func generateTestActorPrivateKeyPEM(t *testing.T) string {
 func TestFederationFollowOverHTTP(t *testing.T) {
 	ctx := context.Background()
 
-	container, err := tcpostgres.Run(ctx, "postgres:17-alpine",
-		tcpostgres.WithDatabase("sveltekit_blog_test"),
-		tcpostgres.WithUsername("sveltekit_blog_test"),
-		tcpostgres.WithPassword("sveltekit_blog_test"),
-		tcpostgres.BasicWaitStrategies(),
-	)
+	dbPath := filepath.Join(t.TempDir(), fmt.Sprintf("test-%d.db", time.Now().UnixNano()))
+	sqlDB, err := sql.Open("sqlite", dbPath)
 	if err != nil {
-		t.Fatalf("failed to start postgres container: %v", err)
+		t.Fatalf("failed to open sqlite database: %v", err)
 	}
-	t.Cleanup(func() {
-		if err := container.Terminate(context.Background()); err != nil {
-			t.Logf("failed to terminate postgres container: %v", err)
-		}
-	})
-
-	connString, err := container.ConnectionString(ctx, "sslmode=disable")
-	if err != nil {
-		t.Fatalf("failed to get connection string: %v", err)
-	}
-
-	migrationDB, err := sql.Open("pgx", connString)
-	if err != nil {
-		t.Fatalf("failed to open migration connection: %v", err)
-	}
-	defer migrationDB.Close()
+	t.Cleanup(func() { sqlDB.Close() })
 
 	goose.SetBaseFS(migrations.FS)
-	if err := goose.SetDialect("postgres"); err != nil {
+	if err := goose.SetDialect("sqlite3"); err != nil {
 		t.Fatalf("failed to set goose dialect: %v", err)
 	}
-	if err := goose.Up(migrationDB, "migrations"); err != nil {
+	if err := goose.Up(sqlDB, "migrations"); err != nil {
 		t.Fatalf("failed to apply migrations: %v", err)
 	}
 
-	pool, err := pgxpool.New(ctx, connString)
-	if err != nil {
-		t.Fatalf("failed to open pgx pool: %v", err)
-	}
-	t.Cleanup(pool.Close)
-	queries := db.New(pool)
+	queries := db.New(sqlDB)
 
 	// Fake remote Mastodon actor + inbox. inboxURL is filled in once the
 	// server is listening, since the actor document needs to advertise

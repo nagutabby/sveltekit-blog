@@ -13,15 +13,18 @@ Goバックエンド（Connect RPC + sqlc）です。
 - `internal/federationadmin`: `blog.federationadmin.v1.FederationAdminService`の実装(内部専用のConnect RPC)。記事のCreate/Update/Delete Activityを組み立て、LD-Signature(`signActivity`相当、RFC 8785のJSON Canonicalizationで署名)を付けて、DB上の全リレーへHTTP Signature付きで配送する。公開のActivityPub HTTPエンドポイントではないため`internal/federation`とは別パッケージ。**公開トリガーの仕組みはこのリポジトリの外にある想定**(元のSvelteKit実装の`/api/activitypub/sender`も認証なしの手動/外部トリガー呼び出しだったため、そのまま踏襲している)。呼び出し例は本ファイル末尾を参照。
 - `content/`: 記事/レビューのMarkdownソース(コミット対象)。画像等の静的アセットは`web/static/content/**/images`に残る。
 - `gen/`: `proto/`から`buf generate`で生成したコード(コミット対象)。
-- `db/migrations`: [goose](https://github.com/pressly/goose)のSQLマイグレーション。`db/migrations.go`で`embed`し、goose CLIとGoテストの両方から使う。
-- `db/queries`, `sqlc.yaml`, `internal/db`: [sqlc](https://sqlc.dev/)によるDBアクセス層(`internal/db`は生成コード)。
-- `internal/db/integration_test.go`: [testcontainers-go](https://golang.testcontainers.org/)で使い捨てのPostgresを起動し、goose migrateしてからsqlcクエリを検証する統合テスト。
+- `db/migrations`: [goose](https://github.com/pressly/goose)のSQLマイグレーション(SQLite方言。本番はCloudflare D1)。`db/migrations.go`で`embed`し、goose CLIとGoテストの両方から使う。
+- `db/queries`, `sqlc.yaml`, `internal/db`: [sqlc](https://sqlc.dev/)によるDBアクセス層(`engine: sqlite`, `internal/db`は生成コード)。`db/queries`内の`--`コメントはASCII文字のみにすること(sqlcのSQLiteパーサーがマルチバイト文字を含むコメントで列位置を誤認識してパースエラーになる既知の問題があるため)。
+- `internal/db/d1`: 本番でCloudflare D1のHTTP query APIを叩く`db.Querier`実装。ローカル開発・テストではこれを使わず、`internal/db`が生成する`database/sql`実装に`modernc.org/sqlite`(pure Go、cgo/Docker不要)で直接繋ぐ。
+- `internal/db/integration_test.go`: 一時ファイルの実SQLiteに対してgoose migrateしてからsqlcクエリを検証する統合テスト(Docker不要)。
 - `internal/content/realcontent_test.go`: `content/`配下の実データを実際に読み込み、frontmatterが壊れていないかを検証する回帰テスト。
-- `internal/server/federation_integration_test.go`: testcontainers-goの実Postgres + 実HTTPサーバー + 偽のリモートMastodon actorを使い、Followの受信→DB反映→署名付きAcceptの送達までを検証する統合テスト。
+- `internal/server/federation_integration_test.go`: 一時ファイルの実SQLite + 実HTTPサーバー + 偽のリモートMastodon actorを使い、Followの受信→DB反映→署名付きAcceptの送達までを検証する統合テスト(Docker不要)。
 
 ## 環境変数
 
-`DATABASE_URL`, `SITE_BASE_URL`(既定`https://blog.nagutabby.uk`), `WEB_BASE_URL`(`/actor/outbox`が`/atom.xml`を取得するweb側のURL。未設定時は`SITE_BASE_URL`と同じ), `ACTOR_PUBLIC_KEY_PEM`/`ACTOR_PRIVATE_KEY_PEM`(改行は`\n`エスケープ可)。詳細は`.env.example`を参照。
+`SITE_BASE_URL`(既定`https://blog.nagutabby.uk`), `WEB_BASE_URL`(`/actor/outbox`が`/atom.xml`を取得するweb側のURL。未設定時は`SITE_BASE_URL`と同じ), `ACTOR_PUBLIC_KEY_PEM`/`ACTOR_PRIVATE_KEY_PEM`(改行は`\n`エスケープ可)。詳細は`.env.example`を参照。
+
+DBは`CLOUDFLARE_ACCOUNT_ID`/`CLOUDFLARE_D1_DATABASE_ID`/`CLOUDFLARE_D1_API_TOKEN`が3つとも設定されていればCloudflare D1(HTTP query API経由)に接続する。1つでも欠けていれば`SQLITE_PATH`(既定`backend.db`)のローカルSQLiteファイルにフォールバックする。
 
 ## 開発
 
@@ -35,19 +38,7 @@ Protoからのコード生成はリポジトリルートの`make generate`を使
 
 DBスキーマを変更したら`sqlc generate`でクエリコードを再生成する。
 
-ローカルDBは`docker compose up -d`（ルートの`docker-compose.yaml`）で起動する。ポート5432が使用中の場合は`POSTGRES_PORT`で上書きできる。
-
-### Rancher Desktop / Colima など非Docker-Desktop環境での`go test`
-
-`internal/db`の統合テストはtestcontainers-goでDockerコンテナを起動する。Rancher Desktopなど、Docker
-socketがVM内にあり`docker context`経由でしか見えない環境では、`DOCKER_HOST`を明示し、testcontainersの
-reaper(ryuk)サイドカーが socket を bind mount できずに失敗するため無効化する必要がある。
-
-```sh
-DOCKER_HOST="unix:///Users/$(whoami)/.rd/docker.sock" TESTCONTAINERS_RYUK_DISABLED=true go test ./...
-```
-
-GitHub Actions(ubuntu-latest)の標準Docker環境では追加設定は不要。
+ローカルDBはDocker不要。`make db-migrate`(ルートの`Makefile`)で`backend.db`にgooseマイグレーションを適用してから`go run ./cmd/server`すればよい。ファイルパスを変えたい場合は`SQLITE_PATH`で上書きする。
 
 ## 記事公開時にFederation通知を送る
 
@@ -71,12 +62,6 @@ curl -X POST http://localhost:8080/blog.federationadmin.v1.FederationAdminServic
 - `web`サービス: Settings > Root Directory を`web`に設定する(Config-as-code file pathは`web/railway.json`)。`BACKEND_URL`をbackendサービスの公開URL(またはRailwayプライベートネットワーキングのURL)に設定する。
 - 公開ドメイン(`blog.nagutabby.uk`)の手前にCloudflare Workerを置き、パスに応じて2つのRailwayサービスへ振り分ける(`web/src/lib/workers/router.ts`、詳細は`web/wrangler.toml`の`WEB_ORIGIN`/`BACKEND_ORIGIN`)。`BACKEND_URL`(web用)と`BACKEND_ORIGIN`(Worker用)は同じbackendサービスのURLを指す。
 
-### 本番DBのbaseline
+### 本番DB(Cloudflare D1)のセットアップ
 
-本番のPostgresは既にPrismaが`Follower`/`RelayConnection`テーブルを作成済み。`db/migrations/00001_initial_schema.sql`は`CREATE TABLE IF NOT EXISTS`/`CREATE UNIQUE INDEX IF NOT EXISTS`で書いているため、既存スキーマと完全に一致する前提で`goose up`を実行してもエラーにならず、goose管理テーブルにバージョン1が記録されるだけで済む(実際に既存スキーマを再現したDBに対して確認済み)。
-
-```sh
-goose -dir db/migrations postgres "$DATABASE_URL" up
-```
-
-以後のスキーマ変更は通常のgooseマイグレーションとして追加する。Prisma側で新規マイグレーションを追加しないこと。
+`wrangler d1 create`でD1データベースを作成し、`wrangler d1 migrations apply --remote`で`db/migrations`を適用する。既存のNeon(PostgreSQL)からの実データ移行手順は別途追加する移行スクリプトを参照。

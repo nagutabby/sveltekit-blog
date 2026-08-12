@@ -2,7 +2,9 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"errors"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -10,11 +12,12 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/jackc/pgx/v5/pgxpool"
+	_ "modernc.org/sqlite"
 
 	"github.com/nagutabby/sveltekit-blog/backend/internal/contact"
 	"github.com/nagutabby/sveltekit-blog/backend/internal/content"
 	"github.com/nagutabby/sveltekit-blog/backend/internal/db"
+	"github.com/nagutabby/sveltekit-blog/backend/internal/db/d1"
 	"github.com/nagutabby/sveltekit-blog/backend/internal/federation"
 	"github.com/nagutabby/sveltekit-blog/backend/internal/federationadmin"
 	"github.com/nagutabby/sveltekit-blog/backend/internal/server"
@@ -49,13 +52,11 @@ func run() error {
 		siteBaseURL = "https://blog.nagutabby.uk"
 	}
 
-	pool, err := pgxpool.New(ctx, os.Getenv("DATABASE_URL"))
+	queries, closeDB, err := newQueries()
 	if err != nil {
 		return err
 	}
-	defer pool.Close()
-
-	queries := db.New(pool)
+	defer closeDB()
 	contentLoader := content.NewLoader(contentDir)
 
 	federationCfg := federation.Config{
@@ -97,4 +98,33 @@ func run() error {
 		defer cancel()
 		return httpServer.Shutdown(shutdownCtx)
 	}
+}
+
+// newQueries builds the db.Querier the server runs against. In production
+// this is Cloudflare D1 (reached over its HTTP query API, since the JS
+// Workers Binding API isn't available outside a Worker); locally, and
+// wherever the D1 environment variables aren't set, it's a plain SQLite
+// file, since D1 is SQLite-compatible and needs no separate driver.
+func newQueries() (db.Querier, func(), error) {
+	accountID := os.Getenv("CLOUDFLARE_ACCOUNT_ID")
+	databaseID := os.Getenv("CLOUDFLARE_D1_DATABASE_ID")
+	apiToken := os.Getenv("CLOUDFLARE_D1_API_TOKEN")
+	if accountID != "" && databaseID != "" && apiToken != "" {
+		client := d1.New(d1.Config{
+			AccountID:  accountID,
+			DatabaseID: databaseID,
+			APIToken:   apiToken,
+		})
+		return client, func() {}, nil
+	}
+
+	sqlitePath := os.Getenv("SQLITE_PATH")
+	if sqlitePath == "" {
+		sqlitePath = "backend.db"
+	}
+	sqlDB, err := sql.Open("sqlite", sqlitePath)
+	if err != nil {
+		return nil, nil, fmt.Errorf("open local sqlite database %q: %w", sqlitePath, err)
+	}
+	return db.New(sqlDB), func() { _ = sqlDB.Close() }, nil
 }
