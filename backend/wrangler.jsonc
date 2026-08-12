@@ -10,9 +10,7 @@
     {
       "binding": "DB",
       "database_name": "sveltekit-blog-db",
-      // `wrangler d1 create sveltekit-blog-db`の出力に表示されるdatabase_idを
-      // ここに設定する。
-      "database_id": "<wrangler d1 createの出力から設定する>",
+      "database_id": "2b4db5b8-4d5a-43ee-b79d-3037f87cec89",
       "migrations_dir": "db/migrations"
     }
   ]
