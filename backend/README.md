@@ -64,4 +64,12 @@ curl -X POST http://localhost:8080/blog.federationadmin.v1.FederationAdminServic
 
 ### 本番DB(Cloudflare D1)のセットアップ
 
-`wrangler d1 create`でD1データベースを作成し、`wrangler d1 migrations apply --remote`で`db/migrations`を適用する。既存のNeon(PostgreSQL)からの実データ移行手順は別途追加する移行スクリプトを参照。
+`wrangler`コマンドは`backend/wrangler.jsonc`(`d1_databases`バインディングと`migrations_dir: "db/migrations"`を定義)を使うため、**このディレクトリ(`backend/`)で実行する**。このファイルはD1の作成・マイグレーション適用専用で、backend自体はVercel Functions(Go runtime)で動かすためWorkerとしてdeployすることはない。
+
+```sh
+cd backend
+wrangler d1 create sveltekit-blog-db  # 出力されたdatabase_idをwrangler.jsoncに設定する
+wrangler d1 migrations apply sveltekit-blog-db --remote  # db/migrationsを適用
+```
+
+既存のNeon(PostgreSQL)からの実データ移行手順は別途追加する移行スクリプトを参照。
