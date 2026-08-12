@@ -5,25 +5,25 @@
 package db
 
 import (
-	"github.com/jackc/pgx/v5/pgtype"
+	"database/sql"
 )
 
 type Follower struct {
-	ID           int32            `json:"id"`
-	ActorId      string           `json:"actorId"`
-	Inbox        string           `json:"inbox"`
-	PublicKeyPem string           `json:"publicKeyPem"`
-	Following    bool             `json:"following"`
-	CreatedAt    pgtype.Timestamp `json:"createdAt"`
-	UpdatedAt    pgtype.Timestamp `json:"updatedAt"`
+	ID           int64  `json:"id"`
+	ActorId      string `json:"actorId"`
+	Inbox        string `json:"inbox"`
+	PublicKeyPem string `json:"publicKeyPem"`
+	Following    bool   `json:"following"`
+	CreatedAt    string `json:"createdAt"`
+	UpdatedAt    string `json:"updatedAt"`
 }
 
 type RelayConnection struct {
-	ID             int32            `json:"id"`
-	ActorId        string           `json:"actorId"`
-	Inbox          string           `json:"inbox"`
-	Connected      bool             `json:"connected"`
-	LastAcceptedAt pgtype.Timestamp `json:"lastAcceptedAt"`
-	CreatedAt      pgtype.Timestamp `json:"createdAt"`
-	UpdatedAt      pgtype.Timestamp `json:"updatedAt"`
+	ID             int64          `json:"id"`
+	ActorId        string         `json:"actorId"`
+	Inbox          string         `json:"inbox"`
+	Connected      bool           `json:"connected"`
+	LastAcceptedAt sql.NullString `json:"lastAcceptedAt"`
+	CreatedAt      string         `json:"createdAt"`
+	UpdatedAt      string         `json:"updatedAt"`
 }

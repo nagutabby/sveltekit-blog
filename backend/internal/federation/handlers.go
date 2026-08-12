@@ -3,6 +3,7 @@ package federation
 import (
 	"bytes"
 	"context"
+	"database/sql"
 	"encoding/json"
 	"encoding/xml"
 	"errors"
@@ -10,6 +11,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"time"
 
 	"github.com/google/uuid"
 
@@ -35,6 +37,12 @@ func NewHandlers(followers FollowerStore, relays RelayStore, articles ArticleSto
 
 const activityJSONContentType = "application/activity+json"
 const actorCacheControl = "max-age=0, private, must-revalidate"
+
+// nowTimestamp formats the current time the way the sqlite/D1 schema
+// stores it: TEXT columns holding RFC3339 with nanosecond precision.
+func nowTimestamp() string {
+	return time.Now().UTC().Format(time.RFC3339Nano)
+}
 
 func (h *Handlers) Webfinger(w http.ResponseWriter, r *http.Request) {
 	resource := r.URL.Query().Get("resource")
@@ -246,10 +254,13 @@ func (h *Handlers) Inbox(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handlers) handleFollow(w http.ResponseWriter, ctx context.Context, activity incomingActivity, actorInfo *remoteActor) {
+	now := nowTimestamp()
 	_, err := h.followers.UpsertFollower(ctx, db.UpsertFollowerParams{
 		ActorId:      activity.Actor,
 		Inbox:        actorInfo.Inbox,
 		PublicKeyPem: actorInfo.PublicKey.PublicKeyPem,
+		CreatedAt:    now,
+		UpdatedAt:    now,
 	})
 	if err != nil {
 		writeJSONError(w, http.StatusInternalServerError, err.Error())
@@ -281,6 +292,7 @@ func (h *Handlers) handleUndo(w http.ResponseWriter, ctx context.Context, activi
 		ActorId:      activity.Actor,
 		Inbox:        actorInfo.Inbox,
 		PublicKeyPem: actorInfo.PublicKey.PublicKeyPem,
+		UpdatedAt:    nowTimestamp(),
 	})
 	if err != nil {
 		writeJSONError(w, http.StatusInternalServerError, err.Error())
@@ -307,9 +319,13 @@ func (h *Handlers) handleAccept(w http.ResponseWriter, ctx context.Context, acti
 		return
 	}
 
+	now := nowTimestamp()
 	_, err := h.relays.UpsertRelayConnectionAccepted(ctx, db.UpsertRelayConnectionAcceptedParams{
-		ActorId: activity.Actor,
-		Inbox:   actorInfo.Inbox,
+		ActorId:        activity.Actor,
+		Inbox:          actorInfo.Inbox,
+		LastAcceptedAt: sql.NullString{String: now, Valid: true},
+		CreatedAt:      now,
+		UpdatedAt:      now,
 	})
 	if err != nil {
 		writeJSONError(w, http.StatusInternalServerError, err.Error())
