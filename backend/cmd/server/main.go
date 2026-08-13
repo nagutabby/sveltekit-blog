@@ -67,7 +67,6 @@ func run() error {
 
 	federationCfg := federation.Config{
 		SiteBaseURL:        siteBaseURL,
-		WebBaseURL:         os.Getenv("WEB_BASE_URL"),
 		ActorPublicKeyPEM:  os.Getenv("ACTOR_PUBLIC_KEY_PEM"),
 		ActorPrivateKeyPEM: os.Getenv("ACTOR_PRIVATE_KEY_PEM"),
 	}

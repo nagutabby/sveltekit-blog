@@ -39,6 +39,38 @@ func (q *Queries) GetFollowerByActorID(ctx context.Context, actorid string) (Fol
 	return i, err
 }
 
+const listActiveFollowerActorIDs = `-- name: ListActiveFollowerActorIDs :many
+SELECT "actorId" FROM "Follower" WHERE "following" = 1 ORDER BY "id" LIMIT ? OFFSET ?
+`
+
+type ListActiveFollowerActorIDsParams struct {
+	Limit  int64 `json:"limit"`
+	Offset int64 `json:"offset"`
+}
+
+func (q *Queries) ListActiveFollowerActorIDs(ctx context.Context, arg ListActiveFollowerActorIDsParams) ([]string, error) {
+	rows, err := q.db.QueryContext(ctx, listActiveFollowerActorIDs, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []string
+	for rows.Next() {
+		var actorId string
+		if err := rows.Scan(&actorId); err != nil {
+			return nil, err
+		}
+		items = append(items, actorId)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const unfollowByActorID = `-- name: UnfollowByActorID :one
 UPDATE "Follower"
 SET "following" = 0,
