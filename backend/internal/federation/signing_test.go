@@ -8,10 +8,13 @@ import (
 	"crypto/x509"
 	"encoding/base64"
 	"encoding/pem"
+	"net/http"
+	"net/http/httptest"
 	"net/url"
 	"regexp"
 	"strings"
 	"testing"
+	"time"
 )
 
 func generateTestKeyPair(t *testing.T) (*rsa.PrivateKey, string, string) {
@@ -97,7 +100,7 @@ func TestSignHTTPRequestProducesVerifiableSignature(t *testing.T) {
 
 	parsed, _ := url.Parse(targetURL)
 	signString := "(request-target): post " + parsed.Path + "\n" +
-		"host: " + parsed.Hostname() + "\n" +
+		"host: " + parsed.Host + "\n" +
 		"date: " + headers.Date + "\n" +
 		"digest: " + headers.Digest
 	hashed := sha256.Sum256([]byte(signString))
@@ -108,5 +111,113 @@ func TestSignHTTPRequestProducesVerifiableSignature(t *testing.T) {
 
 	if !strings.Contains(headers.Signature, `keyId="`+keyID+`"`) {
 		t.Fatalf("Signature header missing expected keyId: %q", headers.Signature)
+	}
+}
+
+func encodeTestPublicKeyPEM(t *testing.T, key *rsa.PrivateKey) string {
+	t.Helper()
+	der, err := x509.MarshalPKIXPublicKey(&key.PublicKey)
+	if err != nil {
+		t.Fatalf("failed to marshal public key: %v", err)
+	}
+	return string(pem.EncodeToMemory(&pem.Block{Type: "PUBLIC KEY", Bytes: der}))
+}
+
+// signedInboxTestRequest builds a request the same way newSignedInboxRequest
+// in handlers_test.go does, but standalone so signing_test.go can exercise
+// VerifyHTTPSignature directly without going through Handlers.Inbox.
+func signedInboxTestRequest(t *testing.T, body, keyID, privateKeyPEM string) *http.Request {
+	t.Helper()
+	const siteBaseURL = "https://blog.nagutabby.uk"
+	headers, err := SignHTTPRequest(siteBaseURL+"/actor/inbox", http.MethodPost, body, keyID, privateKeyPEM)
+	if err != nil {
+		t.Fatalf("failed to sign request: %v", err)
+	}
+
+	req := httptest.NewRequest(http.MethodPost, "/actor/inbox", strings.NewReader(body))
+	req.Host = "blog.nagutabby.uk"
+	req.Header.Set("Date", headers.Date)
+	req.Header.Set("Digest", headers.Digest)
+	req.Header.Set("Signature", headers.Signature)
+	return req
+}
+
+func TestVerifyHTTPSignatureAccepts(t *testing.T) {
+	key, privateKeyPEM, _ := generateTestKeyPair(t)
+	publicKeyPEM := encodeTestPublicKeyPEM(t, key)
+
+	body := `{"type":"Follow"}`
+	req := signedInboxTestRequest(t, body, "https://mastodon.example/users/alice#main-key", privateKeyPEM)
+
+	if err := VerifyHTTPSignature(req, []byte(body), publicKeyPEM); err != nil {
+		t.Fatalf("VerifyHTTPSignature returned error for a validly signed request: %v", err)
+	}
+}
+
+func TestVerifyHTTPSignatureRejectsMissingHeader(t *testing.T) {
+	key, _, _ := generateTestKeyPair(t)
+	publicKeyPEM := encodeTestPublicKeyPEM(t, key)
+
+	req := httptest.NewRequest(http.MethodPost, "/actor/inbox", strings.NewReader("{}"))
+	if err := VerifyHTTPSignature(req, []byte("{}"), publicKeyPEM); err == nil {
+		t.Fatal("expected an error for a request with no Signature header")
+	}
+}
+
+func TestVerifyHTTPSignatureRejectsWrongKey(t *testing.T) {
+	_, signerPrivateKeyPEM, _ := generateTestKeyPair(t)
+	otherKey, _, _ := generateTestKeyPair(t)
+	otherPublicKeyPEM := encodeTestPublicKeyPEM(t, otherKey)
+
+	body := `{"type":"Follow"}`
+	req := signedInboxTestRequest(t, body, "https://mastodon.example/users/alice#main-key", signerPrivateKeyPEM)
+
+	if err := VerifyHTTPSignature(req, []byte(body), otherPublicKeyPEM); err == nil {
+		t.Fatal("expected an error when verifying against a public key that didn't sign the request")
+	}
+}
+
+func TestVerifyHTTPSignatureRejectsBodyMismatch(t *testing.T) {
+	key, privateKeyPEM, _ := generateTestKeyPair(t)
+	publicKeyPEM := encodeTestPublicKeyPEM(t, key)
+
+	signedBody := `{"type":"Follow"}`
+	req := signedInboxTestRequest(t, signedBody, "https://mastodon.example/users/alice#main-key", privateKeyPEM)
+
+	tamperedBody := `{"type":"Delete"}`
+	if err := VerifyHTTPSignature(req, []byte(tamperedBody), publicKeyPEM); err == nil {
+		t.Fatal("expected an error when the actual body doesn't match the signed Digest")
+	}
+}
+
+func TestVerifyHTTPSignatureRejectsStaleDate(t *testing.T) {
+	key, privateKeyPEM, _ := generateTestKeyPair(t)
+	publicKeyPEM := encodeTestPublicKeyPEM(t, key)
+
+	body := `{"type":"Follow"}`
+	req := signedInboxTestRequest(t, body, "https://mastodon.example/users/alice#main-key", privateKeyPEM)
+
+	staleDate := req.Header.Get("Date")
+	parsed, err := http.ParseTime(staleDate)
+	if err != nil {
+		t.Fatalf("failed to parse Date header: %v", err)
+	}
+	req.Header.Set("Date", parsed.Add(-2*time.Hour).Format(http.TimeFormat))
+
+	if err := VerifyHTTPSignature(req, []byte(body), publicKeyPEM); err == nil {
+		t.Fatal("expected an error for a Date header far outside the acceptable window")
+	}
+}
+
+func TestParseRSAPublicKeyRoundTrips(t *testing.T) {
+	key, _, _ := generateTestKeyPair(t)
+	publicKeyPEM := encodeTestPublicKeyPEM(t, key)
+
+	parsed, err := ParseRSAPublicKey(publicKeyPEM)
+	if err != nil {
+		t.Fatalf("ParseRSAPublicKey returned error: %v", err)
+	}
+	if !parsed.Equal(&key.PublicKey) {
+		t.Fatal("parsed public key does not match original")
 	}
 }

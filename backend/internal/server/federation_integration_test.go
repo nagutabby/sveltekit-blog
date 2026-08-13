@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -65,11 +66,25 @@ func TestFederationFollowOverHTTP(t *testing.T) {
 	// Fake remote Mastodon actor + inbox. inboxURL is filled in once the
 	// server is listening, since the actor document needs to advertise
 	// the server's own address as its inbox.
+	aliceKey, err := rsa.GenerateKey(rand.Reader, 2048)
+	if err != nil {
+		t.Fatalf("failed to generate RSA key: %v", err)
+	}
+	aliceKeyDER, err := x509.MarshalPKIXPublicKey(&aliceKey.PublicKey)
+	if err != nil {
+		t.Fatalf("failed to marshal alice's public key: %v", err)
+	}
+	alicePublicKeyPEM := string(pem.EncodeToMemory(&pem.Block{Type: "PUBLIC KEY", Bytes: aliceKeyDER}))
+	alicePrivateKeyPEM := string(pem.EncodeToMemory(&pem.Block{
+		Type:  "RSA PRIVATE KEY",
+		Bytes: x509.MarshalPKCS1PrivateKey(aliceKey),
+	}))
+
 	var inboxURL string
 	var acceptDelivered bool
 	mux := http.NewServeMux()
 	mux.HandleFunc("/users/alice", func(w http.ResponseWriter, r *http.Request) {
-		_, _ = w.Write([]byte(`{"inbox": "` + inboxURL + `", "publicKey": {"publicKeyPem": "REMOTE-KEY"}}`))
+		_, _ = w.Write([]byte(`{"inbox": "` + inboxURL + `", "publicKey": {"publicKeyPem": ` + strconv.Quote(alicePublicKeyPEM) + `}}`))
 	})
 	mux.HandleFunc("/users/alice/inbox", func(w http.ResponseWriter, r *http.Request) {
 		acceptDelivered = r.Header.Get("Signature") != ""
@@ -88,8 +103,26 @@ func TestFederationFollowOverHTTP(t *testing.T) {
 	backend := httptest.NewServer(server.NewHandler(cfg))
 	defer backend.Close()
 
+	// The inbox verifies the sender's HTTP Signature, so the Follow must be
+	// signed with alice's key the same way a real remote server would sign
+	// it — host/date/digest all keyed to backend's actual (random-port)
+	// address, since that's what the server sees as the request's Host.
 	activityBody := `{"@context":"https://www.w3.org/ns/activitystreams","type":"Follow","actor":"` + remote.URL + `/users/alice","object":"https://blog.nagutabby.uk/actor"}`
-	resp, err := http.Post(backend.URL+"/actor/inbox", "application/activity+json", strings.NewReader(activityBody))
+	signedHeaders, err := federation.SignHTTPRequest(backend.URL+"/actor/inbox", http.MethodPost, activityBody, remote.URL+"/users/alice#main-key", alicePrivateKeyPEM)
+	if err != nil {
+		t.Fatalf("failed to sign Follow activity: %v", err)
+	}
+
+	req, err := http.NewRequest(http.MethodPost, backend.URL+"/actor/inbox", strings.NewReader(activityBody))
+	if err != nil {
+		t.Fatalf("failed to build request: %v", err)
+	}
+	req.Header.Set("Content-Type", "application/activity+json")
+	req.Header.Set("Date", signedHeaders.Date)
+	req.Header.Set("Digest", signedHeaders.Digest)
+	req.Header.Set("Signature", signedHeaders.Signature)
+
+	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		t.Fatalf("POST /actor/inbox failed: %v", err)
 	}
