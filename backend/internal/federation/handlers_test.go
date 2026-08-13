@@ -261,6 +261,55 @@ func TestActor(t *testing.T) {
 	}
 }
 
+func TestActorNegotiatesLDJSON(t *testing.T) {
+	h := NewHandlers(&fakeFollowerStore{}, &fakeRelayStore{}, &fakeArticleStore{}, testConfig(t))
+
+	req := httptest.NewRequest(http.MethodGet, "/actor", nil)
+	req.Header.Set("Accept", `application/ld+json; profile="https://www.w3.org/ns/activitystreams"`)
+	rec := httptest.NewRecorder()
+	h.Actor(rec, req)
+
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status = %d, want 200", rec.Code)
+	}
+	if got := rec.Header().Get("Content-Type"); got != ldJSONContentType {
+		t.Fatalf("Content-Type = %q, want %q", got, ldJSONContentType)
+	}
+}
+
+func TestActorRejectsIncompatibleAccept(t *testing.T) {
+	h := NewHandlers(&fakeFollowerStore{}, &fakeRelayStore{}, &fakeArticleStore{}, testConfig(t))
+
+	req := httptest.NewRequest(http.MethodGet, "/actor", nil)
+	req.Header.Set("Accept", "text/html")
+	rec := httptest.NewRecorder()
+	h.Actor(rec, req)
+
+	if rec.Code != http.StatusNotAcceptable {
+		t.Fatalf("status = %d, want 406", rec.Code)
+	}
+}
+
+func TestArticleNoteNegotiatesLDJSON(t *testing.T) {
+	articles := &fakeArticleStore{articles: map[string]content.Article{
+		"my-article": {ID: "my-article", Title: "タイトル"},
+	}}
+	h := &Handlers{articles: articles, cfg: testConfig(t)}
+
+	req := httptest.NewRequest(http.MethodGet, "/api/articles/my-article", nil)
+	req.SetPathValue("name", "my-article")
+	req.Header.Set("Accept", "application/ld+json")
+	rec := httptest.NewRecorder()
+	h.ArticleNote(rec, req)
+
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status = %d, want 200, body=%s", rec.Code, rec.Body.String())
+	}
+	if got := rec.Header().Get("Content-Type"); got != ldJSONContentType {
+		t.Fatalf("Content-Type = %q, want %q", got, ldJSONContentType)
+	}
+}
+
 func TestFollowers(t *testing.T) {
 	followers := &fakeFollowerStore{followerCount: 42}
 	h := NewHandlers(followers, &fakeRelayStore{}, &fakeArticleStore{}, testConfig(t))

@@ -72,7 +72,7 @@ func (h *Handlers) Webfinger(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handlers) Actor(w http.ResponseWriter, r *http.Request) {
-	writeActivityJSON(w, http.StatusOK, map[string]any{
+	writeActivityJSON(w, r, http.StatusOK, map[string]any{
 		"@context":          []string{"https://www.w3.org/ns/activitystreams", "https://w3id.org/security/v1"},
 		"id":                h.cfg.actorURL(),
 		"type":              "Service",
@@ -125,7 +125,7 @@ func (h *Handlers) Followers(w http.ResponseWriter, r *http.Request) {
 			writePlainText(w, http.StatusInternalServerError, "Internal Server Error")
 			return
 		}
-		writeActivityJSON(w, http.StatusOK, map[string]any{
+		writeActivityJSON(w, r, http.StatusOK, map[string]any{
 			"@context":   "https://www.w3.org/ns/activitystreams",
 			"id":         followersURL,
 			"type":       "OrderedCollection",
@@ -150,7 +150,7 @@ func (h *Handlers) Followers(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	writeCollectionPage(w, followersURL, pageNum, actorIDs, len(actorIDs) == collectionPageSize)
+	writeCollectionPage(w, r, followersURL, pageNum, actorIDs, len(actorIDs) == collectionPageSize)
 }
 
 func (h *Handlers) Following(w http.ResponseWriter, r *http.Request) {
@@ -173,7 +173,7 @@ func (h *Handlers) Following(w http.ResponseWriter, r *http.Request) {
 
 	page := r.URL.Query().Get("page")
 	if page == "" {
-		writeActivityJSON(w, http.StatusOK, map[string]any{
+		writeActivityJSON(w, r, http.StatusOK, map[string]any{
 			"@context":   "https://www.w3.org/ns/activitystreams",
 			"id":         followingURL,
 			"type":       "OrderedCollection",
@@ -190,12 +190,12 @@ func (h *Handlers) Following(w http.ResponseWriter, r *http.Request) {
 	}
 
 	pageItems, hasMore := paginate(actorIDs, pageNum, collectionPageSize)
-	writeCollectionPage(w, followingURL, pageNum, pageItems, hasMore)
+	writeCollectionPage(w, r, followingURL, pageNum, pageItems, hasMore)
 }
 
 // writeCollectionPage renders an OrderedCollectionPage for the given page
 // number, adding "next"/"prev" links as appropriate.
-func writeCollectionPage(w http.ResponseWriter, collectionURL string, pageNum int, items any, hasMore bool) {
+func writeCollectionPage(w http.ResponseWriter, r *http.Request, collectionURL string, pageNum int, items any, hasMore bool) {
 	body := map[string]any{
 		"@context":     "https://www.w3.org/ns/activitystreams",
 		"id":           fmt.Sprintf("%s?page=%d", collectionURL, pageNum),
@@ -209,7 +209,7 @@ func writeCollectionPage(w http.ResponseWriter, collectionURL string, pageNum in
 	if pageNum > 1 {
 		body["prev"] = fmt.Sprintf("%s?page=%d", collectionURL, pageNum-1)
 	}
-	writeActivityJSON(w, http.StatusOK, body)
+	writeActivityJSON(w, r, http.StatusOK, body)
 }
 
 // paginate slices items into the page pageNum (1-indexed) of size
@@ -264,7 +264,12 @@ func (h *Handlers) ArticleNote(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("Content-Type", activityJSONContentType)
+	contentType, ok := negotiateAPContentType(r.Header.Get("Accept"))
+	if !ok {
+		writePlainText(w, http.StatusNotAcceptable, "Not Acceptable")
+		return
+	}
+	w.Header().Set("Content-Type", contentType)
 	_ = json.NewEncoder(w).Encode(h.buildArticleNote(article))
 }
 
@@ -296,7 +301,7 @@ func (h *Handlers) Outbox(w http.ResponseWriter, r *http.Request) {
 
 	page := r.URL.Query().Get("page")
 	if page == "" {
-		writeActivityJSON(w, http.StatusOK, map[string]any{
+		writeActivityJSON(w, r, http.StatusOK, map[string]any{
 			"@context":   "https://www.w3.org/ns/activitystreams",
 			"id":         outboxURL,
 			"type":       "OrderedCollection",
@@ -324,7 +329,7 @@ func (h *Handlers) Outbox(w http.ResponseWriter, r *http.Request) {
 		items = append(items, h.buildCreateActivity(article))
 	}
 
-	writeCollectionPage(w, outboxURL, pageNum, items, end < len(articles))
+	writeCollectionPage(w, r, outboxURL, pageNum, items, end < len(articles))
 }
 
 type incomingActivity struct {
@@ -359,7 +364,7 @@ func (h *Handlers) Inbox(w http.ResponseWriter, r *http.Request) {
 	// Cloudflare Worker router (now gone); ported here.
 	userAgent := r.Header.Get("User-Agent")
 	if isRelayUserAgent(userAgent) && activity.Type != "Accept" {
-		writeForbiddenRelayResponse(w, r.URL.Path, userAgent)
+		writeForbiddenRelayResponse(w, r, userAgent)
 		return
 	}
 
@@ -393,9 +398,9 @@ func (h *Handlers) Inbox(w http.ResponseWriter, r *http.Request) {
 
 	switch activity.Type {
 	case "Follow":
-		h.handleFollow(w, r.Context(), activity, actorInfo)
+		h.handleFollow(w, r, activity, actorInfo)
 	case "Undo":
-		h.handleUndo(w, r.Context(), activity, actorInfo)
+		h.handleUndo(w, r, activity, actorInfo)
 	case "Accept":
 		h.handleAccept(w, r.Context(), activity, actorInfo)
 	default:
@@ -479,7 +484,8 @@ func deletedObjectID(object json.RawMessage) string {
 	return ""
 }
 
-func (h *Handlers) handleFollow(w http.ResponseWriter, ctx context.Context, activity incomingActivity, actorInfo *remoteActor) {
+func (h *Handlers) handleFollow(w http.ResponseWriter, r *http.Request, activity incomingActivity, actorInfo *remoteActor) {
+	ctx := r.Context()
 	now := nowTimestamp()
 	_, err := h.followers.UpsertFollower(ctx, db.UpsertFollowerParams{
 		ActorId:      activity.Actor,
@@ -498,7 +504,7 @@ func (h *Handlers) handleFollow(w http.ResponseWriter, ctx context.Context, acti
 		return
 	}
 
-	writeActivityJSON(w, http.StatusOK, map[string]any{
+	writeActivityJSON(w, r, http.StatusOK, map[string]any{
 		"@context": "https://www.w3.org/ns/activitystreams",
 		"id":       h.cfg.SiteBaseURL + "/activities/" + uuid.NewString(),
 		"type":     "Accept",
@@ -507,13 +513,14 @@ func (h *Handlers) handleFollow(w http.ResponseWriter, ctx context.Context, acti
 	})
 }
 
-func (h *Handlers) handleUndo(w http.ResponseWriter, ctx context.Context, activity incomingActivity, actorInfo *remoteActor) {
+func (h *Handlers) handleUndo(w http.ResponseWriter, r *http.Request, activity incomingActivity, actorInfo *remoteActor) {
 	var object activityObject
 	if err := json.Unmarshal(activity.Object, &object); err != nil || object.Type != "Follow" {
 		writePlainText(w, http.StatusBadRequest, "Invalid Undo activity")
 		return
 	}
 
+	ctx := r.Context()
 	_, err := h.followers.UnfollowByActorID(ctx, db.UnfollowByActorIDParams{
 		ActorId:      activity.Actor,
 		Inbox:        actorInfo.Inbox,
@@ -530,7 +537,7 @@ func (h *Handlers) handleUndo(w http.ResponseWriter, ctx context.Context, activi
 		return
 	}
 
-	writeActivityJSON(w, http.StatusOK, map[string]any{
+	writeActivityJSON(w, r, http.StatusOK, map[string]any{
 		"@context": "https://www.w3.org/ns/activitystreams",
 		"type":     "Accept",
 		"actor":    h.cfg.actorURL(),
@@ -605,8 +612,17 @@ func (h *Handlers) sendAccept(ctx context.Context, activity json.RawMessage, tar
 	return nil
 }
 
-func writeActivityJSON(w http.ResponseWriter, status int, body any) {
-	w.Header().Set("Content-Type", activityJSONContentType)
+// writeActivityJSON renders body as ActivityStreams JSON, honoring the
+// request's Accept header (application/activity+json, the historical
+// default, or application/ld+json with the activitystreams profile).
+// Responds 406 if neither is acceptable to the client.
+func writeActivityJSON(w http.ResponseWriter, r *http.Request, status int, body any) {
+	contentType, ok := negotiateAPContentType(r.Header.Get("Accept"))
+	if !ok {
+		writePlainText(w, http.StatusNotAcceptable, "Not Acceptable")
+		return
+	}
+	w.Header().Set("Content-Type", contentType)
 	w.Header().Set("Cache-Control", actorCacheControl)
 	w.WriteHeader(status)
 	_ = json.NewEncoder(w).Encode(body)
@@ -628,14 +644,14 @@ func isRelayUserAgent(userAgent string) bool {
 	return strings.Contains(strings.ToLower(userAgent), "relay")
 }
 
-func writeForbiddenRelayResponse(w http.ResponseWriter, path, userAgent string) {
-	writeActivityJSON(w, http.StatusForbidden, map[string]any{
+func writeForbiddenRelayResponse(w http.ResponseWriter, r *http.Request, userAgent string) {
+	writeActivityJSON(w, r, http.StatusForbidden, map[string]any{
 		"error":   "Forbidden",
 		"status":  http.StatusForbidden,
 		"message": "Relay server access is not permitted",
 		"details": map[string]string{
 			"reason":    "This server does not accept requests from relay servers",
-			"path":      path,
+			"path":      r.URL.Path,
 			"userAgent": userAgent,
 		},
 	})
