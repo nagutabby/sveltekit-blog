@@ -10,7 +10,7 @@ Goバックエンド（Connect RPC + sqlc）です。
 - `internal/contact`: `blog.contact.v1.ContactService`の実装。お問い合わせフォームの入力検証とMailtrap呼び出し。
 - `internal/content`: `Loader`が記事/レビューのMarkdown+frontmatterを`fs.FS`経由で読み込む(`internal/federation`/`internal/federationadmin`が直接使う)。既定では`content/`(下記`content`パッケージ)を`go:embed`したFSを使う。`CONTENT_DIR`を設定するとローカル開発用に任意のOSディレクトリ(`os.DirFS`)へ差し替えられる。スライドはfrontmatterを持たない静的PDFのため対象外(webに残す)。かつて存在した`blog.content.v1.ContentService`(Connect RPC)は撤去済み: SvelteKitのビルド時コンテンツ取得は`web/src/lib/server/content.ts`が`content/`を直接読むように変更されており、ネットワーク越しに呼ぶ必要がなくなったため。
 - `content/`: 記事/レビューのMarkdownソース(コミット対象)。画像等の静的アセットは`web/static/content/**/images`に残る。`content/embed.go`が`//go:embed articles reviews`でバイナリに埋め込む: Vercelの`@vercel/go`ビルダーはGoソース以外の任意ファイルを関数の実行時ファイルシステムに含めないため、`os.ReadFile`の相対パス読み込みは本番で静かに失敗する(実際に本番で発生し、`internal/content/realcontent_test.go`をこのFS経由に切り替えて検知できるようにした)。`db/migrations.go`と同じ理由・同じ手法。
-- `internal/federation`: ActivityPub連携の公開HTTPエンドポイント(`webfinger`, `actor`, `actor/followers`, `actor/following`, `actor/inbox`, `actor/outbox`, `api/articles/{name}`)。外部のMastodon/リレーサーバーはJSON-LD/HTTPしか話せないため、Connect RPCではなくプレーンな`net/http`ハンドラとして実装する。HTTP Signature(`signRequest.ts`相当)の署名・検証、Follower/RelayConnectionのDB更新(sqlc経由)、リモートactorのfetch、署名済みAcceptの送達を行う。
+- `internal/federation`: ActivityPub連携の公開HTTPエンドポイント(`webfinger`, `actor`, `actor/followers`, `actor/following`, `actor/inbox`, `actor/outbox`, `api/articles/{name}`)。外部のMastodon/リレーサーバーはJSON-LD/HTTPしか話せないため、Connect RPCではなくプレーンな`net/http`ハンドラとして実装する。HTTP Signature(`signRequest.ts`相当)の署名・検証、Follower/RelayConnectionのDB更新(sqlc経由)、リモートactorのfetch、署名済みAcceptの送達を行う。`actor/followers`・`actor/following`・`actor/outbox`は`?page=N`でOrderedCollectionPage(実際のフォロワーactorId/フォロー中のリレー/記事のCreate活動)を返す。
 - `internal/federationadmin`: `blog.federationadmin.v1.FederationAdminService`の実装(内部専用のConnect RPC)。記事のCreate/Update/Delete Activityを組み立て、LD-Signature(`signActivity`相当、RFC 8785のJSON Canonicalizationで署名)を付けて、DB上の全リレーへHTTP Signature付きで配送する。公開のActivityPub HTTPエンドポイントではないため`internal/federation`とは別パッケージ。**公開トリガーの仕組みはこのリポジトリの外にある想定**(元のSvelteKit実装の`/api/activitypub/sender`も認証なしの手動/外部トリガー呼び出しだったため、そのまま踏襲している)。呼び出し例は本ファイル末尾を参照。
 - `gen/`: `proto/`から`buf generate`で生成したコード(コミット対象)。
 - `db/migrations`: [goose](https://github.com/pressly/goose)のSQLマイグレーション(SQLite方言。本番はCloudflare D1)。`db/migrations.go`で`embed`し、goose CLIとGoテストの両方から使う。
@@ -22,7 +22,7 @@ Goバックエンド（Connect RPC + sqlc）です。
 
 ## 環境変数
 
-`SITE_BASE_URL`(既定`https://blog.nagutabby.uk`), `WEB_BASE_URL`(`/actor/outbox`が`/atom.xml`を取得するweb側のURL。未設定時は`SITE_BASE_URL`と同じ), `ACTOR_PUBLIC_KEY_PEM`/`ACTOR_PRIVATE_KEY_PEM`(改行は`\n`エスケープ可), `FEDERATION_ADMIN_TOKEN`(`FederationAdminService`を保護する共有シークレット。未設定だと同サービスは常に401を返す)。詳細は`.env.example`を参照。
+`SITE_BASE_URL`(既定`https://blog.nagutabby.uk`), `ACTOR_PUBLIC_KEY_PEM`/`ACTOR_PRIVATE_KEY_PEM`(改行は`\n`エスケープ可), `FEDERATION_ADMIN_TOKEN`(`FederationAdminService`を保護する共有シークレット。未設定だと同サービスは常に401を返す)。詳細は`.env.example`を参照。
 
 DBは`CLOUDFLARE_ACCOUNT_ID`/`CLOUDFLARE_D1_DATABASE_ID`/`CLOUDFLARE_D1_API_TOKEN`が3つとも設定されていればCloudflare D1(HTTP query API経由)に接続する。1つでも欠けていれば`SQLITE_PATH`(既定`backend.db`)のローカルSQLiteファイルにフォールバックする。
 
@@ -57,7 +57,7 @@ curl -X POST http://localhost:8080/blog.federationadmin.v1.FederationAdminServic
 
 `web`(SvelteKit adapter-static)と`backend`(Go)は1つのVercelプロジェクト内の別サービスとしてデプロイする。ルートの[`vercel.json`](../vercel.json)の`services`で両サービスを定義し、`rewrites`でパスに応じて振り分ける(`/actor*`, `/.well-known/webfinger`, `/.well-known/nodeinfo`, `/nodeinfo/*`, `/api/articles/*`, `/blog.contact.v1.ContactService/*`, `/blog.federationadmin.v1.FederationAdminService/*`は`backend`へ、それ以外は`web`へ)。
 
-Vercelダッシュボードで環境変数を設定する(`backend`サービス向け): `SITE_BASE_URL`, `WEB_BASE_URL`, `ACTOR_PUBLIC_KEY_PEM`/`ACTOR_PRIVATE_KEY_PEM`, `EMAIL_API_TOKEN`, `FROM_ADDRESS`, `BCC_ADDRESS`, `FEDERATION_ADMIN_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`/`CLOUDFLARE_D1_DATABASE_ID`/`CLOUDFLARE_D1_API_TOKEN`。`PORT`はVercelのGo runtimeが自動で注入する。
+Vercelダッシュボードで環境変数を設定する(`backend`サービス向け): `SITE_BASE_URL`, `ACTOR_PUBLIC_KEY_PEM`/`ACTOR_PRIVATE_KEY_PEM`, `EMAIL_API_TOKEN`, `FROM_ADDRESS`, `BCC_ADDRESS`, `FEDERATION_ADMIN_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`/`CLOUDFLARE_D1_DATABASE_ID`/`CLOUDFLARE_D1_API_TOKEN`。`PORT`はVercelのGo runtimeが自動で注入する。
 
 ### 本番DB(Cloudflare D1)のセットアップ
 

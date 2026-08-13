@@ -12,6 +12,7 @@ type Querier interface {
 	CountActiveFollowers(ctx context.Context) (int64, error)
 	GetFollowerByActorID(ctx context.Context, actorid string) (Follower, error)
 	GetRelayConnectionByActorID(ctx context.Context, actorid string) (RelayConnection, error)
+	ListActiveFollowerActorIDs(ctx context.Context, arg ListActiveFollowerActorIDsParams) ([]string, error)
 	ListRelayConnections(ctx context.Context) ([]RelayConnection, error)
 	// Sets an existing follower's following=false; errors if the row does not exist.
 	UnfollowByActorID(ctx context.Context, arg UnfollowByActorIDParams) (Follower, error)
