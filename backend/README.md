@@ -55,7 +55,7 @@ curl -X POST http://localhost:8080/blog.federationadmin.v1.FederationAdminServic
 
 ## デプロイ
 
-`web`(SvelteKit adapter-static)と`backend`(Go)は1つのVercelプロジェクト内の別サービスとしてデプロイする。ルートの[`vercel.json`](../vercel.json)の`services`で両サービスを定義し、`rewrites`でパスに応じて振り分ける(`/actor*`, `/.well-known/webfinger`, `/api/articles/*`, `/blog.contact.v1.ContactService/*`, `/blog.federationadmin.v1.FederationAdminService/*`は`backend`へ、それ以外は`web`へ)。
+`web`(SvelteKit adapter-static)と`backend`(Go)は1つのVercelプロジェクト内の別サービスとしてデプロイする。ルートの[`vercel.json`](../vercel.json)の`services`で両サービスを定義し、`rewrites`でパスに応じて振り分ける(`/actor*`, `/.well-known/webfinger`, `/.well-known/nodeinfo`, `/nodeinfo/*`, `/api/articles/*`, `/blog.contact.v1.ContactService/*`, `/blog.federationadmin.v1.FederationAdminService/*`は`backend`へ、それ以外は`web`へ)。
 
 Vercelダッシュボードで環境変数を設定する(`backend`サービス向け): `SITE_BASE_URL`, `WEB_BASE_URL`, `ACTOR_PUBLIC_KEY_PEM`/`ACTOR_PRIVATE_KEY_PEM`, `EMAIL_API_TOKEN`, `FROM_ADDRESS`, `BCC_ADDRESS`, `FEDERATION_ADMIN_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`/`CLOUDFLARE_D1_DATABASE_ID`/`CLOUDFLARE_D1_API_TOKEN`。`PORT`はVercelのGo runtimeが自動で注入する。
 
