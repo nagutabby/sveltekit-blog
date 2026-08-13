@@ -5,12 +5,12 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
-	"encoding/xml"
 	"errors"
 	"fmt"
 	"io"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 	"time"
 
@@ -98,34 +98,149 @@ func (h *Handlers) Actor(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+// collectionPageSize bounds how many items a single OrderedCollectionPage
+// (followers/following/outbox) returns, matching the page size Mastodon
+// itself uses for the same collections.
+const collectionPageSize = 20
+
+// parsePageNumber validates the "page" query parameter shared by the
+// followers/following/outbox collections: a positive integer, or an error
+// for anything else (missing/non-numeric/zero/negative is handled by the
+// caller checking for an empty raw value before calling this).
+func parsePageNumber(raw string) (int, error) {
+	n, err := strconv.Atoi(raw)
+	if err != nil || n < 1 {
+		return 0, fmt.Errorf("invalid page number %q", raw)
+	}
+	return n, nil
+}
+
 func (h *Handlers) Followers(w http.ResponseWriter, r *http.Request) {
-	count, err := h.followers.CountActiveFollowers(r.Context())
+	followersURL := h.cfg.actorURL() + "/followers"
+
+	page := r.URL.Query().Get("page")
+	if page == "" {
+		count, err := h.followers.CountActiveFollowers(r.Context())
+		if err != nil {
+			writePlainText(w, http.StatusInternalServerError, "Internal Server Error")
+			return
+		}
+		writeActivityJSON(w, http.StatusOK, map[string]any{
+			"@context":   "https://www.w3.org/ns/activitystreams",
+			"id":         followersURL,
+			"type":       "OrderedCollection",
+			"totalItems": count,
+			"first":      followersURL + "?page=1",
+		})
+		return
+	}
+
+	pageNum, err := parsePageNumber(page)
+	if err != nil {
+		writePlainText(w, http.StatusBadRequest, "Invalid page parameter")
+		return
+	}
+
+	actorIDs, err := h.followers.ListActiveFollowerActorIDs(r.Context(), db.ListActiveFollowerActorIDsParams{
+		Limit:  collectionPageSize,
+		Offset: int64(pageNum-1) * collectionPageSize,
+	})
 	if err != nil {
 		writePlainText(w, http.StatusInternalServerError, "Internal Server Error")
 		return
 	}
 
-	followersURL := h.cfg.actorURL() + "/followers"
-	writeActivityJSON(w, http.StatusOK, map[string]any{
-		"@context":   "https://www.w3.org/ns/activitystreams",
-		"id":         followersURL,
-		"type":       "OrderedCollection",
-		"totalItems": count,
-		"first":      followersURL + "?page=1",
-		"last":       followersURL + "?page=1",
-	})
+	writeCollectionPage(w, followersURL, pageNum, actorIDs, len(actorIDs) == collectionPageSize)
 }
 
 func (h *Handlers) Following(w http.ResponseWriter, r *http.Request) {
 	followingURL := h.cfg.actorURL() + "/following"
-	writeActivityJSON(w, http.StatusOK, map[string]any{
-		"@context":   "https://www.w3.org/ns/activitystreams",
-		"id":         followingURL,
-		"type":       "OrderedCollection",
-		"totalItems": 0,
-		"first":      followingURL + "?page=1",
-		"last":       followingURL + "?page=1",
-	})
+
+	// This actor never sends its own Follow through this codebase (see
+	// RelayStore's doc comment), so "following" is exactly the relays
+	// that have accepted it.
+	connections, err := h.relays.ListRelayConnections(r.Context())
+	if err != nil {
+		writePlainText(w, http.StatusInternalServerError, "Internal Server Error")
+		return
+	}
+	actorIDs := make([]string, 0, len(connections))
+	for _, connection := range connections {
+		if connection.Connected {
+			actorIDs = append(actorIDs, connection.ActorId)
+		}
+	}
+
+	page := r.URL.Query().Get("page")
+	if page == "" {
+		writeActivityJSON(w, http.StatusOK, map[string]any{
+			"@context":   "https://www.w3.org/ns/activitystreams",
+			"id":         followingURL,
+			"type":       "OrderedCollection",
+			"totalItems": len(actorIDs),
+			"first":      followingURL + "?page=1",
+		})
+		return
+	}
+
+	pageNum, err := parsePageNumber(page)
+	if err != nil {
+		writePlainText(w, http.StatusBadRequest, "Invalid page parameter")
+		return
+	}
+
+	pageItems, hasMore := paginate(actorIDs, pageNum, collectionPageSize)
+	writeCollectionPage(w, followingURL, pageNum, pageItems, hasMore)
+}
+
+// writeCollectionPage renders an OrderedCollectionPage for the given page
+// number, adding "next"/"prev" links as appropriate.
+func writeCollectionPage(w http.ResponseWriter, collectionURL string, pageNum int, items any, hasMore bool) {
+	body := map[string]any{
+		"@context":     "https://www.w3.org/ns/activitystreams",
+		"id":           fmt.Sprintf("%s?page=%d", collectionURL, pageNum),
+		"type":         "OrderedCollectionPage",
+		"partOf":       collectionURL,
+		"orderedItems": items,
+	}
+	if hasMore {
+		body["next"] = fmt.Sprintf("%s?page=%d", collectionURL, pageNum+1)
+	}
+	if pageNum > 1 {
+		body["prev"] = fmt.Sprintf("%s?page=%d", collectionURL, pageNum-1)
+	}
+	writeActivityJSON(w, http.StatusOK, body)
+}
+
+// paginate slices items into the page pageNum (1-indexed) of size
+// pageSize, reporting whether a further page follows.
+func paginate(items []string, pageNum, pageSize int) ([]string, bool) {
+	start := (pageNum - 1) * pageSize
+	if start < 0 || start >= len(items) {
+		return []string{}, false
+	}
+	end := min(start+pageSize, len(items))
+	return items[start:end], end < len(items)
+}
+
+// buildArticleNote renders the bare ActivityPub Note representation of an
+// article shared by ArticleNote (dereferenced directly) and Outbox (nested
+// inside each page's Create activities).
+func (h *Handlers) buildArticleNote(article content.Article) map[string]any {
+	articleURL := fmt.Sprintf("%s/api/articles/%s", h.cfg.SiteBaseURL, article.ID)
+	return map[string]any{
+		"id":           articleURL,
+		"type":         "Note",
+		"attributedTo": h.cfg.actorURL(),
+		"name":         article.Title,
+		"content": fmt.Sprintf(
+			`<p>%s</p><a href="%s/articles/%s" target="_blank">%s/articles/%s</a>`,
+			article.Title, h.cfg.SiteBaseURL, article.ID, h.cfg.SiteBaseURL, article.ID,
+		),
+		"published": article.PublishedAt.UTC().Format("2006-01-02T15:04:05.000") + "Z",
+		"url":       articleURL,
+		"to":        []string{"https://www.w3.org/ns/activitystreams#Public"},
+	}
 }
 
 // ArticleNote renders a bare ActivityPub Note representation of an
@@ -149,60 +264,67 @@ func (h *Handlers) ArticleNote(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	articleURL := fmt.Sprintf("%s/api/articles/%s", h.cfg.SiteBaseURL, name)
-
 	w.Header().Set("Content-Type", activityJSONContentType)
-	_ = json.NewEncoder(w).Encode(map[string]any{
-		"id":           articleURL,
-		"type":         "Note",
-		"attributedTo": h.cfg.actorURL(),
-		"name":         article.Title,
-		"content": fmt.Sprintf(
-			`<p>%s</p><a href="%s/articles/%s" target="_blank">%s/articles/%s</a>`,
-			article.Title, h.cfg.SiteBaseURL, name, h.cfg.SiteBaseURL, name,
-		),
-		"published": article.PublishedAt.UTC().Format("2006-01-02T15:04:05.000") + "Z",
-		"url":       articleURL,
-		"to":        []string{"https://www.w3.org/ns/activitystreams#Public"},
-	})
+	_ = json.NewEncoder(w).Encode(h.buildArticleNote(article))
 }
 
-type atomFeedEntryCount struct {
-	Entries []struct{} `xml:"entry"`
+// buildCreateActivity wraps an article's Note in the Create activity that
+// originally delivered it, for the outbox's historical record. Unlike the
+// Create activities internal/federationadmin actually delivers to relays,
+// this carries no LD-Signature: it's a read-only listing, not something
+// being (re-)delivered.
+func (h *Handlers) buildCreateActivity(article content.Article) map[string]any {
+	note := h.buildArticleNote(article)
+	return map[string]any{
+		"id":        note["id"].(string) + "/create",
+		"type":      "Create",
+		"actor":     h.cfg.actorURL(),
+		"published": note["published"],
+		"to":        []string{"https://www.w3.org/ns/activitystreams#Public"},
+		"object":    note,
+	}
 }
 
 func (h *Handlers) Outbox(w http.ResponseWriter, r *http.Request) {
-	req, err := http.NewRequestWithContext(r.Context(), http.MethodGet, h.cfg.webBaseURL()+"/atom.xml", nil)
+	outboxURL := h.cfg.actorURL() + "/outbox"
+
+	articles, err := h.articles.ListArticles()
 	if err != nil {
 		writePlainText(w, http.StatusInternalServerError, "Internal Server Error")
 		return
 	}
 
-	resp, err := h.cfg.httpClient().Do(req)
+	page := r.URL.Query().Get("page")
+	if page == "" {
+		writeActivityJSON(w, http.StatusOK, map[string]any{
+			"@context":   "https://www.w3.org/ns/activitystreams",
+			"id":         outboxURL,
+			"type":       "OrderedCollection",
+			"totalItems": len(articles),
+			"first":      outboxURL + "?page=1",
+		})
+		return
+	}
+
+	pageNum, err := parsePageNumber(page)
 	if err != nil {
-		writePlainText(w, http.StatusInternalServerError, "Internal Server Error")
-		return
-	}
-	defer resp.Body.Close()
-
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		writePlainText(w, http.StatusInternalServerError, "Internal Server Error")
+		writePlainText(w, http.StatusBadRequest, "Invalid page parameter")
 		return
 	}
 
-	var feed atomFeedEntryCount
-	if err := xml.Unmarshal(body, &feed); err != nil {
-		writePlainText(w, http.StatusInternalServerError, "Internal Server Error")
+	start := (pageNum - 1) * collectionPageSize
+	if start < 0 || start > len(articles) {
+		writePlainText(w, http.StatusNotFound, "Page not found")
 		return
 	}
+	end := min(start+collectionPageSize, len(articles))
 
-	writeActivityJSON(w, http.StatusOK, map[string]any{
-		"@context":   "https://www.w3.org/ns/activitystreams",
-		"id":         h.cfg.actorURL() + "/outbox",
-		"type":       "OrderedCollection",
-		"totalItems": len(feed.Entries),
-	})
+	items := make([]map[string]any, 0, end-start)
+	for _, article := range articles[start:end] {
+		items = append(items, h.buildCreateActivity(article))
+	}
+
+	writeCollectionPage(w, outboxURL, pageNum, items, end < len(articles))
 }
 
 type incomingActivity struct {

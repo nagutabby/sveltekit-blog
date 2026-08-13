@@ -14,9 +14,6 @@ import (
 type Config struct {
 	// SiteBaseURL is the actor's public origin, e.g. "https://blog.nagutabby.uk".
 	SiteBaseURL string
-	// WebBaseURL is where /atom.xml (published by web) can be fetched from.
-	// Defaults to SiteBaseURL when empty.
-	WebBaseURL string
 	// ActorPublicKeyPEM is embedded verbatim in the actor document.
 	ActorPublicKeyPEM string
 	// ActorPrivateKeyPEM signs outgoing Accept activities.
@@ -24,13 +21,6 @@ type Config struct {
 	// HTTPClient is used for outbound federation requests. Defaults to
 	// http.DefaultClient when nil.
 	HTTPClient *http.Client
-}
-
-func (c Config) webBaseURL() string {
-	if c.WebBaseURL != "" {
-		return c.WebBaseURL
-	}
-	return c.SiteBaseURL
 }
 
 func (c Config) httpClient() *http.Client {
@@ -66,20 +56,30 @@ type FollowerStore interface {
 	// (the actor is gone by the time its Delete arrives, so there's
 	// nothing to re-fetch them from).
 	GetFollowerByActorID(ctx context.Context, actorID string) (db.Follower, error)
+	// ListActiveFollowerActorIDs backs paginated GET /actor/followers
+	// pages (?page=N), returning real actorId items instead of just a
+	// totalItems count.
+	ListActiveFollowerActorIDs(ctx context.Context, arg db.ListActiveFollowerActorIDsParams) ([]string, error)
 }
 
 // RelayStore is the subset of *db.Queries the Inbox handler needs for
-// relay Accept bookkeeping.
+// relay Accept bookkeeping, and Following needs to list what this actor
+// follows: this codebase never sends its own Follow to a relay (that's
+// done out-of-band by whoever operates the instance), but it does record
+// the Accept once a relay confirms it, so RelayConnection rows with
+// connected=true are exactly this actor's "following" set.
 type RelayStore interface {
 	UpsertRelayConnectionAccepted(ctx context.Context, arg db.UpsertRelayConnectionAcceptedParams) (db.RelayConnection, error)
+	ListRelayConnections(ctx context.Context) ([]db.RelayConnection, error)
 }
 
-// ArticleStore is the subset of *content.Loader the ArticleNote and
-// NodeInfo handlers need: GetArticle to render a bare ActivityPub Note
+// ArticleStore is the subset of *content.Loader the ArticleNote, NodeInfo,
+// and Outbox handlers need: GetArticle to render a bare ActivityPub Note
 // representation of an article (mirroring web's
 // api/articles/[name]/+server.ts; other AP servers dereference an
 // activity's object.id/url at this URL), ListArticles to report
-// usage.localPosts in the NodeInfo document.
+// usage.localPosts in the NodeInfo document and to render the outbox's
+// actual Create activities.
 type ArticleStore interface {
 	GetArticle(id string) (content.Article, error)
 	ListArticles() ([]content.Article, error)

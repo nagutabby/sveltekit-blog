@@ -7,6 +7,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"encoding/pem"
+	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -51,7 +52,11 @@ func newSignedInboxRequest(t *testing.T, cfg Config, body, keyID, privateKeyPEM 
 
 type fakeArticleStore struct {
 	articles map[string]content.Article
-	err      error
+	// orderedArticles backs ListArticles with a deterministic order,
+	// since map iteration order is randomized and pagination tests need
+	// stable results.
+	orderedArticles []content.Article
+	err             error
 }
 
 func (f *fakeArticleStore) GetArticle(id string) (content.Article, error) {
@@ -69,10 +74,8 @@ func (f *fakeArticleStore) ListArticles() ([]content.Article, error) {
 	if f.err != nil {
 		return nil, f.err
 	}
-	articles := make([]content.Article, 0, len(f.articles))
-	for _, article := range f.articles {
-		articles = append(articles, article)
-	}
+	articles := make([]content.Article, 0, len(f.orderedArticles))
+	articles = append(articles, f.orderedArticles...)
 	return articles, nil
 }
 
@@ -88,6 +91,11 @@ type fakeFollowerStore struct {
 
 	byActorID     map[string]db.Follower
 	getByActorErr error
+
+	// activeActorIDs backs ListActiveFollowerActorIDs in a deterministic
+	// order (map iteration order isn't), so pagination tests are stable.
+	activeActorIDs []string
+	listErr        error
 }
 
 func (f *fakeFollowerStore) UpsertFollower(_ context.Context, arg db.UpsertFollowerParams) (db.Follower, error) {
@@ -124,9 +132,27 @@ func (f *fakeFollowerStore) GetFollowerByActorID(_ context.Context, actorID stri
 	return follower, nil
 }
 
+func (f *fakeFollowerStore) ListActiveFollowerActorIDs(_ context.Context, arg db.ListActiveFollowerActorIDsParams) ([]string, error) {
+	if f.listErr != nil {
+		return nil, f.listErr
+	}
+	start := int(arg.Offset)
+	if start < 0 || start >= len(f.activeActorIDs) {
+		return []string{}, nil
+	}
+	end := start + int(arg.Limit)
+	if end > len(f.activeActorIDs) {
+		end = len(f.activeActorIDs)
+	}
+	return f.activeActorIDs[start:end], nil
+}
+
 type fakeRelayStore struct {
 	upsertCalls []db.UpsertRelayConnectionAcceptedParams
 	upsertErr   error
+
+	connections []db.RelayConnection
+	listErr     error
 }
 
 func (f *fakeRelayStore) UpsertRelayConnectionAccepted(_ context.Context, arg db.UpsertRelayConnectionAcceptedParams) (db.RelayConnection, error) {
@@ -135,6 +161,13 @@ func (f *fakeRelayStore) UpsertRelayConnectionAccepted(_ context.Context, arg db
 		return db.RelayConnection{}, f.upsertErr
 	}
 	return db.RelayConnection{ActorId: arg.ActorId, Inbox: arg.Inbox, Connected: true}, nil
+}
+
+func (f *fakeRelayStore) ListRelayConnections(_ context.Context) ([]db.RelayConnection, error) {
+	if f.listErr != nil {
+		return nil, f.listErr
+	}
+	return f.connections, nil
 }
 
 func testConfig(t *testing.T) Config {
@@ -240,8 +273,14 @@ func TestFollowers(t *testing.T) {
 	if err := json.Unmarshal(rec.Body.Bytes(), &body); err != nil {
 		t.Fatalf("failed to decode body: %v", err)
 	}
+	if body["type"] != "OrderedCollection" {
+		t.Fatalf("type = %v", body["type"])
+	}
 	if body["totalItems"] != float64(42) {
 		t.Fatalf("totalItems = %v", body["totalItems"])
+	}
+	if body["first"] != "https://blog.nagutabby.uk/actor/followers?page=1" {
+		t.Fatalf("first = %v", body["first"])
 	}
 }
 
@@ -258,8 +297,79 @@ func TestFollowersDBError(t *testing.T) {
 	}
 }
 
-func TestFollowing(t *testing.T) {
+func TestFollowersPage(t *testing.T) {
+	followers := &fakeFollowerStore{activeActorIDs: []string{"https://a.example/users/1", "https://a.example/users/2"}}
+	h := NewHandlers(followers, &fakeRelayStore{}, &fakeArticleStore{}, testConfig(t))
+
+	req := httptest.NewRequest(http.MethodGet, "/actor/followers?page=1", nil)
+	rec := httptest.NewRecorder()
+	h.Followers(rec, req)
+
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status = %d, want 200, body=%s", rec.Code, rec.Body.String())
+	}
+
+	var body map[string]any
+	if err := json.Unmarshal(rec.Body.Bytes(), &body); err != nil {
+		t.Fatalf("failed to decode body: %v", err)
+	}
+	if body["type"] != "OrderedCollectionPage" {
+		t.Fatalf("type = %v", body["type"])
+	}
+	if body["partOf"] != "https://blog.nagutabby.uk/actor/followers" {
+		t.Fatalf("partOf = %v", body["partOf"])
+	}
+	items := body["orderedItems"].([]any)
+	if len(items) != 2 || items[0] != "https://a.example/users/1" || items[1] != "https://a.example/users/2" {
+		t.Fatalf("orderedItems = %v", items)
+	}
+	if _, hasNext := body["next"]; hasNext {
+		t.Fatal("should not have a next page when results are under the page size")
+	}
+}
+
+func TestFollowersPageHasNextWhenFull(t *testing.T) {
+	full := make([]string, collectionPageSize)
+	for i := range full {
+		full[i] = fmt.Sprintf("https://a.example/users/%d", i)
+	}
+	followers := &fakeFollowerStore{activeActorIDs: full}
+	h := NewHandlers(followers, &fakeRelayStore{}, &fakeArticleStore{}, testConfig(t))
+
+	req := httptest.NewRequest(http.MethodGet, "/actor/followers?page=1", nil)
+	rec := httptest.NewRecorder()
+	h.Followers(rec, req)
+
+	var body map[string]any
+	if err := json.Unmarshal(rec.Body.Bytes(), &body); err != nil {
+		t.Fatalf("failed to decode body: %v", err)
+	}
+	if body["next"] != "https://blog.nagutabby.uk/actor/followers?page=2" {
+		t.Fatalf("next = %v", body["next"])
+	}
+	if _, hasPrev := body["prev"]; hasPrev {
+		t.Fatal("page 1 should not have a prev link")
+	}
+}
+
+func TestFollowersPageInvalid(t *testing.T) {
 	h := NewHandlers(&fakeFollowerStore{}, &fakeRelayStore{}, &fakeArticleStore{}, testConfig(t))
+
+	req := httptest.NewRequest(http.MethodGet, "/actor/followers?page=nope", nil)
+	rec := httptest.NewRecorder()
+	h.Followers(rec, req)
+
+	if rec.Code != http.StatusBadRequest {
+		t.Fatalf("status = %d, want 400", rec.Code)
+	}
+}
+
+func TestFollowing(t *testing.T) {
+	relays := &fakeRelayStore{connections: []db.RelayConnection{
+		{ActorId: "https://relay.example/actor", Connected: true},
+		{ActorId: "https://old-relay.example/actor", Connected: false},
+	}}
+	h := NewHandlers(&fakeFollowerStore{}, relays, &fakeArticleStore{}, testConfig(t))
 
 	req := httptest.NewRequest(http.MethodGet, "/actor/following", nil)
 	rec := httptest.NewRecorder()
@@ -269,20 +379,40 @@ func TestFollowing(t *testing.T) {
 	if err := json.Unmarshal(rec.Body.Bytes(), &body); err != nil {
 		t.Fatalf("failed to decode body: %v", err)
 	}
-	if body["totalItems"] != float64(0) {
-		t.Fatalf("totalItems = %v", body["totalItems"])
+	// Only the connected relay counts; a relay whose Follow was
+	// undone/rejected shouldn't inflate "following".
+	if body["totalItems"] != float64(1) {
+		t.Fatalf("totalItems = %v, want 1", body["totalItems"])
+	}
+}
+
+func TestFollowingPage(t *testing.T) {
+	relays := &fakeRelayStore{connections: []db.RelayConnection{
+		{ActorId: "https://relay-a.example/actor", Connected: true},
+		{ActorId: "https://relay-b.example/actor", Connected: true},
+	}}
+	h := NewHandlers(&fakeFollowerStore{}, relays, &fakeArticleStore{}, testConfig(t))
+
+	req := httptest.NewRequest(http.MethodGet, "/actor/following?page=1", nil)
+	rec := httptest.NewRecorder()
+	h.Following(rec, req)
+
+	var body map[string]any
+	if err := json.Unmarshal(rec.Body.Bytes(), &body); err != nil {
+		t.Fatalf("failed to decode body: %v", err)
+	}
+	items := body["orderedItems"].([]any)
+	if len(items) != 2 {
+		t.Fatalf("orderedItems = %v, want 2 connected relays", items)
 	}
 }
 
 func TestOutbox(t *testing.T) {
-	atomServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		_, _ = w.Write([]byte(`<?xml version="1.0"?><feed><entry><title>a</title></entry><entry><title>b</title></entry></feed>`))
-	}))
-	defer atomServer.Close()
-
-	cfg := testConfig(t)
-	cfg.WebBaseURL = atomServer.URL
-	h := NewHandlers(&fakeFollowerStore{}, &fakeRelayStore{}, &fakeArticleStore{}, cfg)
+	articles := &fakeArticleStore{orderedArticles: []content.Article{
+		{ID: "a", Title: "A"},
+		{ID: "b", Title: "B"},
+	}}
+	h := NewHandlers(&fakeFollowerStore{}, &fakeRelayStore{}, articles, testConfig(t))
 
 	req := httptest.NewRequest(http.MethodGet, "/actor/outbox", nil)
 	rec := httptest.NewRecorder()
@@ -297,25 +427,67 @@ func TestOutbox(t *testing.T) {
 	}
 }
 
-func TestOutboxUpstreamError(t *testing.T) {
-	atomServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusInternalServerError)
-	}))
-	defer atomServer.Close()
-
-	cfg := testConfig(t)
-	cfg.WebBaseURL = atomServer.URL
-	h := NewHandlers(&fakeFollowerStore{}, &fakeRelayStore{}, &fakeArticleStore{}, cfg)
+func TestOutboxError(t *testing.T) {
+	articles := &fakeArticleStore{err: context.DeadlineExceeded}
+	h := NewHandlers(&fakeFollowerStore{}, &fakeRelayStore{}, articles, testConfig(t))
 
 	req := httptest.NewRequest(http.MethodGet, "/actor/outbox", nil)
 	rec := httptest.NewRecorder()
 	h.Outbox(rec, req)
 
-	// The 500-status response body isn't a well-formed Atom feed the
-	// unmarshaler can decode as expected, so the handler should surface it
-	// as an error rather than pretending totalItems=0.
 	if rec.Code != http.StatusInternalServerError {
 		t.Fatalf("status = %d, want 500", rec.Code)
+	}
+}
+
+func TestOutboxPageReturnsCreateActivities(t *testing.T) {
+	articles := &fakeArticleStore{orderedArticles: []content.Article{
+		{ID: "my-article", Title: "タイトル", PublishedAt: time.Date(2025, 6, 15, 0, 0, 0, 0, time.UTC)},
+	}}
+	h := NewHandlers(&fakeFollowerStore{}, &fakeRelayStore{}, articles, testConfig(t))
+
+	req := httptest.NewRequest(http.MethodGet, "/actor/outbox?page=1", nil)
+	rec := httptest.NewRecorder()
+	h.Outbox(rec, req)
+
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status = %d, want 200, body=%s", rec.Code, rec.Body.String())
+	}
+
+	var body map[string]any
+	if err := json.Unmarshal(rec.Body.Bytes(), &body); err != nil {
+		t.Fatalf("failed to decode body: %v", err)
+	}
+	items := body["orderedItems"].([]any)
+	if len(items) != 1 {
+		t.Fatalf("orderedItems = %v, want 1", items)
+	}
+	create := items[0].(map[string]any)
+	if create["type"] != "Create" {
+		t.Fatalf("type = %v", create["type"])
+	}
+	if create["id"] != "https://blog.nagutabby.uk/api/articles/my-article/create" {
+		t.Fatalf("id = %v", create["id"])
+	}
+	object := create["object"].(map[string]any)
+	if object["type"] != "Note" {
+		t.Fatalf("object.type = %v", object["type"])
+	}
+	if object["name"] != "タイトル" {
+		t.Fatalf("object.name = %v", object["name"])
+	}
+}
+
+func TestOutboxPageNotFound(t *testing.T) {
+	articles := &fakeArticleStore{orderedArticles: []content.Article{{ID: "a"}}}
+	h := NewHandlers(&fakeFollowerStore{}, &fakeRelayStore{}, articles, testConfig(t))
+
+	req := httptest.NewRequest(http.MethodGet, "/actor/outbox?page=99", nil)
+	rec := httptest.NewRecorder()
+	h.Outbox(rec, req)
+
+	if rec.Code != http.StatusNotFound {
+		t.Fatalf("status = %d, want 404", rec.Code)
 	}
 }
 
@@ -841,6 +1013,7 @@ func TestInboxActorFetchFailure(t *testing.T) {
 func TestArticleNote(t *testing.T) {
 	articles := &fakeArticleStore{articles: map[string]content.Article{
 		"my-article": {
+			ID:          "my-article",
 			Title:       "タイトル",
 			PublishedAt: time.Date(2025, 6, 15, 0, 0, 0, 0, time.UTC),
 		},

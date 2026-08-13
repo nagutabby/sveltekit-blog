@@ -27,3 +27,6 @@ SELECT count(*) FROM "Follower" WHERE "following" = 1;
 
 -- name: GetFollowerByActorID :one
 SELECT * FROM "Follower" WHERE "actorId" = ?;
+
+-- name: ListActiveFollowerActorIDs :many
+SELECT "actorId" FROM "Follower" WHERE "following" = 1 ORDER BY "id" LIMIT ? OFFSET ?;
