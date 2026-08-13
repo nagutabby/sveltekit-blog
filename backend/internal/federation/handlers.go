@@ -246,6 +246,18 @@ func (h *Handlers) Inbox(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Delete is handled before fetchActor/signature verification: by the
+	// time an actor announces its own deletion, its actor document is
+	// typically already gone (404/410), so fetchActor would always fail
+	// and this cleanup would never run. The worst a forged Delete can do
+	// is mark a follower unfollowed early, which is low-risk and
+	// self-correcting (a real Follow re-adds them), so this is handled
+	// as best-effort without a verified signature.
+	if activity.Type == "Delete" {
+		h.handleDelete(w, r.Context(), activity)
+		return
+	}
+
 	actorInfo, err := fetchActor(r.Context(), h.cfg.httpClient(), activity.Actor)
 	if err != nil {
 		writePlainText(w, http.StatusBadRequest, "Could not fetch actor information")
@@ -265,8 +277,84 @@ func (h *Handlers) Inbox(w http.ResponseWriter, r *http.Request) {
 	case "Accept":
 		h.handleAccept(w, r.Context(), activity, actorInfo)
 	default:
+		if acknowledgedActivityTypes[activity.Type] {
+			// Recognized ActivityPub activity types this actor has no
+			// local state for (it's a single publishing bot, not a
+			// timeline/likes UI): acknowledge receipt so senders don't
+			// keep retrying delivery, without pretending to act on them.
+			w.WriteHeader(http.StatusAccepted)
+			return
+		}
 		writePlainText(w, http.StatusUnprocessableEntity, fmt.Sprintf("%s activity is not supported", activity.Type))
 	}
+}
+
+// acknowledgedActivityTypes are activity types we understand well enough to
+// safely no-op on (this actor keeps no timeline, likes, or shares), as
+// opposed to truly unrecognized types that still get a 422.
+var acknowledgedActivityTypes = map[string]bool{
+	"Create":   true,
+	"Update":   true,
+	"Like":     true,
+	"Announce": true,
+	"Flag":     true,
+	"Add":      true,
+	"Remove":   true,
+	"Block":    true,
+	"Move":     true,
+}
+
+// handleDelete processes an actor announcing its own deletion (the object
+// is the actor's own IRI, either bare or as a Tombstone-shaped object) by
+// marking any matching follower row unfollowed. Anything else framed as a
+// Delete — deleting some other object this server doesn't track — is
+// acknowledged without action.
+func (h *Handlers) handleDelete(w http.ResponseWriter, ctx context.Context, activity incomingActivity) {
+	objectID := deletedObjectID(activity.Object)
+	if objectID == "" || objectID != activity.Actor {
+		w.WriteHeader(http.StatusAccepted)
+		return
+	}
+
+	existing, err := h.followers.GetFollowerByActorID(ctx, activity.Actor)
+	if err != nil {
+		// Not a follower we know about (or already removed); nothing to
+		// clean up, but still acknowledge so the sender doesn't retry.
+		w.WriteHeader(http.StatusAccepted)
+		return
+	}
+
+	_, err = h.followers.UnfollowByActorID(ctx, db.UnfollowByActorIDParams{
+		ActorId:      activity.Actor,
+		Inbox:        existing.Inbox,
+		PublicKeyPem: existing.PublicKeyPem,
+		UpdatedAt:    nowTimestamp(),
+	})
+	if err != nil {
+		writeJSONError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+}
+
+// deletedObjectID extracts the target IRI from a Delete activity's object,
+// which per the ActivityPub spec may be either a bare IRI string or an
+// object (commonly a Tombstone) carrying an "id" field.
+func deletedObjectID(object json.RawMessage) string {
+	var asString string
+	if err := json.Unmarshal(object, &asString); err == nil {
+		return asString
+	}
+
+	var asObject struct {
+		ID string `json:"id"`
+	}
+	if err := json.Unmarshal(object, &asObject); err == nil {
+		return asObject.ID
+	}
+
+	return ""
 }
 
 func (h *Handlers) handleFollow(w http.ResponseWriter, ctx context.Context, activity incomingActivity, actorInfo *remoteActor) {
