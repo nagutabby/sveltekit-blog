@@ -43,6 +43,9 @@ func NewHandler(cfg Config) http.Handler {
 
 	if cfg.Federation != nil {
 		mux.HandleFunc("GET /.well-known/webfinger", cfg.Federation.Webfinger)
+		mux.HandleFunc("GET /.well-known/nodeinfo", cfg.Federation.WellKnownNodeInfo)
+		mux.HandleFunc("GET /nodeinfo/2.0", cfg.Federation.NodeInfo20)
+		mux.HandleFunc("GET /nodeinfo/2.1", cfg.Federation.NodeInfo21)
 		mux.HandleFunc("GET /actor", cfg.Federation.Actor)
 		mux.HandleFunc("GET /actor/followers", cfg.Federation.Followers)
 		mux.HandleFunc("GET /actor/following", cfg.Federation.Following)

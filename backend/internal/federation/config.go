@@ -68,10 +68,13 @@ type RelayStore interface {
 	UpsertRelayConnectionAccepted(ctx context.Context, arg db.UpsertRelayConnectionAcceptedParams) (db.RelayConnection, error)
 }
 
-// ArticleStore is the subset of *content.Loader the ArticleNote handler
-// needs to render a bare ActivityPub Note representation of an article,
-// mirroring web's api/articles/[name]/+server.ts. Other AP servers
-// dereference an activity's object.id/url at this URL.
+// ArticleStore is the subset of *content.Loader the ArticleNote and
+// NodeInfo handlers need: GetArticle to render a bare ActivityPub Note
+// representation of an article (mirroring web's
+// api/articles/[name]/+server.ts; other AP servers dereference an
+// activity's object.id/url at this URL), ListArticles to report
+// usage.localPosts in the NodeInfo document.
 type ArticleStore interface {
 	GetArticle(id string) (content.Article, error)
+	ListArticles() ([]content.Article, error)
 }

@@ -30,6 +30,17 @@ func (f *fakeArticleStore) GetArticle(id string) (content.Article, error) {
 	return article, nil
 }
 
+func (f *fakeArticleStore) ListArticles() ([]content.Article, error) {
+	if f.err != nil {
+		return nil, f.err
+	}
+	articles := make([]content.Article, 0, len(f.articles))
+	for _, article := range f.articles {
+		articles = append(articles, article)
+	}
+	return articles, nil
+}
+
 type fakeFollowerStore struct {
 	upsertFollowerCalls []db.UpsertFollowerParams
 	upsertFollowerErr   error
