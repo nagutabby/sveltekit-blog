@@ -2,14 +2,18 @@ package content
 
 import (
 	"testing"
+
+	contentembed "github.com/nagutabby/sveltekit-blog/backend/content"
 )
 
-// TestRealContentParsesWithoutError guards against frontmatter mistakes in
-// actual blog posts (e.g. an unquoted title containing a colon breaking
-// YAML). It runs against backend/content, so it exercises every article
-// and review that ships in this repository.
+// TestRealContentParsesWithoutError guards against both frontmatter
+// mistakes in actual blog posts (e.g. an unquoted title containing a
+// colon breaking YAML) and the embedded FS silently missing files: it
+// runs against backend/content's embed.FS (the same one production
+// uses), so it exercises every article and review that ships in this
+// repository through the exact path production takes.
 func TestRealContentParsesWithoutError(t *testing.T) {
-	loader := NewLoader("../../content")
+	loader := NewLoader(contentembed.FS)
 
 	articles, err := loader.ListArticles()
 	if err != nil {

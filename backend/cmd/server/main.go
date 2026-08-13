@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"io/fs"
 	"log"
 	"net/http"
 	"os"
@@ -14,6 +15,7 @@ import (
 
 	_ "modernc.org/sqlite"
 
+	contentembed "github.com/nagutabby/sveltekit-blog/backend/content"
 	"github.com/nagutabby/sveltekit-blog/backend/internal/contact"
 	"github.com/nagutabby/sveltekit-blog/backend/internal/content"
 	"github.com/nagutabby/sveltekit-blog/backend/internal/db"
@@ -42,9 +44,13 @@ func run() error {
 		}
 	}
 
-	contentDir := os.Getenv("CONTENT_DIR")
-	if contentDir == "" {
-		contentDir = "content"
+	// CONTENT_DIR overrides the content source with a plain OS directory
+	// (useful for local development). Its absence is the production
+	// path: the embedded FS, since a relative os.DirFS("content") isn't
+	// reliably present in Vercel's Go serverless runtime.
+	var contentFS fs.FS = contentembed.FS
+	if contentDir := os.Getenv("CONTENT_DIR"); contentDir != "" {
+		contentFS = os.DirFS(contentDir)
 	}
 
 	siteBaseURL := os.Getenv("SITE_BASE_URL")
@@ -57,7 +63,7 @@ func run() error {
 		return err
 	}
 	defer closeDB()
-	contentLoader := content.NewLoader(contentDir)
+	contentLoader := content.NewLoader(contentFS)
 
 	federationCfg := federation.Config{
 		SiteBaseURL:        siteBaseURL,

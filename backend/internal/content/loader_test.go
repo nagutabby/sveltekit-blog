@@ -52,7 +52,7 @@ updatedAt: 2025-03-02
 本文です。
 `)
 
-	return NewLoader(dir), dir
+	return NewLoader(os.DirFS(dir)), dir
 }
 
 func TestListArticlesSortedByPublishedAtDescending(t *testing.T) {

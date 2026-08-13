@@ -1,9 +1,10 @@
 package content
 
 import (
+	"errors"
 	"fmt"
-	"os"
-	"path/filepath"
+	"io/fs"
+	"path"
 	"sort"
 	"strings"
 	"time"
@@ -36,14 +37,18 @@ type Review struct {
 
 var ErrNotFound = fmt.Errorf("content not found")
 
-// Loader reads Markdown + frontmatter from a directory laid out like
-// web/static/content: <baseDir>/articles/*.md and <baseDir>/reviews/*.md.
+// Loader reads Markdown + frontmatter from an fs.FS laid out like
+// web/static/content: articles/*.md and reviews/*.md. In production this
+// is the backend/content package's embedded FS (see its doc comment for
+// why: a plain OS directory isn't reliably present at runtime on Vercel),
+// but any fs.FS works — tests pass os.DirFS pointed at a fixture
+// directory instead.
 type Loader struct {
-	baseDir string
+	fsys fs.FS
 }
 
-func NewLoader(baseDir string) *Loader {
-	return &Loader{baseDir: baseDir}
+func NewLoader(fsys fs.FS) *Loader {
+	return &Loader{fsys: fsys}
 }
 
 func (l *Loader) ListArticles() ([]Article, error) {
@@ -105,9 +110,7 @@ type markdownEntry struct {
 }
 
 func (l *Loader) readMarkdownDir(contentType string) ([]markdownEntry, error) {
-	dir := filepath.Join(l.baseDir, contentType)
-
-	files, err := os.ReadDir(dir)
+	files, err := fs.ReadDir(l.fsys, contentType)
 	if err != nil {
 		return nil, fmt.Errorf("reading %s directory: %w", contentType, err)
 	}
@@ -129,14 +132,14 @@ func (l *Loader) readMarkdownDir(contentType string) ([]markdownEntry, error) {
 }
 
 func (l *Loader) readMarkdownFile(contentType, id string) (map[string]any, string, error) {
-	path := filepath.Join(l.baseDir, contentType, id+".md")
+	filePath := path.Join(contentType, id+".md")
 
-	raw, err := os.ReadFile(path)
+	raw, err := fs.ReadFile(l.fsys, filePath)
 	if err != nil {
-		if os.IsNotExist(err) {
+		if errors.Is(err, fs.ErrNotExist) {
 			return nil, "", ErrNotFound
 		}
-		return nil, "", fmt.Errorf("reading %s: %w", path, err)
+		return nil, "", fmt.Errorf("reading %s: %w", filePath, err)
 	}
 
 	return parseFrontMatter(raw)
@@ -172,7 +175,7 @@ func reviewFromFrontMatter(id string, data map[string]any, body string) Review {
 // web static file server exposes it at.
 func transformImagePath(imagePath, contentType string) string {
 	if strings.HasPrefix(imagePath, "images/") {
-		return fmt.Sprintf("/content/%s/images/%s", contentType, filepath.Base(imagePath))
+		return fmt.Sprintf("/content/%s/images/%s", contentType, path.Base(imagePath))
 	}
 	return imagePath
 }
