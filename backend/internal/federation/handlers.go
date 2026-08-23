@@ -252,6 +252,11 @@ func (h *Handlers) Inbox(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if err := VerifyHTTPSignature(r, body, actorInfo.PublicKey.PublicKeyPem); err != nil {
+		writePlainText(w, http.StatusUnauthorized, "Invalid HTTP Signature")
+		return
+	}
+
 	switch activity.Type {
 	case "Follow":
 		h.handleFollow(w, r.Context(), activity, actorInfo)

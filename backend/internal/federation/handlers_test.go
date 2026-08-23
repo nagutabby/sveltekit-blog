@@ -2,7 +2,10 @@ package federation
 
 import (
 	"context"
+	"crypto/rsa"
+	"crypto/x509"
 	"encoding/json"
+	"encoding/pem"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -13,6 +16,37 @@ import (
 	"github.com/nagutabby/sveltekit-blog/backend/internal/content"
 	"github.com/nagutabby/sveltekit-blog/backend/internal/db"
 )
+
+// encodePublicKeyPEM renders an RSA public key the way real ActivityPub
+// actor documents do: PKIX, "BEGIN PUBLIC KEY".
+func encodePublicKeyPEM(t *testing.T, key *rsa.PrivateKey) string {
+	t.Helper()
+	der, err := x509.MarshalPKIXPublicKey(&key.PublicKey)
+	if err != nil {
+		t.Fatalf("failed to marshal public key: %v", err)
+	}
+	return string(pem.EncodeToMemory(&pem.Block{Type: "PUBLIC KEY", Bytes: der}))
+}
+
+// newSignedInboxRequest builds a POST /actor/inbox request signed the way a
+// real remote server would sign it, so Handlers.Inbox's HTTP Signature
+// verification accepts it. keyID/privateKeyPEM belong to the *sending*
+// (remote) actor, not this server's own actor key.
+func newSignedInboxRequest(t *testing.T, cfg Config, body, keyID, privateKeyPEM string) *http.Request {
+	t.Helper()
+	targetURL := cfg.SiteBaseURL + "/actor/inbox"
+	headers, err := SignHTTPRequest(targetURL, http.MethodPost, body, keyID, privateKeyPEM)
+	if err != nil {
+		t.Fatalf("failed to sign inbox request: %v", err)
+	}
+
+	req := httptest.NewRequest(http.MethodPost, "/actor/inbox", strings.NewReader(body))
+	req.Host = hostOf(cfg.SiteBaseURL)
+	req.Header.Set("Date", headers.Date)
+	req.Header.Set("Digest", headers.Digest)
+	req.Header.Set("Signature", headers.Signature)
+	return req
+}
 
 type fakeArticleStore struct {
 	articles map[string]content.Article
@@ -300,20 +334,27 @@ func TestInboxFollow(t *testing.T) {
 	server, signatures, _ := newRemoteActorServer(t)
 	defer server.Close()
 
+	aliceKey, alicePrivateKeyPEM, _ := generateTestKeyPair(t)
+	alicePublicKeyPEM := encodePublicKeyPEM(t, aliceKey)
+
 	// The fake actor doc returns a placeholder inbox URL; patch it to the
 	// real httptest server address per-test via a small proxy handler.
 	mux := http.NewServeMux()
 	mux.HandleFunc("/users/alice", func(w http.ResponseWriter, r *http.Request) {
-		_, _ = w.Write([]byte(`{"inbox": "` + server.URL + `/users/alice/inbox", "publicKey": {"publicKeyPem": "REMOTE-PUBLIC-KEY"}}`))
+		_ = json.NewEncoder(w).Encode(map[string]any{
+			"inbox":     server.URL + "/users/alice/inbox",
+			"publicKey": map[string]string{"publicKeyPem": alicePublicKeyPEM},
+		})
 	})
 	actorServer := httptest.NewServer(mux)
 	defer actorServer.Close()
 
 	followers := &fakeFollowerStore{}
-	h := NewHandlers(followers, &fakeRelayStore{}, &fakeArticleStore{}, testConfig(t))
+	cfg := testConfig(t)
+	h := NewHandlers(followers, &fakeRelayStore{}, &fakeArticleStore{}, cfg)
 
 	activityBody := `{"@context":"https://www.w3.org/ns/activitystreams","type":"Follow","actor":"` + actorServer.URL + `/users/alice","object":"https://blog.nagutabby.uk/actor"}`
-	req := httptest.NewRequest(http.MethodPost, "/actor/inbox", strings.NewReader(activityBody))
+	req := newSignedInboxRequest(t, cfg, activityBody, actorServer.URL+"/users/alice#main-key", alicePrivateKeyPEM)
 	rec := httptest.NewRecorder()
 	h.Inbox(rec, req)
 
@@ -352,18 +393,25 @@ func TestInboxUndo(t *testing.T) {
 	server, _, _ := newRemoteActorServer(t)
 	defer server.Close()
 
+	aliceKey, alicePrivateKeyPEM, _ := generateTestKeyPair(t)
+	alicePublicKeyPEM := encodePublicKeyPEM(t, aliceKey)
+
 	mux := http.NewServeMux()
 	mux.HandleFunc("/users/alice", func(w http.ResponseWriter, r *http.Request) {
-		_, _ = w.Write([]byte(`{"inbox": "` + server.URL + `/users/alice/inbox", "publicKey": {"publicKeyPem": "REMOTE-PUBLIC-KEY"}}`))
+		_ = json.NewEncoder(w).Encode(map[string]any{
+			"inbox":     server.URL + "/users/alice/inbox",
+			"publicKey": map[string]string{"publicKeyPem": alicePublicKeyPEM},
+		})
 	})
 	actorServer := httptest.NewServer(mux)
 	defer actorServer.Close()
 
 	followers := &fakeFollowerStore{}
-	h := NewHandlers(followers, &fakeRelayStore{}, &fakeArticleStore{}, testConfig(t))
+	cfg := testConfig(t)
+	h := NewHandlers(followers, &fakeRelayStore{}, &fakeArticleStore{}, cfg)
 
 	activityBody := `{"@context":"https://www.w3.org/ns/activitystreams","type":"Undo","actor":"` + actorServer.URL + `/users/alice","object":{"type":"Follow"}}`
-	req := httptest.NewRequest(http.MethodPost, "/actor/inbox", strings.NewReader(activityBody))
+	req := newSignedInboxRequest(t, cfg, activityBody, actorServer.URL+"/users/alice#main-key", alicePrivateKeyPEM)
 	rec := httptest.NewRecorder()
 	h.Inbox(rec, req)
 
@@ -384,18 +432,25 @@ func TestInboxUndo(t *testing.T) {
 }
 
 func TestInboxUndoWrongObjectType(t *testing.T) {
+	aliceKey, alicePrivateKeyPEM, _ := generateTestKeyPair(t)
+	alicePublicKeyPEM := encodePublicKeyPEM(t, aliceKey)
+
 	mux := http.NewServeMux()
 	mux.HandleFunc("/users/alice", func(w http.ResponseWriter, r *http.Request) {
-		_, _ = w.Write([]byte(`{"inbox": "https://mastodon.example/inbox", "publicKey": {"publicKeyPem": "PEM"}}`))
+		_ = json.NewEncoder(w).Encode(map[string]any{
+			"inbox":     "https://mastodon.example/inbox",
+			"publicKey": map[string]string{"publicKeyPem": alicePublicKeyPEM},
+		})
 	})
 	actorServer := httptest.NewServer(mux)
 	defer actorServer.Close()
 
 	followers := &fakeFollowerStore{}
-	h := NewHandlers(followers, &fakeRelayStore{}, &fakeArticleStore{}, testConfig(t))
+	cfg := testConfig(t)
+	h := NewHandlers(followers, &fakeRelayStore{}, &fakeArticleStore{}, cfg)
 
 	activityBody := `{"@context":"x","type":"Undo","actor":"` + actorServer.URL + `/users/alice","object":{"type":"Like"}}`
-	req := httptest.NewRequest(http.MethodPost, "/actor/inbox", strings.NewReader(activityBody))
+	req := newSignedInboxRequest(t, cfg, activityBody, actorServer.URL+"/users/alice#main-key", alicePrivateKeyPEM)
 	rec := httptest.NewRecorder()
 	h.Inbox(rec, req)
 
@@ -411,18 +466,25 @@ func TestInboxUndoWrongObjectType(t *testing.T) {
 }
 
 func TestInboxAccept(t *testing.T) {
+	relayKey, relayPrivateKeyPEM, _ := generateTestKeyPair(t)
+	relayPublicKeyPEM := encodePublicKeyPEM(t, relayKey)
+
 	mux := http.NewServeMux()
 	mux.HandleFunc("/users/relay", func(w http.ResponseWriter, r *http.Request) {
-		_, _ = w.Write([]byte(`{"inbox": "https://relay.example/inbox", "publicKey": {"publicKeyPem": "RELAY-PUBLIC-KEY"}}`))
+		_ = json.NewEncoder(w).Encode(map[string]any{
+			"inbox":     "https://relay.example/inbox",
+			"publicKey": map[string]string{"publicKeyPem": relayPublicKeyPEM},
+		})
 	})
 	actorServer := httptest.NewServer(mux)
 	defer actorServer.Close()
 
 	relays := &fakeRelayStore{}
-	h := NewHandlers(&fakeFollowerStore{}, relays, &fakeArticleStore{}, testConfig(t))
+	cfg := testConfig(t)
+	h := NewHandlers(&fakeFollowerStore{}, relays, &fakeArticleStore{}, cfg)
 
 	activityBody := `{"@context":"x","type":"Accept","actor":"` + actorServer.URL + `/users/relay","object":{"type":"Follow"}}`
-	req := httptest.NewRequest(http.MethodPost, "/actor/inbox", strings.NewReader(activityBody))
+	req := newSignedInboxRequest(t, cfg, activityBody, actorServer.URL+"/users/relay#main-key", relayPrivateKeyPEM)
 	rec := httptest.NewRecorder()
 	h.Inbox(rec, req)
 
@@ -465,18 +527,25 @@ func TestInboxRejectsRelayNonAccept(t *testing.T) {
 }
 
 func TestInboxAllowsRelayAccept(t *testing.T) {
+	relayKey, relayPrivateKeyPEM, _ := generateTestKeyPair(t)
+	relayPublicKeyPEM := encodePublicKeyPEM(t, relayKey)
+
 	mux := http.NewServeMux()
 	mux.HandleFunc("/users/relay", func(w http.ResponseWriter, r *http.Request) {
-		_, _ = w.Write([]byte(`{"inbox": "https://relay.example/inbox", "publicKey": {"publicKeyPem": "RELAY-PUBLIC-KEY"}}`))
+		_ = json.NewEncoder(w).Encode(map[string]any{
+			"inbox":     "https://relay.example/inbox",
+			"publicKey": map[string]string{"publicKeyPem": relayPublicKeyPEM},
+		})
 	})
 	actorServer := httptest.NewServer(mux)
 	defer actorServer.Close()
 
 	relays := &fakeRelayStore{}
-	h := NewHandlers(&fakeFollowerStore{}, relays, &fakeArticleStore{}, testConfig(t))
+	cfg := testConfig(t)
+	h := NewHandlers(&fakeFollowerStore{}, relays, &fakeArticleStore{}, cfg)
 
 	activityBody := `{"@context":"x","type":"Accept","actor":"` + actorServer.URL + `/users/relay","object":{"type":"Follow"}}`
-	req := httptest.NewRequest(http.MethodPost, "/actor/inbox", strings.NewReader(activityBody))
+	req := newSignedInboxRequest(t, cfg, activityBody, actorServer.URL+"/users/relay#main-key", relayPrivateKeyPEM)
 	req.Header.Set("User-Agent", "SomeRelay/1.0")
 	rec := httptest.NewRecorder()
 	h.Inbox(rec, req)
@@ -502,22 +571,97 @@ func TestInboxMissingRequiredFields(t *testing.T) {
 }
 
 func TestInboxUnsupportedType(t *testing.T) {
+	aliceKey, alicePrivateKeyPEM, _ := generateTestKeyPair(t)
+	alicePublicKeyPEM := encodePublicKeyPEM(t, aliceKey)
+
 	mux := http.NewServeMux()
 	mux.HandleFunc("/users/alice", func(w http.ResponseWriter, r *http.Request) {
-		_, _ = w.Write([]byte(`{"inbox": "https://mastodon.example/inbox", "publicKey": {"publicKeyPem": "PEM"}}`))
+		_ = json.NewEncoder(w).Encode(map[string]any{
+			"inbox":     "https://mastodon.example/inbox",
+			"publicKey": map[string]string{"publicKeyPem": alicePublicKeyPEM},
+		})
 	})
 	actorServer := httptest.NewServer(mux)
 	defer actorServer.Close()
 
-	h := NewHandlers(&fakeFollowerStore{}, &fakeRelayStore{}, &fakeArticleStore{}, testConfig(t))
+	cfg := testConfig(t)
+	h := NewHandlers(&fakeFollowerStore{}, &fakeRelayStore{}, &fakeArticleStore{}, cfg)
 
 	activityBody := `{"@context":"x","type":"Like","actor":"` + actorServer.URL + `/users/alice","object":"y"}`
-	req := httptest.NewRequest(http.MethodPost, "/actor/inbox", strings.NewReader(activityBody))
+	req := newSignedInboxRequest(t, cfg, activityBody, actorServer.URL+"/users/alice#main-key", alicePrivateKeyPEM)
 	rec := httptest.NewRecorder()
 	h.Inbox(rec, req)
 
 	if rec.Code != http.StatusUnprocessableEntity {
 		t.Fatalf("status = %d, want 422", rec.Code)
+	}
+}
+
+func TestInboxRejectsMissingSignature(t *testing.T) {
+	aliceKey, _, _ := generateTestKeyPair(t)
+	alicePublicKeyPEM := encodePublicKeyPEM(t, aliceKey)
+
+	mux := http.NewServeMux()
+	mux.HandleFunc("/users/alice", func(w http.ResponseWriter, r *http.Request) {
+		_ = json.NewEncoder(w).Encode(map[string]any{
+			"inbox":     "https://mastodon.example/inbox",
+			"publicKey": map[string]string{"publicKeyPem": alicePublicKeyPEM},
+		})
+	})
+	actorServer := httptest.NewServer(mux)
+	defer actorServer.Close()
+
+	followers := &fakeFollowerStore{}
+	h := NewHandlers(followers, &fakeRelayStore{}, &fakeArticleStore{}, testConfig(t))
+
+	activityBody := `{"@context":"x","type":"Follow","actor":"` + actorServer.URL + `/users/alice","object":"y"}`
+	req := httptest.NewRequest(http.MethodPost, "/actor/inbox", strings.NewReader(activityBody))
+	rec := httptest.NewRecorder()
+	h.Inbox(rec, req)
+
+	if rec.Code != http.StatusUnauthorized {
+		t.Fatalf("status = %d, want 401, body=%s", rec.Code, rec.Body.String())
+	}
+	if len(followers.upsertFollowerCalls) != 0 {
+		t.Fatal("UpsertFollower should not be called for an unsigned request")
+	}
+}
+
+func TestInboxRejectsSignatureOverTamperedBody(t *testing.T) {
+	aliceKey, alicePrivateKeyPEM, _ := generateTestKeyPair(t)
+	alicePublicKeyPEM := encodePublicKeyPEM(t, aliceKey)
+
+	mux := http.NewServeMux()
+	mux.HandleFunc("/users/alice", func(w http.ResponseWriter, r *http.Request) {
+		_ = json.NewEncoder(w).Encode(map[string]any{
+			"inbox":     "https://mastodon.example/inbox",
+			"publicKey": map[string]string{"publicKeyPem": alicePublicKeyPEM},
+		})
+	})
+	actorServer := httptest.NewServer(mux)
+	defer actorServer.Close()
+
+	followers := &fakeFollowerStore{}
+	cfg := testConfig(t)
+	h := NewHandlers(followers, &fakeRelayStore{}, &fakeArticleStore{}, cfg)
+
+	signedBody := `{"@context":"x","type":"Follow","actor":"` + actorServer.URL + `/users/alice","object":"y"}`
+	req := newSignedInboxRequest(t, cfg, signedBody, actorServer.URL+"/users/alice#main-key", alicePrivateKeyPEM)
+
+	// Swap in a different body after signing, keeping the original
+	// Content-Length so httptest doesn't truncate/pad it strangely: the
+	// Digest/Signature headers were computed over signedBody, not this one.
+	tamperedBody := `{"@context":"x","type":"Follow","actor":"` + actorServer.URL + `/users/alice","object":"z"}`
+	req.Body = io.NopCloser(strings.NewReader(tamperedBody))
+
+	rec := httptest.NewRecorder()
+	h.Inbox(rec, req)
+
+	if rec.Code != http.StatusUnauthorized {
+		t.Fatalf("status = %d, want 401, body=%s", rec.Code, rec.Body.String())
+	}
+	if len(followers.upsertFollowerCalls) != 0 {
+		t.Fatal("UpsertFollower should not be called when the Digest doesn't match the body")
 	}
 }
 
