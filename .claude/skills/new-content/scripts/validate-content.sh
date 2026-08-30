@@ -5,7 +5,7 @@
 #
 # Usage: validate-content.sh <path/to/backend/content/{articles,reviews}/YYYY-MM-DD[-N].md>
 #
-# 前提: macOS(BSD date/sips環境)での実行を想定している。
+# 前提: macOS(BSD date環境)での実行を想定している。
 
 set -uo pipefail
 
