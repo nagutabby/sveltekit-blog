@@ -22,6 +22,7 @@ func TestRealContentParsesWithoutError(t *testing.T) {
 	if len(articles) == 0 {
 		t.Fatal("expected at least one real article, got 0")
 	}
+	seenArticleIDs := make(map[string]bool)
 	for _, a := range articles {
 		if a.Title == "" {
 			t.Errorf("article %q has an empty title", a.ID)
@@ -29,6 +30,13 @@ func TestRealContentParsesWithoutError(t *testing.T) {
 		if a.PublishedAt.IsZero() {
 			t.Errorf("article %q has no publishedAt", a.ID)
 		}
+		if a.ID == "" {
+			t.Error("article has no id (missing frontmatter id?)")
+		}
+		if seenArticleIDs[a.ID] {
+			t.Errorf("duplicate article id %q", a.ID)
+		}
+		seenArticleIDs[a.ID] = true
 	}
 
 	reviews, err := loader.ListReviews()
@@ -38,6 +46,7 @@ func TestRealContentParsesWithoutError(t *testing.T) {
 	if len(reviews) == 0 {
 		t.Fatal("expected at least one real review, got 0")
 	}
+	seenReviewIDs := make(map[string]bool)
 	for _, r := range reviews {
 		if r.Title == "" {
 			t.Errorf("review %q has an empty title", r.ID)
@@ -45,5 +54,12 @@ func TestRealContentParsesWithoutError(t *testing.T) {
 		if r.Rating < 1 || r.Rating > 5 {
 			t.Errorf("review %q has an out-of-range rating: %d", r.ID, r.Rating)
 		}
+		if r.ID == "" {
+			t.Error("review has no id (missing frontmatter id?)")
+		}
+		if seenReviewIDs[r.ID] {
+			t.Errorf("duplicate review id %q", r.ID)
+		}
+		seenReviewIDs[r.ID] = true
 	}
 }

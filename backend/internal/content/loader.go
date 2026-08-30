@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/fs"
 	"path"
+	"regexp"
 	"sort"
 	"strings"
 	"time"
@@ -59,7 +60,7 @@ func (l *Loader) ListArticles() ([]Article, error) {
 
 	articles := make([]Article, 0, len(entries))
 	for _, e := range entries {
-		articles = append(articles, articleFromFrontMatter(e.id, e.data, e.body))
+		articles = append(articles, articleFromFrontMatter(e))
 	}
 
 	sort.SliceStable(articles, func(i, j int) bool {
@@ -70,11 +71,16 @@ func (l *Loader) ListArticles() ([]Article, error) {
 }
 
 func (l *Loader) GetArticle(id string) (Article, error) {
-	data, body, err := l.readMarkdownFile("articles", id)
+	entries, err := l.readMarkdownDir("articles")
 	if err != nil {
 		return Article{}, err
 	}
-	return articleFromFrontMatter(id, data, body), nil
+	for _, e := range entries {
+		if e.id == id {
+			return articleFromFrontMatter(e), nil
+		}
+	}
+	return Article{}, ErrNotFound
 }
 
 func (l *Loader) ListReviews() ([]Review, error) {
@@ -85,7 +91,7 @@ func (l *Loader) ListReviews() ([]Review, error) {
 
 	reviews := make([]Review, 0, len(entries))
 	for _, e := range entries {
-		reviews = append(reviews, reviewFromFrontMatter(e.id, e.data, e.body))
+		reviews = append(reviews, reviewFromFrontMatter(e))
 	}
 
 	sort.SliceStable(reviews, func(i, j int) bool {
@@ -96,17 +102,39 @@ func (l *Loader) ListReviews() ([]Review, error) {
 }
 
 func (l *Loader) GetReview(id string) (Review, error) {
-	data, body, err := l.readMarkdownFile("reviews", id)
+	entries, err := l.readMarkdownDir("reviews")
 	if err != nil {
 		return Review{}, err
 	}
-	return reviewFromFrontMatter(id, data, body), nil
+	for _, e := range entries {
+		if e.id == id {
+			return reviewFromFrontMatter(e), nil
+		}
+	}
+	return Review{}, ErrNotFound
 }
 
 type markdownEntry struct {
-	id   string
-	data map[string]any
-	body string
+	id          string
+	publishedAt time.Time
+	data        map[string]any
+	body        string
+}
+
+// filenameDatePattern matches the ISO 8601 date-only filename convention
+// (YYYY-MM-DD.md), with an optional "-N" suffix to disambiguate multiple
+// posts published on the same date.
+var filenameDatePattern = regexp.MustCompile(`^(\d{4}-\d{2}-\d{2})(-\d+)?\.md$`)
+
+// parsePublishedAtFromFilename derives a post's publish date from its
+// filename, which is the source of truth now that frontmatter no longer
+// carries a publishedAt field.
+func parsePublishedAtFromFilename(name string) (time.Time, error) {
+	m := filenameDatePattern.FindStringSubmatch(name)
+	if m == nil {
+		return time.Time{}, fmt.Errorf("filename %q is not in YYYY-MM-DD[-N].md format", name)
+	}
+	return time.Parse("2006-01-02", m[1])
 }
 
 func (l *Loader) readMarkdownDir(contentType string) ([]markdownEntry, error) {
@@ -120,19 +148,27 @@ func (l *Loader) readMarkdownDir(contentType string) ([]markdownEntry, error) {
 		if f.IsDir() || !strings.HasSuffix(f.Name(), ".md") {
 			continue
 		}
-		id := strings.TrimSuffix(f.Name(), ".md")
-		data, body, err := l.readMarkdownFile(contentType, id)
+		publishedAt, err := parsePublishedAtFromFilename(f.Name())
 		if err != nil {
 			return nil, err
 		}
-		entries = append(entries, markdownEntry{id: id, data: data, body: body})
+		data, body, err := l.readMarkdownFile(contentType, f.Name())
+		if err != nil {
+			return nil, err
+		}
+		entries = append(entries, markdownEntry{
+			id:          stringField(data, "id"),
+			publishedAt: publishedAt,
+			data:        data,
+			body:        body,
+		})
 	}
 
 	return entries, nil
 }
 
-func (l *Loader) readMarkdownFile(contentType, id string) (map[string]any, string, error) {
-	filePath := path.Join(contentType, id+".md")
+func (l *Loader) readMarkdownFile(contentType, filename string) (map[string]any, string, error) {
+	filePath := path.Join(contentType, filename)
 
 	raw, err := fs.ReadFile(l.fsys, filePath)
 	if err != nil {
@@ -145,28 +181,28 @@ func (l *Loader) readMarkdownFile(contentType, id string) (map[string]any, strin
 	return parseFrontMatter(raw)
 }
 
-func articleFromFrontMatter(id string, data map[string]any, body string) Article {
+func articleFromFrontMatter(e markdownEntry) Article {
 	return Article{
-		ID:          id,
-		Title:       stringField(data, "title"),
-		Image:       transformImagePath(stringField(data, "image"), "articles"),
-		Body:        body,
-		PublishedAt: timeField(data, "publishedAt"),
-		UpdatedAt:   timeField(data, "updatedAt"),
+		ID:          e.id,
+		Title:       stringField(e.data, "title"),
+		Image:       transformImagePath(stringField(e.data, "image"), "articles"),
+		Body:        e.body,
+		PublishedAt: e.publishedAt,
+		UpdatedAt:   timeField(e.data, "updatedAt"),
 	}
 }
 
-func reviewFromFrontMatter(id string, data map[string]any, body string) Review {
+func reviewFromFrontMatter(e markdownEntry) Review {
 	return Review{
-		ID:          id,
-		Title:       stringField(data, "title"),
-		Description: stringField(data, "description"),
-		JPECode:     stringField(data, "jp_e_code"),
-		Image:       transformImagePath(stringField(data, "image"), "reviews"),
-		Rating:      int32Field(data, "rating"),
-		Body:        body,
-		PublishedAt: timeField(data, "publishedAt"),
-		UpdatedAt:   timeField(data, "updatedAt"),
+		ID:          e.id,
+		Title:       stringField(e.data, "title"),
+		Description: stringField(e.data, "description"),
+		JPECode:     stringField(e.data, "jp_e_code"),
+		Image:       transformImagePath(stringField(e.data, "image"), "reviews"),
+		Rating:      int32Field(e.data, "rating"),
+		Body:        e.body,
+		PublishedAt: e.publishedAt,
+		UpdatedAt:   timeField(e.data, "updatedAt"),
 	}
 }
 

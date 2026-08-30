@@ -37,46 +37,73 @@ const transformImagePath = (imagePath: string | undefined, contentType: ContentT
   return imagePath ?? '';
 };
 
-const readMarkdownFile = (contentType: ContentType, id: string) => {
-  const filePath = path.join(CONTENT_DIR, contentType, `${id}.md`);
-  let raw: string;
-  try {
-    raw = fs.readFileSync(filePath, 'utf-8');
-  } catch (err) {
-    if ((err as NodeJS.ErrnoException).code === 'ENOENT') {
-      throw new ContentNotFoundError(`content not found: ${contentType}/${id}`);
-    }
-    throw err;
+// filenameDatePattern mirrors backend/internal/content.Loader's
+// filenameDatePattern: articles/reviews are named by their publish date
+// (YYYY-MM-DD.md), with an optional "-N" suffix to disambiguate multiple
+// posts published on the same date.
+const filenameDatePattern = /^(\d{4}-\d{2}-\d{2})(-\d+)?\.md$/;
+
+// parsePublishedAtFromFilename derives a post's publish date from its
+// filename, which is the source of truth now that frontmatter no longer
+// carries a publishedAt field.
+const parsePublishedAtFromFilename = (filename: string): Date => {
+  const match = filenameDatePattern.exec(filename);
+  if (!match) {
+    throw new Error(`filename "${filename}" is not in YYYY-MM-DD[-N].md format`);
   }
+  return new Date(match[1]);
+};
+
+type MarkdownEntry = {
+  id: string;
+  publishedAt: Date;
+  parsed: ReturnType<typeof matter>;
+};
+
+const readMarkdownFile = (contentType: ContentType, filename: string) => {
+  const filePath = path.join(CONTENT_DIR, contentType, filename);
+  const raw = fs.readFileSync(filePath, 'utf-8');
   return matter(raw);
 };
 
-const listMarkdownIds = (contentType: ContentType): string[] =>
+const listMarkdownEntries = (contentType: ContentType): MarkdownEntry[] =>
   fs
     .readdirSync(path.join(CONTENT_DIR, contentType))
     .filter((name) => name.endsWith('.md'))
-    .map((name) => name.slice(0, -3))
-    .sort();
+    .sort()
+    .map((filename) => {
+      const publishedAt = parsePublishedAtFromFilename(filename);
+      const parsed = readMarkdownFile(contentType, filename);
+      return { id: parsed.data.id ?? '', publishedAt, parsed };
+    });
 
-const toArticle = (id: string, parsed: ReturnType<typeof matter>): Article => ({
-  id,
-  body: parsed.content,
-  title: parsed.data.title ?? '',
-  image: transformImagePath(parsed.data.image, 'articles'),
-  publishedAt: toDate(parsed.data.publishedAt),
-  updatedAt: toDate(parsed.data.updatedAt)
+const findMarkdownEntryById = (contentType: ContentType, id: string): MarkdownEntry => {
+  const entry = listMarkdownEntries(contentType).find((e) => e.id === id);
+  if (!entry) {
+    throw new ContentNotFoundError(`content not found: ${contentType}/${id}`);
+  }
+  return entry;
+};
+
+const toArticle = (entry: MarkdownEntry): Article => ({
+  id: entry.id,
+  body: entry.parsed.content,
+  title: entry.parsed.data.title ?? '',
+  image: transformImagePath(entry.parsed.data.image, 'articles'),
+  publishedAt: entry.publishedAt,
+  updatedAt: toDate(entry.parsed.data.updatedAt)
 });
 
-const toReview = (id: string, parsed: ReturnType<typeof matter>): Review => ({
-  id,
-  body: parsed.content,
-  title: parsed.data.title ?? '',
-  description: parsed.data.description ?? '',
-  jp_e_code: parsed.data.jp_e_code ?? '',
-  image: transformImagePath(parsed.data.image, 'reviews'),
-  rating: parsed.data.rating ?? 0,
-  publishedAt: toDate(parsed.data.publishedAt),
-  updatedAt: toDate(parsed.data.updatedAt)
+const toReview = (entry: MarkdownEntry): Review => ({
+  id: entry.id,
+  body: entry.parsed.content,
+  title: entry.parsed.data.title ?? '',
+  description: entry.parsed.data.description ?? '',
+  jp_e_code: entry.parsed.data.jp_e_code ?? '',
+  image: transformImagePath(entry.parsed.data.image, 'reviews'),
+  rating: entry.parsed.data.rating ?? 0,
+  publishedAt: entry.publishedAt,
+  updatedAt: toDate(entry.parsed.data.updatedAt)
 });
 
 // Newest first, matching backend/internal/content.Loader's
@@ -85,14 +112,10 @@ const byPublishedAtDescending = <T extends { publishedAt: Date }>(a: T, b: T) =>
   b.publishedAt.getTime() - a.publishedAt.getTime();
 
 const listArticles = (): Article[] =>
-  listMarkdownIds('articles')
-    .map((id) => toArticle(id, readMarkdownFile('articles', id)))
-    .sort(byPublishedAtDescending);
+  listMarkdownEntries('articles').map(toArticle).sort(byPublishedAtDescending);
 
 const listReviews = (): Review[] =>
-  listMarkdownIds('reviews')
-    .map((id) => toReview(id, readMarkdownFile('reviews', id)))
-    .sort(byPublishedAtDescending);
+  listMarkdownEntries('reviews').map(toReview).sort(byPublishedAtDescending);
 
 const getAllRawDataImpl = async (type: ContentType): Promise<(Article | Review)[]> => {
   try {
@@ -118,12 +141,12 @@ export const getAllHTMLData = async (type: ContentType) => {
 export const getHTMLData = async (id: string, type: ContentType): Promise<Article | Review> => {
   try {
     if (type === 'articles') {
-      const article = toArticle(id, readMarkdownFile('articles', id));
+      const article = toArticle(findMarkdownEntryById('articles', id));
       article.body = await convertMarkdownToHtml(article.body);
       return article;
     }
 
-    const review = toReview(id, readMarkdownFile('reviews', id));
+    const review = toReview(findMarkdownEntryById('reviews', id));
     review.body = await convertMarkdownToHtml(review.body);
     return review;
   } catch (err) {

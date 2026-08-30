@@ -9,37 +9,45 @@ import path from 'node:path';
 const contentDir = fs.mkdtempSync(path.join(os.tmpdir(), 'content-test-'));
 process.env.CONTENT_DIR = contentDir;
 
-const writeArticle = (id: string, frontmatter: Record<string, unknown>, body: string) => {
+const writeArticle = (
+  filename: string,
+  frontmatter: Record<string, unknown>,
+  body: string
+) => {
   const yaml = Object.entries(frontmatter)
     .map(([key, value]) => `${key}: ${value}`)
     .join('\n');
-  fs.writeFileSync(path.join(contentDir, 'articles', `${id}.md`), `---\n${yaml}\n---\n${body}`);
+  fs.writeFileSync(path.join(contentDir, 'articles', filename), `---\n${yaml}\n---\n${body}`);
 };
 
-const writeReview = (id: string, frontmatter: Record<string, unknown>, body: string) => {
+const writeReview = (
+  filename: string,
+  frontmatter: Record<string, unknown>,
+  body: string
+) => {
   const yaml = Object.entries(frontmatter)
     .map(([key, value]) => `${key}: ${value}`)
     .join('\n');
-  fs.writeFileSync(path.join(contentDir, 'reviews', `${id}.md`), `---\n${yaml}\n---\n${body}`);
+  fs.writeFileSync(path.join(contentDir, 'reviews', filename), `---\n${yaml}\n---\n${body}`);
 };
 
 fs.mkdirSync(path.join(contentDir, 'articles'), { recursive: true });
 fs.mkdirSync(path.join(contentDir, 'reviews'), { recursive: true });
 
 writeArticle(
-  'my-article',
-  { title: 'タイトル', image: 'images/foo.png', publishedAt: '2025-06-15', updatedAt: '2025-06-16' },
+  '2025-06-15.md',
+  { id: 'my-article', title: 'タイトル', image: 'images/foo.png', updatedAt: '2025-06-16' },
   '# 見出し'
 );
 writeReview(
-  'my-review',
+  '2025-03-01.md',
   {
+    id: 'my-review',
     title: '本のタイトル',
     description: 'あらすじ',
     jp_e_code: '"1234567890123"',
     image: 'images/foo.jpg',
     rating: 5,
-    publishedAt: '2025-03-01',
     updatedAt: '2025-03-02'
   },
   '## 概要'
@@ -108,7 +116,7 @@ describe('getHTMLData', () => {
 
   it('frontmatterが壊れている記事は500を投げる', async () => {
     fs.writeFileSync(
-      path.join(contentDir, 'articles', 'broken.md'),
+      path.join(contentDir, 'articles', '2025-01-01.md'),
       '---\ntitle: ["unterminated\n---\nbody'
     );
 
