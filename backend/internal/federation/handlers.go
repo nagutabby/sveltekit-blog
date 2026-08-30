@@ -246,15 +246,15 @@ func (h *Handlers) Inbox(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Delete is handled before fetchActor/signature verification: by the
-	// time an actor announces its own deletion, its actor document is
-	// typically already gone (404/410), so fetchActor would always fail
-	// and this cleanup would never run. The worst a forged Delete can do
-	// is mark a follower unfollowed early, which is low-risk and
-	// self-correcting (a real Follow re-adds them), so this is handled
-	// as best-effort without a verified signature.
+	// Delete is handled before fetchActor: by the time an actor announces
+	// its own deletion, its actor document is typically already gone
+	// (404/410), so fetchActor would always fail and this cleanup would
+	// never run. Signature verification still happens, but against the
+	// follower's already-stored public key (from its earlier Follow)
+	// instead of a freshly fetched actor document, since none is
+	// obtainable here.
 	if activity.Type == "Delete" {
-		h.handleDelete(w, r.Context(), activity)
+		h.handleDelete(w, r, body, activity)
 		return
 	}
 
@@ -309,7 +309,9 @@ var acknowledgedActivityTypes = map[string]bool{
 // marking any matching follower row unfollowed. Anything else framed as a
 // Delete — deleting some other object this server doesn't track — is
 // acknowledged without action.
-func (h *Handlers) handleDelete(w http.ResponseWriter, ctx context.Context, activity incomingActivity) {
+func (h *Handlers) handleDelete(w http.ResponseWriter, r *http.Request, body []byte, activity incomingActivity) {
+	ctx := r.Context()
+
 	objectID := deletedObjectID(activity.Object)
 	if objectID == "" || objectID != activity.Actor {
 		w.WriteHeader(http.StatusAccepted)
@@ -320,6 +322,15 @@ func (h *Handlers) handleDelete(w http.ResponseWriter, ctx context.Context, acti
 	if err != nil {
 		// Not a follower we know about (or already removed); nothing to
 		// clean up, but still acknowledge so the sender doesn't retry.
+		w.WriteHeader(http.StatusAccepted)
+		return
+	}
+
+	// The actor document is typically already gone by self-delete time,
+	// so verify against the public key stored from this follower's
+	// original Follow instead of fetching one now. Without this, anyone
+	// could spoof another actor's IRI and force them unfollowed.
+	if err := VerifyHTTPSignature(r, body, existing.PublicKeyPem); err != nil {
 		w.WriteHeader(http.StatusAccepted)
 		return
 	}

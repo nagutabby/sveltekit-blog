@@ -647,14 +647,18 @@ func TestInboxAcknowledgesRecognizedActivityTypes(t *testing.T) {
 }
 
 func TestInboxDeleteSelfUnfollowsKnownFollower(t *testing.T) {
+	aliceKey, alicePrivateKeyPEM, _ := generateTestKeyPair(t)
+	alicePublicKeyPEM := encodePublicKeyPEM(t, aliceKey)
+
 	const actorID = "https://mastodon.example/users/alice"
 	followers := &fakeFollowerStore{byActorID: map[string]db.Follower{
-		actorID: {ActorId: actorID, Inbox: "https://mastodon.example/inbox", PublicKeyPem: "ALICE-KEY", Following: true},
+		actorID: {ActorId: actorID, Inbox: "https://mastodon.example/inbox", PublicKeyPem: alicePublicKeyPEM, Following: true},
 	}}
-	h := NewHandlers(followers, &fakeRelayStore{}, &fakeArticleStore{}, testConfig(t))
+	cfg := testConfig(t)
+	h := NewHandlers(followers, &fakeRelayStore{}, &fakeArticleStore{}, cfg)
 
 	activityBody := `{"@context":"x","type":"Delete","actor":"` + actorID + `","object":"` + actorID + `"}`
-	req := httptest.NewRequest(http.MethodPost, "/actor/inbox", strings.NewReader(activityBody))
+	req := newSignedInboxRequest(t, cfg, activityBody, actorID+"#main-key", alicePrivateKeyPEM)
 	rec := httptest.NewRecorder()
 	h.Inbox(rec, req)
 
@@ -668,20 +672,24 @@ func TestInboxDeleteSelfUnfollowsKnownFollower(t *testing.T) {
 	if call.ActorId != actorID {
 		t.Fatalf("ActorId = %q", call.ActorId)
 	}
-	if call.Inbox != "https://mastodon.example/inbox" || call.PublicKeyPem != "ALICE-KEY" {
+	if call.Inbox != "https://mastodon.example/inbox" || call.PublicKeyPem != alicePublicKeyPEM {
 		t.Fatalf("unfollow preserved wrong inbox/publicKeyPem: %+v", call)
 	}
 }
 
 func TestInboxDeleteSelfWithTombstoneObject(t *testing.T) {
+	aliceKey, alicePrivateKeyPEM, _ := generateTestKeyPair(t)
+	alicePublicKeyPEM := encodePublicKeyPEM(t, aliceKey)
+
 	const actorID = "https://mastodon.example/users/alice"
 	followers := &fakeFollowerStore{byActorID: map[string]db.Follower{
-		actorID: {ActorId: actorID, Inbox: "https://mastodon.example/inbox", PublicKeyPem: "ALICE-KEY", Following: true},
+		actorID: {ActorId: actorID, Inbox: "https://mastodon.example/inbox", PublicKeyPem: alicePublicKeyPEM, Following: true},
 	}}
-	h := NewHandlers(followers, &fakeRelayStore{}, &fakeArticleStore{}, testConfig(t))
+	cfg := testConfig(t)
+	h := NewHandlers(followers, &fakeRelayStore{}, &fakeArticleStore{}, cfg)
 
 	activityBody := `{"@context":"x","type":"Delete","actor":"` + actorID + `","object":{"id":"` + actorID + `","type":"Tombstone"}}`
-	req := httptest.NewRequest(http.MethodPost, "/actor/inbox", strings.NewReader(activityBody))
+	req := newSignedInboxRequest(t, cfg, activityBody, actorID+"#main-key", alicePrivateKeyPEM)
 	rec := httptest.NewRecorder()
 	h.Inbox(rec, req)
 
@@ -732,14 +740,17 @@ func TestInboxDeleteOfOtherObjectIsAcknowledgedWithoutAction(t *testing.T) {
 	}
 }
 
-func TestInboxDeleteDoesNotRequireSignature(t *testing.T) {
-	// The whole point of handling Delete before fetchActor/signature
-	// verification is that the actor is typically already gone by the
-	// time its self-Delete arrives, so an unsigned request must still
-	// work.
+func TestInboxDeleteRequiresSignatureFromKnownFollower(t *testing.T) {
+	// Delete skips fetchActor (the actor document is typically already
+	// gone by self-delete time) but must still verify the request was
+	// signed by the follower's own key, or anyone could spoof another
+	// actor's IRI and force them unfollowed.
+	aliceKey, _, _ := generateTestKeyPair(t)
+	alicePublicKeyPEM := encodePublicKeyPEM(t, aliceKey)
+
 	const actorID = "https://mastodon.example/users/alice"
 	followers := &fakeFollowerStore{byActorID: map[string]db.Follower{
-		actorID: {ActorId: actorID, Inbox: "https://mastodon.example/inbox", PublicKeyPem: "ALICE-KEY", Following: true},
+		actorID: {ActorId: actorID, Inbox: "https://mastodon.example/inbox", PublicKeyPem: alicePublicKeyPEM, Following: true},
 	}}
 	h := NewHandlers(followers, &fakeRelayStore{}, &fakeArticleStore{}, testConfig(t))
 
@@ -749,8 +760,39 @@ func TestInboxDeleteDoesNotRequireSignature(t *testing.T) {
 	rec := httptest.NewRecorder()
 	h.Inbox(rec, req)
 
-	if rec.Code != http.StatusOK {
-		t.Fatalf("status = %d, want 200, body=%s", rec.Code, rec.Body.String())
+	if rec.Code != http.StatusAccepted {
+		t.Fatalf("status = %d, want 202, body=%s", rec.Code, rec.Body.String())
+	}
+	if len(followers.unfollowCalls) != 0 {
+		t.Fatal("UnfollowByActorID should not be called without a valid signature")
+	}
+}
+
+func TestInboxDeleteRejectsForgedActorIRI(t *testing.T) {
+	// An attacker without alice's key cannot force her unfollowed by
+	// signing with a different (e.g. their own) key while claiming to be
+	// her in the activity body.
+	aliceKey, _, _ := generateTestKeyPair(t)
+	alicePublicKeyPEM := encodePublicKeyPEM(t, aliceKey)
+	_, attackerPrivateKeyPEM, _ := generateTestKeyPair(t)
+
+	const actorID = "https://mastodon.example/users/alice"
+	followers := &fakeFollowerStore{byActorID: map[string]db.Follower{
+		actorID: {ActorId: actorID, Inbox: "https://mastodon.example/inbox", PublicKeyPem: alicePublicKeyPEM, Following: true},
+	}}
+	cfg := testConfig(t)
+	h := NewHandlers(followers, &fakeRelayStore{}, &fakeArticleStore{}, cfg)
+
+	activityBody := `{"@context":"x","type":"Delete","actor":"` + actorID + `","object":"` + actorID + `"}`
+	req := newSignedInboxRequest(t, cfg, activityBody, actorID+"#main-key", attackerPrivateKeyPEM)
+	rec := httptest.NewRecorder()
+	h.Inbox(rec, req)
+
+	if rec.Code != http.StatusAccepted {
+		t.Fatalf("status = %d, want 202, body=%s", rec.Code, rec.Body.String())
+	}
+	if len(followers.unfollowCalls) != 0 {
+		t.Fatal("UnfollowByActorID should not be called for a forged signature")
 	}
 }
 
