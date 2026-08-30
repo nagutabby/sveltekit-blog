@@ -241,6 +241,18 @@ func (c *Client) UpsertFollower(ctx context.Context, arg db.UpsertFollowerParams
 	return scanFollower(row), nil
 }
 
+func (c *Client) ListActiveFollowerActorIDs(ctx context.Context, arg db.ListActiveFollowerActorIDsParams) ([]string, error) {
+	rows, err := c.exec(ctx, `SELECT "actorId" FROM "Follower" WHERE "following" = 1 ORDER BY "id" LIMIT ? OFFSET ?`, []any{arg.Limit, arg.Offset})
+	if err != nil {
+		return nil, err
+	}
+	actorIDs := make([]string, 0, len(rows))
+	for _, row := range rows {
+		actorIDs = append(actorIDs, rowString(row, "actorId"))
+	}
+	return actorIDs, nil
+}
+
 func (c *Client) UnfollowByActorID(ctx context.Context, arg db.UnfollowByActorIDParams) (db.Follower, error) {
 	row, err := c.execOne(ctx, `
 		UPDATE "Follower"

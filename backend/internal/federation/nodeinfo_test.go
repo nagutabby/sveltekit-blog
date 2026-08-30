@@ -41,9 +41,9 @@ func TestWellKnownNodeInfo(t *testing.T) {
 }
 
 func TestNodeInfo21(t *testing.T) {
-	articles := &fakeArticleStore{articles: map[string]content.Article{
-		"a": {Title: "a"},
-		"b": {Title: "b"},
+	articles := &fakeArticleStore{orderedArticles: []content.Article{
+		{Title: "a"},
+		{Title: "b"},
 	}}
 	h := NewHandlers(&fakeFollowerStore{}, &fakeRelayStore{}, articles, testConfig(t))
 
