@@ -95,5 +95,14 @@ review では画像の自動取得は行わない。`image:` には `images/<id>
 ### 8. ファイル作成
 `backend/content/{articles,reviews}/YYYY-MM-DD.md` を新規作成し、確定したfrontmatterのみを書き込む。本文は空にする。review の定型見出し(`## 概要` / `## 感想`)もファイルには書かず、口頭で目安として伝えるだけにする。
 
-### 9. 完了報告
-作成したファイルパスを伝え、本文はユーザー自身が書くことを伝えて終了する。
+### 9. 検証
+作成したファイルに対して検証スクリプトを実行し、ファイル名とfrontmatterの構造が規約通りであることを確認する。
+
+```bash
+bash .claude/skills/new-content/scripts/validate-content.sh backend/content/{articles,reviews}/YYYY-MM-DD.md
+```
+
+`NG` が出た場合はファイルを削除せず、指摘された内容(必須フィールドの欠落、id重複、rating範囲外、image実体の不在など)に沿ってfrontmatterを修正し、`OK` になるまで再実行する。**修正はfrontmatterのみに留め、本文には手を加えない。**
+
+### 10. 完了報告
+作成したファイルパスと検証結果(`OK`)を伝え、本文はユーザー自身が書くことを伝えて終了する。
