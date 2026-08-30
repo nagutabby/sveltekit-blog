@@ -31,6 +31,7 @@
     "fast-xml-parser": "^5.10.1",
     "gray-matter": "^4.0.3",
     "jsdom": "^30.0.1",
+    "katex": "^0.17.0",
     "lodash.memoize": "^4.1.2",
     "marked": "^18.0.9",
     "marked-gfm-heading-id": "^4.1.4",
