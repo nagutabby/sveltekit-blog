@@ -328,7 +328,10 @@ func TestFollowersPage(t *testing.T) {
 	}
 }
 
-func TestFollowersPageHasNextWhenFull(t *testing.T) {
+func TestFollowersPageNoNextWhenExactlyPageSize(t *testing.T) {
+	// A full page (items == collectionPageSize) does not by itself mean
+	// there's a next page: the total count can land exactly on a page
+	// boundary, in which case "next" must be absent.
 	full := make([]string, collectionPageSize)
 	for i := range full {
 		full[i] = fmt.Sprintf("https://a.example/users/%d", i)
@@ -343,6 +346,38 @@ func TestFollowersPageHasNextWhenFull(t *testing.T) {
 	var body map[string]any
 	if err := json.Unmarshal(rec.Body.Bytes(), &body); err != nil {
 		t.Fatalf("failed to decode body: %v", err)
+	}
+	items := body["orderedItems"].([]any)
+	if len(items) != collectionPageSize {
+		t.Fatalf("orderedItems length = %d, want %d", len(items), collectionPageSize)
+	}
+	if _, hasNext := body["next"]; hasNext {
+		t.Fatal("should not have a next page when the total is exactly one page")
+	}
+	if _, hasPrev := body["prev"]; hasPrev {
+		t.Fatal("page 1 should not have a prev link")
+	}
+}
+
+func TestFollowersPageHasNextWhenMoreThanPageSize(t *testing.T) {
+	beyondOnePage := make([]string, collectionPageSize+1)
+	for i := range beyondOnePage {
+		beyondOnePage[i] = fmt.Sprintf("https://a.example/users/%d", i)
+	}
+	followers := &fakeFollowerStore{activeActorIDs: beyondOnePage}
+	h := NewHandlers(followers, &fakeRelayStore{}, &fakeArticleStore{}, testConfig(t))
+
+	req := httptest.NewRequest(http.MethodGet, "/actor/followers?page=1", nil)
+	rec := httptest.NewRecorder()
+	h.Followers(rec, req)
+
+	var body map[string]any
+	if err := json.Unmarshal(rec.Body.Bytes(), &body); err != nil {
+		t.Fatalf("failed to decode body: %v", err)
+	}
+	items := body["orderedItems"].([]any)
+	if len(items) != collectionPageSize {
+		t.Fatalf("orderedItems length = %d, want %d", len(items), collectionPageSize)
 	}
 	if body["next"] != "https://blog.nagutabby.uk/actor/followers?page=2" {
 		t.Fatalf("next = %v", body["next"])
