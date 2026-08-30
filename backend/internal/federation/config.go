@@ -60,6 +60,12 @@ type FollowerStore interface {
 	UpsertFollower(ctx context.Context, arg db.UpsertFollowerParams) (db.Follower, error)
 	UnfollowByActorID(ctx context.Context, arg db.UnfollowByActorIDParams) (db.Follower, error)
 	CountActiveFollowers(ctx context.Context) (int64, error)
+	// GetFollowerByActorID backs Inbox's handling of a remote actor
+	// deleting itself: it looks up the existing row so UnfollowByActorID
+	// can be called without clobbering inbox/publicKeyPem with blanks
+	// (the actor is gone by the time its Delete arrives, so there's
+	// nothing to re-fetch them from).
+	GetFollowerByActorID(ctx context.Context, actorID string) (db.Follower, error)
 }
 
 // RelayStore is the subset of *db.Queries the Inbox handler needs for

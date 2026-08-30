@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/rsa"
 	"crypto/x509"
+	"database/sql"
 	"encoding/json"
 	"encoding/pem"
 	"io"
@@ -84,6 +85,9 @@ type fakeFollowerStore struct {
 
 	followerCount int64
 	countErr      error
+
+	byActorID     map[string]db.Follower
+	getByActorErr error
 }
 
 func (f *fakeFollowerStore) UpsertFollower(_ context.Context, arg db.UpsertFollowerParams) (db.Follower, error) {
@@ -107,6 +111,17 @@ func (f *fakeFollowerStore) CountActiveFollowers(_ context.Context) (int64, erro
 		return 0, f.countErr
 	}
 	return f.followerCount, nil
+}
+
+func (f *fakeFollowerStore) GetFollowerByActorID(_ context.Context, actorID string) (db.Follower, error) {
+	if f.getByActorErr != nil {
+		return db.Follower{}, f.getByActorErr
+	}
+	follower, ok := f.byActorID[actorID]
+	if !ok {
+		return db.Follower{}, sql.ErrNoRows
+	}
+	return follower, nil
 }
 
 type fakeRelayStore struct {
@@ -587,13 +602,197 @@ func TestInboxUnsupportedType(t *testing.T) {
 	cfg := testConfig(t)
 	h := NewHandlers(&fakeFollowerStore{}, &fakeRelayStore{}, &fakeArticleStore{}, cfg)
 
-	activityBody := `{"@context":"x","type":"Like","actor":"` + actorServer.URL + `/users/alice","object":"y"}`
+	// "Wave" isn't a real ActivityPub activity type, unlike Like/Create/
+	// etc. below, which are recognized-but-unhandled and get a 202.
+	activityBody := `{"@context":"x","type":"Wave","actor":"` + actorServer.URL + `/users/alice","object":"y"}`
 	req := newSignedInboxRequest(t, cfg, activityBody, actorServer.URL+"/users/alice#main-key", alicePrivateKeyPEM)
 	rec := httptest.NewRecorder()
 	h.Inbox(rec, req)
 
 	if rec.Code != http.StatusUnprocessableEntity {
 		t.Fatalf("status = %d, want 422", rec.Code)
+	}
+}
+
+func TestInboxAcknowledgesRecognizedActivityTypes(t *testing.T) {
+	aliceKey, alicePrivateKeyPEM, _ := generateTestKeyPair(t)
+	alicePublicKeyPEM := encodePublicKeyPEM(t, aliceKey)
+
+	mux := http.NewServeMux()
+	mux.HandleFunc("/users/alice", func(w http.ResponseWriter, r *http.Request) {
+		_ = json.NewEncoder(w).Encode(map[string]any{
+			"inbox":     "https://mastodon.example/inbox",
+			"publicKey": map[string]string{"publicKeyPem": alicePublicKeyPEM},
+		})
+	})
+	actorServer := httptest.NewServer(mux)
+	defer actorServer.Close()
+
+	cfg := testConfig(t)
+
+	for _, activityType := range []string{"Create", "Update", "Like", "Announce"} {
+		t.Run(activityType, func(t *testing.T) {
+			h := NewHandlers(&fakeFollowerStore{}, &fakeRelayStore{}, &fakeArticleStore{}, cfg)
+
+			activityBody := `{"@context":"x","type":"` + activityType + `","actor":"` + actorServer.URL + `/users/alice","object":"y"}`
+			req := newSignedInboxRequest(t, cfg, activityBody, actorServer.URL+"/users/alice#main-key", alicePrivateKeyPEM)
+			rec := httptest.NewRecorder()
+			h.Inbox(rec, req)
+
+			if rec.Code != http.StatusAccepted {
+				t.Fatalf("status = %d, want 202, body=%s", rec.Code, rec.Body.String())
+			}
+		})
+	}
+}
+
+func TestInboxDeleteSelfUnfollowsKnownFollower(t *testing.T) {
+	aliceKey, alicePrivateKeyPEM, _ := generateTestKeyPair(t)
+	alicePublicKeyPEM := encodePublicKeyPEM(t, aliceKey)
+
+	const actorID = "https://mastodon.example/users/alice"
+	followers := &fakeFollowerStore{byActorID: map[string]db.Follower{
+		actorID: {ActorId: actorID, Inbox: "https://mastodon.example/inbox", PublicKeyPem: alicePublicKeyPEM, Following: true},
+	}}
+	cfg := testConfig(t)
+	h := NewHandlers(followers, &fakeRelayStore{}, &fakeArticleStore{}, cfg)
+
+	activityBody := `{"@context":"x","type":"Delete","actor":"` + actorID + `","object":"` + actorID + `"}`
+	req := newSignedInboxRequest(t, cfg, activityBody, actorID+"#main-key", alicePrivateKeyPEM)
+	rec := httptest.NewRecorder()
+	h.Inbox(rec, req)
+
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status = %d, want 200, body=%s", rec.Code, rec.Body.String())
+	}
+	if len(followers.unfollowCalls) != 1 {
+		t.Fatalf("UnfollowByActorID called %d times, want 1", len(followers.unfollowCalls))
+	}
+	call := followers.unfollowCalls[0]
+	if call.ActorId != actorID {
+		t.Fatalf("ActorId = %q", call.ActorId)
+	}
+	if call.Inbox != "https://mastodon.example/inbox" || call.PublicKeyPem != alicePublicKeyPEM {
+		t.Fatalf("unfollow preserved wrong inbox/publicKeyPem: %+v", call)
+	}
+}
+
+func TestInboxDeleteSelfWithTombstoneObject(t *testing.T) {
+	aliceKey, alicePrivateKeyPEM, _ := generateTestKeyPair(t)
+	alicePublicKeyPEM := encodePublicKeyPEM(t, aliceKey)
+
+	const actorID = "https://mastodon.example/users/alice"
+	followers := &fakeFollowerStore{byActorID: map[string]db.Follower{
+		actorID: {ActorId: actorID, Inbox: "https://mastodon.example/inbox", PublicKeyPem: alicePublicKeyPEM, Following: true},
+	}}
+	cfg := testConfig(t)
+	h := NewHandlers(followers, &fakeRelayStore{}, &fakeArticleStore{}, cfg)
+
+	activityBody := `{"@context":"x","type":"Delete","actor":"` + actorID + `","object":{"id":"` + actorID + `","type":"Tombstone"}}`
+	req := newSignedInboxRequest(t, cfg, activityBody, actorID+"#main-key", alicePrivateKeyPEM)
+	rec := httptest.NewRecorder()
+	h.Inbox(rec, req)
+
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status = %d, want 200, body=%s", rec.Code, rec.Body.String())
+	}
+	if len(followers.unfollowCalls) != 1 {
+		t.Fatalf("UnfollowByActorID called %d times, want 1", len(followers.unfollowCalls))
+	}
+}
+
+func TestInboxDeleteUnknownFollowerIsAcknowledged(t *testing.T) {
+	followers := &fakeFollowerStore{}
+	h := NewHandlers(followers, &fakeRelayStore{}, &fakeArticleStore{}, testConfig(t))
+
+	const actorID = "https://mastodon.example/users/bob"
+	activityBody := `{"@context":"x","type":"Delete","actor":"` + actorID + `","object":"` + actorID + `"}`
+	req := httptest.NewRequest(http.MethodPost, "/actor/inbox", strings.NewReader(activityBody))
+	rec := httptest.NewRecorder()
+	h.Inbox(rec, req)
+
+	if rec.Code != http.StatusAccepted {
+		t.Fatalf("status = %d, want 202, body=%s", rec.Code, rec.Body.String())
+	}
+	if len(followers.unfollowCalls) != 0 {
+		t.Fatal("UnfollowByActorID should not be called for an unknown actor")
+	}
+}
+
+func TestInboxDeleteOfOtherObjectIsAcknowledgedWithoutAction(t *testing.T) {
+	const actorID = "https://mastodon.example/users/alice"
+	followers := &fakeFollowerStore{byActorID: map[string]db.Follower{
+		actorID: {ActorId: actorID, Following: true},
+	}}
+	h := NewHandlers(followers, &fakeRelayStore{}, &fakeArticleStore{}, testConfig(t))
+
+	// alice deleting one of her own posts, not herself.
+	activityBody := `{"@context":"x","type":"Delete","actor":"` + actorID + `","object":"https://mastodon.example/users/alice/statuses/123"}`
+	req := httptest.NewRequest(http.MethodPost, "/actor/inbox", strings.NewReader(activityBody))
+	rec := httptest.NewRecorder()
+	h.Inbox(rec, req)
+
+	if rec.Code != http.StatusAccepted {
+		t.Fatalf("status = %d, want 202, body=%s", rec.Code, rec.Body.String())
+	}
+	if len(followers.unfollowCalls) != 0 {
+		t.Fatal("UnfollowByActorID should not be called when deleting an unrelated object")
+	}
+}
+
+func TestInboxDeleteRequiresSignatureFromKnownFollower(t *testing.T) {
+	// Delete skips fetchActor (the actor document is typically already
+	// gone by self-delete time) but must still verify the request was
+	// signed by the follower's own key, or anyone could spoof another
+	// actor's IRI and force them unfollowed.
+	aliceKey, _, _ := generateTestKeyPair(t)
+	alicePublicKeyPEM := encodePublicKeyPEM(t, aliceKey)
+
+	const actorID = "https://mastodon.example/users/alice"
+	followers := &fakeFollowerStore{byActorID: map[string]db.Follower{
+		actorID: {ActorId: actorID, Inbox: "https://mastodon.example/inbox", PublicKeyPem: alicePublicKeyPEM, Following: true},
+	}}
+	h := NewHandlers(followers, &fakeRelayStore{}, &fakeArticleStore{}, testConfig(t))
+
+	activityBody := `{"@context":"x","type":"Delete","actor":"` + actorID + `","object":"` + actorID + `"}`
+	req := httptest.NewRequest(http.MethodPost, "/actor/inbox", strings.NewReader(activityBody))
+	// Deliberately no Signature/Date/Digest headers.
+	rec := httptest.NewRecorder()
+	h.Inbox(rec, req)
+
+	if rec.Code != http.StatusAccepted {
+		t.Fatalf("status = %d, want 202, body=%s", rec.Code, rec.Body.String())
+	}
+	if len(followers.unfollowCalls) != 0 {
+		t.Fatal("UnfollowByActorID should not be called without a valid signature")
+	}
+}
+
+func TestInboxDeleteRejectsForgedActorIRI(t *testing.T) {
+	// An attacker without alice's key cannot force her unfollowed by
+	// signing with a different (e.g. their own) key while claiming to be
+	// her in the activity body.
+	aliceKey, _, _ := generateTestKeyPair(t)
+	alicePublicKeyPEM := encodePublicKeyPEM(t, aliceKey)
+	_, attackerPrivateKeyPEM, _ := generateTestKeyPair(t)
+
+	const actorID = "https://mastodon.example/users/alice"
+	followers := &fakeFollowerStore{byActorID: map[string]db.Follower{
+		actorID: {ActorId: actorID, Inbox: "https://mastodon.example/inbox", PublicKeyPem: alicePublicKeyPEM, Following: true},
+	}}
+	cfg := testConfig(t)
+	h := NewHandlers(followers, &fakeRelayStore{}, &fakeArticleStore{}, cfg)
+
+	activityBody := `{"@context":"x","type":"Delete","actor":"` + actorID + `","object":"` + actorID + `"}`
+	req := newSignedInboxRequest(t, cfg, activityBody, actorID+"#main-key", attackerPrivateKeyPEM)
+	rec := httptest.NewRecorder()
+	h.Inbox(rec, req)
+
+	if rec.Code != http.StatusAccepted {
+		t.Fatalf("status = %d, want 202, body=%s", rec.Code, rec.Body.String())
+	}
+	if len(followers.unfollowCalls) != 0 {
+		t.Fatal("UnfollowByActorID should not be called for a forged signature")
 	}
 }
 
