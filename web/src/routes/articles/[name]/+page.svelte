@@ -8,6 +8,7 @@
   import { page } from "$app/state";
   import Header from "$lib/components/Header.svelte";
   import OpenGraph from "$lib/components/OpenGraph.svelte";
+  import "katex/dist/katex.min.css";
 
   const { data }: { data: PageData } = $props();
 
