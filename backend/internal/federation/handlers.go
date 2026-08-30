@@ -141,8 +141,12 @@ func (h *Handlers) Followers(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Fetch one extra row beyond the page size: whether this page is
+	// full (len == collectionPageSize) doesn't tell us whether a next
+	// page exists, since the total count can be an exact multiple of
+	// collectionPageSize. The extra row (trimmed below) does.
 	actorIDs, err := h.followers.ListActiveFollowerActorIDs(r.Context(), db.ListActiveFollowerActorIDsParams{
-		Limit:  collectionPageSize,
+		Limit:  collectionPageSize + 1,
 		Offset: int64(pageNum-1) * collectionPageSize,
 	})
 	if err != nil {
@@ -150,7 +154,12 @@ func (h *Handlers) Followers(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	writeCollectionPage(w, r, followersURL, pageNum, actorIDs, len(actorIDs) == collectionPageSize)
+	hasMore := len(actorIDs) > collectionPageSize
+	if hasMore {
+		actorIDs = actorIDs[:collectionPageSize]
+	}
+
+	writeCollectionPage(w, r, followersURL, pageNum, actorIDs, hasMore)
 }
 
 func (h *Handlers) Following(w http.ResponseWriter, r *http.Request) {
