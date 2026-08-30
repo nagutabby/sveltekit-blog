@@ -10,6 +10,8 @@
 
 set -uo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
 TITLE="${1:-}"
 PUBLISHER="${2:-}"
 
@@ -18,28 +20,7 @@ if [ -z "$TITLE" ] || [ -z "$PUBLISHER" ]; then
   exit 2
 fi
 
-COOKIE_JAR=$(mktemp)
-trap 'rm -f "$COOKIE_JAR"' EXIT
-
-TOP_HTML=$(curl -sL -c "$COOKIE_JAR" -A "Mozilla/5.0" "https://www.books.or.jp/")
-TOKEN=$(printf '%s\n' "$TOP_HTML" | grep -o 'name="_token" value="[^"]*"' | head -1 | sed -E 's/.*value="([^"]*)"/\1/')
-
-if [ -z "$TOKEN" ]; then
-  echo "ERROR: books.or.jp からCSRFトークンを取得できませんでした" >&2
-  exit 1
-fi
-
-RESULT_HTML=$(curl -sL -b "$COOKIE_JAR" -c "$COOKIE_JAR" -A "Mozilla/5.0" \
-  -X POST "https://www.books.or.jp/search-results" \
-  --data-urlencode "_token=$TOKEN" \
-  --data-urlencode "searchforbooks_title=$TITLE" \
-  --data-urlencode "searchforbooks_publisher=$PUBLISHER" \
-  --data-urlencode "publishtype1=on" \
-  --data-urlencode "publishtype2=on" \
-  --data-urlencode "publishtype3=on" \
-  --data-urlencode "publishtype4=on" \
-  --data-urlencode "accessible_search_flag=0" \
-  --data-urlencode "first_books_search_flag=1")
+RESULT_HTML=$(bash "$SCRIPT_DIR/lib/search-books-or-jp.sh" "$TITLE" "$PUBLISHER") || exit 1
 
 # 検索結果は <h3 class ="result_list_item"> 〜 </h3> が1件分のブロック。
 # ブロック内の /book-details/<code> と 出版社名、電子版バッジのactive有無を見て、

@@ -146,11 +146,17 @@ if [ "$TYPE" = "reviews" ]; then
 fi
 
 # 7. imageが指す画像ファイルの実在確認
+# Card.svelte/Header.svelteは image の拡張子を.webpに置き換えたパスのみを<img src>に使う
+# (web/src/lib/utils.ts の getWebpPath)。元画像(jpg/png)だけでなく.webpも無いと表示が壊れる。
 IMAGE=$(get_field image)
 if [ -n "$IMAGE" ] && [ -n "$TYPE" ]; then
   IMG_PATH="$REPO_ROOT/web/static/content/$TYPE/$IMAGE"
+  WEBP_PATH="${IMG_PATH%.*}.webp"
   if [ ! -f "$IMG_PATH" ]; then
     fail "image が指す画像ファイルが存在しません: $IMG_PATH"
+  fi
+  if [ ! -f "$WEBP_PATH" ]; then
+    fail "image の.webp版が存在しません(実際の配信に必要): $WEBP_PATH"
   fi
 fi
 

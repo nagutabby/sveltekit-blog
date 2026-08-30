@@ -1,6 +1,6 @@
 ---
 name: new-content
-description: 記事(article)または書評(review)の新規Markdownファイルをbackend/content配下に作成する。タイトル・id・(articleなら絵文字画像、reviewならbooks.or.jpから検索したjp_e_code)を対話的に確定してfrontmatterのみを書き込む。本文はユーザーが書くため生成しない。「記事を書きたい」「書評を追加したい」「新しい記事のテンプレートを作って」などで使う。
+description: 記事(article)または書評(review)の新規Markdownファイルをbackend/content配下に作成する。タイトル・id・画像(articleはfluentui-emoji、reviewはbooks.or.jpの書影とjp_e_code)を対話的に確定してfrontmatterのみを書き込む。本文はユーザーが書くため生成しない。「記事を書きたい」「書評を追加したい」「新しい記事のテンプレートを作って」などで使う。
 ---
 
 # 記事/書評テンプレート作成
@@ -8,6 +8,8 @@ description: 記事(article)または書評(review)の新規Markdownファイル
 `backend/content/articles/` または `backend/content/reviews/` に新規Markdownファイルを1つ作成する。**本文(記事の中身)は絶対に書かない。frontmatterと空の本文だけを書き込み、続きはユーザーに書かせる。**
 
 引数(`$ARGUMENTS`)に `article` または `review` があればその種別を使う。なければユーザーに質問する。
+
+前提ツール(macOS想定): `sips`(標準搭載)、`gh`、`curl`、`cwebp`(`brew install webp`)。
 
 ## 前提知識(このリポジトリの規約)
 
@@ -33,6 +35,7 @@ description: 記事(article)または書評(review)の新規Markdownファイル
   ```
   `jp_e_code` は [books.or.jp](https://www.books.or.jp/)(日本書籍出版協会 出版書誌データベース)で書籍タイトル・出版社から検索できる電子版(JP-e)コードで、`.claude/skills/new-content/scripts/lookup-jp-e-code.sh` で自動取得する。
 - `id` は英単語をハイフンで繋いだkebab-caseで、`articles/`・`reviews/`全体で一意でなければならない(URLスラッグとして使われる)。
+- `image` が指す画像は、`web/src/lib/utils.ts` の `getWebpPath` により拡張子を `.webp` に置き換えたパスのみが実際に `<img src>` として配信される(`Card.svelte`/`Header.svelte`)。**元画像(png/jpg)と同名の`.webp`が無いと画像が表示されない。** 画像取得スクリプトは両方を生成する。
 - `web/static/content/templates/{article,review}.md` に古いテンプレートが存在するが、`publishedAt`/`updatedAt`が残っていたり`id`が無かったりして**現行実装と食い違っている**。参照せず、上記の実測frontmatterに従うこと。
 
 ## 手順
@@ -88,33 +91,26 @@ echo "$DIR/$FILENAME"
 当日分がまだ無ければ `$DATE.md`、既にあれば空いている連番(`$DATE-2.md`, `$DATE-3.md`, ...)を使う。既存ファイルへの**上書きは絶対に行わない**。
 
 ### 7. (article のみ) 絵文字画像の取得・変換
-承認された絵文字名(例 "White Flag")について:
+承認された絵文字名(例 "White Flag")について実行する。
 
 ```bash
-EMOJI_NAME="White Flag"                     # 承認された絵文字の英語名
-SNAKE=$(echo "$EMOJI_NAME" | tr '[:upper:] ' '[:lower:]_')   # white_flag
-HYPHEN=$(echo "$EMOJI_NAME" | tr ' ' '-')                     # White-Flag
-
-# 実ファイル名を確認(スペースを含むディレクトリ名に注意)
-gh api "repos/microsoft/fluentui-emoji/contents/assets/$EMOJI_NAME/3D" --jq '.[].name'
-
-# ダウンロード
-curl -sL "https://raw.githubusercontent.com/microsoft/fluentui-emoji/main/assets/$EMOJI_NAME/3D/${SNAKE}_3d.png" \
-  -o /tmp/emoji_source.png
-
-# 1024x1024 PNGにリサイズしてリポジトリの命名規則に合わせて配置
-sips -s format png -z 1024 1024 /tmp/emoji_source.png \
-  --out "web/static/content/articles/images/Microsoft-Fluentui-Emoji-3d-${HYPHEN}-3d.1024.png"
-
-rm -f /tmp/emoji_source.png
+bash .claude/skills/new-content/scripts/fetch-emoji-image.sh "White Flag"
 ```
 
-`gh api` のディレクトリ一覧で得た実ファイル名と `${SNAKE}_3d.png` が一致しない場合は、実際のファイル名に合わせて `curl` のURLを修正する。
+成功すると `web/static/content/articles/images/` に1024x1024 PNGと同名`.webp`を作成し、標準出力に `images/Microsoft-Fluentui-Emoji-3d-White-Flag-3d.1024.png` のような相対パスを返す。これをそのままfrontmatterの `image:` に書く。
 
-frontmatterの `image:` には `images/Microsoft-Fluentui-Emoji-3d-${HYPHEN}-3d.1024.png` を書く。
+`NOT_FOUND`(終了コード1)の場合はその絵文字がfluentui-emojiに存在しない。手順5に戻って別の絵文字を再提案する。
 
-### 8. (review のみ) 画像の案内
-review では画像の自動取得は行わない。`image:` には `images/<id>.jpg` を書き、「書影画像を `web/static/content/reviews/images/<id>.jpg` に配置してください」とユーザーに伝える。
+### 8. (review のみ) 書影画像の取得・変換
+手順2で得た書籍タイトル・出版社と、確定したidで実行する。
+
+```bash
+bash .claude/skills/new-content/scripts/fetch-review-cover.sh "<書籍タイトル>" "<出版社>" "<id>"
+```
+
+成功すると `web/static/content/reviews/images/<id>.jpg` と同名`.webp`を作成し、標準出力に `images/<id>.jpg` を返す。これをそのままfrontmatterの `image:` に書く。
+
+`NOT_FOUND`(終了コード1)の場合は書影を自動取得できなかったということなので、`image:` には `images/<id>.jpg` を書いた上で、「書影画像を `web/static/content/reviews/images/<id>.jpg` および同名`.webp`として配置してください」とユーザーに伝える。
 
 ### 9. ファイル作成
 手順6で決めた `$DIR/$FILENAME` を新規作成し、確定したfrontmatterのみを書き込む。本文は空にする。review の定型見出し(`## 概要` / `## 感想`)もファイルには書かず、口頭で目安として伝えるだけにする。
