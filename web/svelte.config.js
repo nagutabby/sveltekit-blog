@@ -14,6 +14,17 @@ const config = {
     // ルート+layout.tsでprerender = trueを指定して全ページSSG化しているため、
     // サーバーランタイムを持たないadapter-staticで完全な静的サイトとして出力する。
     adapter: adapter(),
+    // Header.css/Date.cssのような極小コンポーネントCSSのみを<head>にインライン化する。
+    // Tailwind/DaisyUIの本体バンドルやKaTeX CSSはこの閾値を超えるため対象外で、
+    // それらはビルド後のscripts/inline-critical-css.mjsでクリティカルCSS抽出する。
+    inlineStyleThreshold: 1000,
+    paths: {
+      // 既定の相対パス(../_app/...)だとbeastiesがCSSファイルをbuild/配下の
+      // ものと解決できずスキップしてしまう(root直下のページ以外で無効化される)。
+      // ルート絶対パス(/_app/...)に統一して解決できるようにする。サイトは
+      // blog.nagutabby.ukのドメインルートで配信されるためサブパス配信の制約はない。
+      relative: false
+    },
     prerender: {
       // 記事本文中の壊れたリンク/画像参照が1件あるだけで全体のビルドが
       // 失敗しないようにする(警告は出るがビルドは継続する)。
