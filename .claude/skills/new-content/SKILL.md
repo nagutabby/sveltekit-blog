@@ -11,7 +11,7 @@ description: 記事(article)または書評(review)の新規Markdownファイル
 
 ## 前提知識(このリポジトリの規約)
 
-- ファイル名は `YYYY-MM-DD.md`(当日の日付、ISO 8601)。同日に複数作る場合の連番(`-2`など)は使わない。当日分がすでに存在する場合は**上書きせずエラーにして中断する**。
+- ファイル名は `YYYY-MM-DD.md`(当日の日付、ISO 8601)。同日に複数作る場合は `YYYY-MM-DD-N.md`(Nは2から始まる連番)にする。既存ファイルへの**上書きは行わない**。
 - article の frontmatter は3フィールドのみ:
   ```yaml
   ---
@@ -55,13 +55,23 @@ grep -h '^id:' backend/content/articles/*.md backend/content/reviews/*.md
 
 AskUserQuestion でこれらをまとめて提示し、承認を求める。修正依頼があれば直るまで再提案する。**この提案はあくまでタイトル・id・画像であり、本文には一切触れない。**
 
-### 5. 当日ファイルの重複チェック
+### 5. ファイル名の決定(同日複数作成は連番)
 ```bash
 DATE=$(date +%Y-%m-%d)
-test -f "backend/content/articles/$DATE.md" && echo exists
-test -f "backend/content/reviews/$DATE.md" && echo exists
+DIR="backend/content/$TYPE"   # $TYPE は articles または reviews
+
+if [ ! -e "$DIR/$DATE.md" ]; then
+  FILENAME="$DATE.md"
+else
+  N=2
+  while [ -e "$DIR/$DATE-$N.md" ]; do
+    N=$((N + 1))
+  done
+  FILENAME="$DATE-$N.md"
+fi
+echo "$DIR/$FILENAME"
 ```
-対象種別のファイルが既に存在する場合は、作成を中断してユーザーに報告する(上書きしない。別日付を使う・既存ファイルを手動でリネームするなどの対応はユーザーに委ねる)。
+当日分がまだ無ければ `$DATE.md`、既にあれば空いている連番(`$DATE-2.md`, `$DATE-3.md`, ...)を使う。既存ファイルへの**上書きは絶対に行わない**。
 
 ### 6. (article のみ) 絵文字画像の取得・変換
 承認された絵文字名(例 "White Flag")について:
@@ -93,13 +103,13 @@ frontmatterの `image:` には `images/Microsoft-Fluentui-Emoji-3d-${HYPHEN}-3d.
 review では画像の自動取得は行わない。`image:` には `images/<id>.jpg` を書き、「書影画像を `web/static/content/reviews/images/<id>.jpg` に配置してください」とユーザーに伝える。
 
 ### 8. ファイル作成
-`backend/content/{articles,reviews}/YYYY-MM-DD.md` を新規作成し、確定したfrontmatterのみを書き込む。本文は空にする。review の定型見出し(`## 概要` / `## 感想`)もファイルには書かず、口頭で目安として伝えるだけにする。
+手順5で決めた `$DIR/$FILENAME` を新規作成し、確定したfrontmatterのみを書き込む。本文は空にする。review の定型見出し(`## 概要` / `## 感想`)もファイルには書かず、口頭で目安として伝えるだけにする。
 
 ### 9. 検証
 作成したファイルに対して検証スクリプトを実行し、ファイル名とfrontmatterの構造が規約通りであることを確認する。
 
 ```bash
-bash .claude/skills/new-content/scripts/validate-content.sh backend/content/{articles,reviews}/YYYY-MM-DD.md
+bash .claude/skills/new-content/scripts/validate-content.sh "$DIR/$FILENAME"
 ```
 
 `NG` が出た場合はファイルを削除せず、指摘された内容(必須フィールドの欠落、id重複、rating範囲外、image実体の不在など)に沿ってfrontmatterを修正し、`OK` になるまで再実行する。**修正はfrontmatterのみに留め、本文には手を加えない。**
