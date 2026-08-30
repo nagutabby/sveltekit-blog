@@ -22,30 +22,30 @@ func newFixtureLoader(t *testing.T) (*Loader, string) {
 	t.Helper()
 	dir := t.TempDir()
 
-	writeFixture(t, dir, "articles", "older-article.md", `---
+	writeFixture(t, dir, "articles", "2024-01-01.md", `---
+id: older-article
 title: 古い記事
 image: images/old.png
-publishedAt: 2024-01-01
 updatedAt: 2024-01-02
 ---
 # 古い本文
 `)
-	writeFixture(t, dir, "articles", "newer-article.md", `---
+	writeFixture(t, dir, "articles", "2025-06-15.md", `---
+id: newer-article
 title: 新しい記事
 image: images/new.png
-publishedAt: 2025-06-15
 updatedAt: 2025-06-16
 ---
 # 新しい本文
 `)
 
-	writeFixture(t, dir, "reviews", "some-book.md", `---
+	writeFixture(t, dir, "reviews", "2025-03-01.md", `---
+id: some-book
 title: ある本のレビュー
 description: あらすじ
 jp_e_code: "1234567890123"
 image: images/book.jpg
 rating: 5
-publishedAt: 2025-03-01
 updatedAt: 2025-03-02
 ---
 ## 概要
@@ -127,5 +127,56 @@ func TestListReviews(t *testing.T) {
 	}
 	if len(reviews) != 1 {
 		t.Fatalf("len(reviews) = %d, want 1", len(reviews))
+	}
+}
+
+func TestListArticlesResolvesFilenameSuffixCollisions(t *testing.T) {
+	dir := t.TempDir()
+
+	writeFixture(t, dir, "articles", "2024-05-01.md", `---
+id: first-on-that-day
+title: 一件目
+image: images/a.png
+updatedAt: 2024-05-01
+---
+# 一件目本文
+`)
+	writeFixture(t, dir, "articles", "2024-05-01-2.md", `---
+id: second-on-that-day
+title: 二件目
+image: images/b.png
+updatedAt: 2024-05-01
+---
+# 二件目本文
+`)
+
+	loader := NewLoader(os.DirFS(dir))
+	articles, err := loader.ListArticles()
+	if err != nil {
+		t.Fatalf("ListArticles returned error: %v", err)
+	}
+	if len(articles) != 2 {
+		t.Fatalf("len(articles) = %d, want 2", len(articles))
+	}
+	for _, a := range articles {
+		if a.PublishedAt.Format("2006-01-02") != "2024-05-01" {
+			t.Fatalf("PublishedAt = %v, want 2024-05-01", a.PublishedAt)
+		}
+	}
+}
+
+func TestListArticlesRejectsInvalidFilename(t *testing.T) {
+	dir := t.TempDir()
+
+	writeFixture(t, dir, "articles", "not-a-date.md", `---
+id: bad-filename
+title: 不正なファイル名
+---
+本文
+`)
+
+	loader := NewLoader(os.DirFS(dir))
+	if _, err := loader.ListArticles(); err == nil {
+		t.Fatal("ListArticles should return an error for a non-date filename")
 	}
 }
