@@ -19,7 +19,7 @@ description: 記事(article)または書評(review)の新規Markdownファイル
   ---
   id: kebab-case-english-words
   title: 日本語タイトル
-  image: images/Microsoft-Fluentui-Emoji-Color-<Name>.512.png
+  image: images/Microsoft-Fluentui-Emoji-Flat-<Name>.512.png
   ---
   ```
 - review の frontmatter:
@@ -97,7 +97,7 @@ echo "$DIR/$FILENAME"
 bash .claude/skills/new-content/scripts/fetch-emoji-image.sh "White Flag"
 ```
 
-成功すると `web/static/content/articles/images/` に512x512 PNG(fluentui-emojiの2D/Color版SVGをラスタライズしたもの)と同名`.webp`を作成し、標準出力に `images/Microsoft-Fluentui-Emoji-Color-White-Flag.512.png` のような相対パスを返す。これをそのままfrontmatterの `image:` に書く。fluentui-emoji側のフォルダ名は "White flag" のように先頭のみ大文字のsentence caseだが、スクリプト内で大文字小文字を無視して検索するため入力の表記は問わない。
+成功すると `web/static/content/articles/images/` に512x512 PNG(fluentui-emojiの2D(Flat)版SVGをラスタライズしたもの)と同名`.webp`を作成し、標準出力に `images/Microsoft-Fluentui-Emoji-Flat-White-Flag.512.png` のような相対パスを返す。これをそのままfrontmatterの `image:` に書く。fluentui-emoji側のフォルダ名は "White flag" のように先頭のみ大文字のsentence caseだが、スクリプト内で大文字小文字を無視して検索するため入力の表記は問わない。
 
 `NOT_FOUND`(終了コード1)の場合はその絵文字がfluentui-emojiに存在しない。手順5に戻って別の絵文字を再提案する。
 
