@@ -42,7 +42,6 @@
         <div class="flex flex-col gap-y-4">
           <Date
             publishedAt={data.publishedAt}
-            updatedAt={data.updatedAt}
           />
 
           <div class="flex items-center gap-2">

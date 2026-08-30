@@ -21,12 +21,6 @@ const CONTENT_DIR = process.env.CONTENT_DIR ?? path.resolve(process.cwd(), '../b
 
 class ContentNotFoundError extends Error {}
 
-const toDate = (value: unknown): Date => {
-  if (value instanceof Date) return value;
-  if (typeof value === 'string' && value) return new Date(value);
-  return new Date(0);
-};
-
 // Mirrors backend/internal/content.transformImagePath: a frontmatter
 // image path like "images/foo.png" is rewritten to the URL web's static
 // file server exposes it at.
@@ -90,8 +84,7 @@ const toArticle = (entry: MarkdownEntry): Article => ({
   body: entry.parsed.content,
   title: entry.parsed.data.title ?? '',
   image: transformImagePath(entry.parsed.data.image, 'articles'),
-  publishedAt: entry.publishedAt,
-  updatedAt: toDate(entry.parsed.data.updatedAt)
+  publishedAt: entry.publishedAt
 });
 
 const toReview = (entry: MarkdownEntry): Review => ({
@@ -102,8 +95,7 @@ const toReview = (entry: MarkdownEntry): Review => ({
   jp_e_code: entry.parsed.data.jp_e_code ?? '',
   image: transformImagePath(entry.parsed.data.image, 'reviews'),
   rating: entry.parsed.data.rating ?? 0,
-  publishedAt: entry.publishedAt,
-  updatedAt: toDate(entry.parsed.data.updatedAt)
+  publishedAt: entry.publishedAt
 });
 
 // Newest first, matching backend/internal/content.Loader's

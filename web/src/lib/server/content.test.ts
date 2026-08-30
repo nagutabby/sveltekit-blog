@@ -36,7 +36,7 @@ fs.mkdirSync(path.join(contentDir, 'reviews'), { recursive: true });
 
 writeArticle(
   '2025-06-15.md',
-  { id: 'my-article', title: 'タイトル', image: 'images/foo.png', updatedAt: '2025-06-16' },
+  { id: 'my-article', title: 'タイトル', image: 'images/foo.png' },
   '# 見出し'
 );
 writeReview(
@@ -47,8 +47,7 @@ writeReview(
     description: 'あらすじ',
     jp_e_code: '"1234567890123"',
     image: 'images/foo.jpg',
-    rating: 5,
-    updatedAt: '2025-03-02'
+    rating: 5
   },
   '## 概要'
 );
@@ -69,8 +68,7 @@ describe('getAllRawData', () => {
         body: '# 見出し',
         title: 'タイトル',
         image: '/content/articles/images/foo.png',
-        publishedAt: new Date('2025-06-15'),
-        updatedAt: new Date('2025-06-16')
+        publishedAt: new Date('2025-06-15')
       }
     ]);
   });
@@ -87,8 +85,7 @@ describe('getAllRawData', () => {
         jp_e_code: '1234567890123',
         image: '/content/reviews/images/foo.jpg',
         rating: 5,
-        publishedAt: new Date('2025-03-01'),
-        updatedAt: new Date('2025-03-02')
+        publishedAt: new Date('2025-03-01')
       }
     ]);
   });

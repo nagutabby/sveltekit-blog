@@ -6,7 +6,7 @@ export const prerender = true;
 function createEntry(path: string, lastmod: Date, type: "articles" | "reviews") {
   return `<url>
     <loc>${new URL(`${type}/${path}`, "https://blog.nagutabby.uk").href}</loc>
-    ${lastmod ? `<lastmod>${lastmod.toISOString()}</lastmod>` : ''}
+    <lastmod>${lastmod.toISOString()}</lastmod>
   </url>`;
 }
 
@@ -18,8 +18,8 @@ export async function GET({ setHeaders }) {
   const allArticles = await getAllRawData("articles") as Article[]
   const allReviews = await getAllRawData("reviews") as Review[]
 
-  const articlePosts = allArticles.map((post) => createEntry(post.id, post.updatedAt, "articles"));
-  const reviewPosts = allReviews.map((post) => createEntry(post.id, post.updatedAt, "reviews"));
+  const articlePosts = allArticles.map((post) => createEntry(post.id, post.publishedAt, "articles"));
+  const reviewPosts = allReviews.map((post) => createEntry(post.id, post.publishedAt, "reviews"));
 
   const posts = [...articlePosts, ...reviewPosts]
   

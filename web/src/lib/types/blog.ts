@@ -2,7 +2,6 @@ export type ArticleFrontMatter = {
   id: string;
   title: string;
   image: string;
-  updatedAt: Date;
 };
 
 export type Article = {
@@ -11,7 +10,6 @@ export type Article = {
   title: string;
   image: string;
   publishedAt: Date;
-  updatedAt: Date;
 };
 
 export type ReviewFrontMatter = {
@@ -21,7 +19,6 @@ export type ReviewFrontMatter = {
   jp_e_code: string;
   image: string;
   rating: number;
-  updatedAt: Date;
 };
 
 export type Review = {
@@ -33,5 +30,4 @@ export type Review = {
   image: string;
   rating: number;
   publishedAt: Date;
-  updatedAt: Date;
 };

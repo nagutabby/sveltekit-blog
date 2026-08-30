@@ -134,7 +134,7 @@
     >
       <article class="prose max-w-full">
         <div class="my-3">
-          <Date publishedAt={data.publishedAt} updatedAt={data.updatedAt} />
+          <Date publishedAt={data.publishedAt} />
         </div>
         {@html data.body}
       </article>

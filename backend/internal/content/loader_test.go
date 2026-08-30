@@ -26,7 +26,6 @@ func newFixtureLoader(t *testing.T) (*Loader, string) {
 id: older-article
 title: 古い記事
 image: images/old.png
-updatedAt: 2024-01-02
 ---
 # 古い本文
 `)
@@ -34,7 +33,6 @@ updatedAt: 2024-01-02
 id: newer-article
 title: 新しい記事
 image: images/new.png
-updatedAt: 2025-06-16
 ---
 # 新しい本文
 `)
@@ -46,7 +44,6 @@ description: あらすじ
 jp_e_code: "1234567890123"
 image: images/book.jpg
 rating: 5
-updatedAt: 2025-03-02
 ---
 ## 概要
 本文です。
@@ -137,7 +134,6 @@ func TestListArticlesResolvesFilenameSuffixCollisions(t *testing.T) {
 id: first-on-that-day
 title: 一件目
 image: images/a.png
-updatedAt: 2024-05-01
 ---
 # 一件目本文
 `)
@@ -145,7 +141,6 @@ updatedAt: 2024-05-01
 id: second-on-that-day
 title: 二件目
 image: images/b.png
-updatedAt: 2024-05-01
 ---
 # 二件目本文
 `)

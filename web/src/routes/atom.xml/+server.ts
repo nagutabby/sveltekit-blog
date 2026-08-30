@@ -14,17 +14,14 @@ export async function GET({ setHeaders }) {
 
   let latestDate: Date | undefined;
 
-  function createEntry(title: string, body: string, path: string, publishedAt: Date, updatedAt: Date, type: "articles" | "reviews") {
+  function createEntry(title: string, body: string, path: string, publishedAt: Date, type: "articles" | "reviews") {
     const publishedDate = new Date(publishedAt).toISOString().substring(0, 10);
 
-    if (latestDate === undefined) {
-      latestDate = new Date(updatedAt);
-    } else if (latestDate < new Date(updatedAt)) {
-      latestDate = new Date(updatedAt);
+    if (latestDate === undefined || latestDate < new Date(publishedAt)) {
+      latestDate = new Date(publishedAt);
     }
 
     const formattedPublishedAt = new Date(publishedAt).toISOString();
-    const formattedUpdatedAt = new Date(updatedAt).toISOString();
 
     let categoryTag = '';
     if (type === "articles") {
@@ -37,15 +34,15 @@ export async function GET({ setHeaders }) {
   <title>${title}</title>
   <summary type="text"><![CDATA[${generateDescriptionFromText(body)}]]></summary>
   <link href="${new URL(`/${type}/${path}`, 'https://blog.nagutabby.uk').href}" rel="alternate" />
-  <updated>${formattedUpdatedAt}</updated>
+  <updated>${formattedPublishedAt}</updated>
   <published>${formattedPublishedAt}</published>
   <id>tag:blog.nagutabby.uk,${publishedDate}:/${type}/${path}</id>
   ${categoryTag}
   </entry>`;
   }
 
-  const articlePosts = allArticles.map((post) => createEntry(post.title, post.body, post.id, post.publishedAt, post.updatedAt, "articles"));
-  const reviewPosts = allReviews.map((post) => createEntry(post.title, post.body, post.id, post.publishedAt, post.updatedAt, "reviews"));
+  const articlePosts = allArticles.map((post) => createEntry(post.title, post.body, post.id, post.publishedAt, "articles"));
+  const reviewPosts = allReviews.map((post) => createEntry(post.title, post.body, post.id, post.publishedAt, "reviews"));
 
   const posts = [...articlePosts, ...reviewPosts];
 
