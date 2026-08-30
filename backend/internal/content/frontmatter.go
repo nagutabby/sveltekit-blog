@@ -3,7 +3,6 @@ package content
 import (
 	"fmt"
 	"strings"
-	"time"
 
 	"gopkg.in/yaml.v3"
 )
@@ -68,25 +67,4 @@ func int32Field(data map[string]any, key string) int32 {
 	default:
 		return 0
 	}
-}
-
-// timeField reads a frontmatter date. yaml.v3 resolves bare "YYYY-MM-DD"
-// scalars into time.Time when decoding into a map[string]any, but we fall
-// back to string parsing to tolerate other formats.
-func timeField(data map[string]any, key string) time.Time {
-	v, ok := data[key]
-	if !ok {
-		return time.Time{}
-	}
-	switch t := v.(type) {
-	case time.Time:
-		return t
-	case string:
-		for _, layout := range []string{time.RFC3339, "2006-01-02"} {
-			if parsed, err := time.Parse(layout, t); err == nil {
-				return parsed
-			}
-		}
-	}
-	return time.Time{}
 }

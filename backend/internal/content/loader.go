@@ -20,7 +20,6 @@ type Article struct {
 	Image       string
 	Body        string
 	PublishedAt time.Time
-	UpdatedAt   time.Time
 }
 
 // Review mirrors web's Review type (src/lib/types/blog.ts).
@@ -33,7 +32,6 @@ type Review struct {
 	Rating      int32
 	Body        string
 	PublishedAt time.Time
-	UpdatedAt   time.Time
 }
 
 var ErrNotFound = fmt.Errorf("content not found")
@@ -188,7 +186,6 @@ func articleFromFrontMatter(e markdownEntry) Article {
 		Image:       transformImagePath(stringField(e.data, "image"), "articles"),
 		Body:        e.body,
 		PublishedAt: e.publishedAt,
-		UpdatedAt:   timeField(e.data, "updatedAt"),
 	}
 }
 
@@ -202,7 +199,6 @@ func reviewFromFrontMatter(e markdownEntry) Review {
 		Rating:      int32Field(e.data, "rating"),
 		Body:        e.body,
 		PublishedAt: e.publishedAt,
-		UpdatedAt:   timeField(e.data, "updatedAt"),
 	}
 }
 

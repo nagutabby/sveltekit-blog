@@ -25,16 +25,14 @@ describe('/atom.xml endpoint', () => {
       title: 'テスト記事1',
       body: 'これはテスト記事1の本文です。',
       image: '/images/article-1.jpg',
-      publishedAt: new Date('2023-01-10T09:00:00Z'),
-      updatedAt: new Date('2023-01-15T14:30:00Z')
+      publishedAt: new Date('2023-01-10T09:00:00Z')
     },
     {
       id: 'article-2',
       title: 'テスト記事2',
       body: 'これはテスト記事2の本文です。これは長い本文のテストです。',
       image: '/images/article-2.png',
-      publishedAt: new Date('2023-02-20T10:00:00Z'),
-      updatedAt: new Date('2023-02-25T15:45:00Z')
+      publishedAt: new Date('2023-02-20T10:00:00Z')
     }
   ];
 
@@ -113,8 +111,8 @@ describe('/atom.xml endpoint', () => {
     const xmlContent = await response.text();
     const parsedXml = parser.parse(xmlContent);
 
-    // 最新の更新日時は2番目の記事のupdatedAt
-    const latestDate = new Date(mockArticles[1].updatedAt).toISOString();
+    // 最新の更新日時は2番目の記事のpublishedAt(updatedAt廃止に伴い公開日を流用)
+    const latestDate = new Date(mockArticles[1].publishedAt).toISOString();
     expect(parsedXml.feed.updated).toBe(latestDate);
   });
 
@@ -145,7 +143,7 @@ describe('/atom.xml endpoint', () => {
     expect(firstEntry.link['@_href']).toBe(`https://blog.nagutabby.uk/articles/${firstArticle.id}`);
     expect(firstEntry.link['@_rel']).toBe('alternate');
     expect(firstEntry.published).toBe(new Date(firstArticle.publishedAt).toISOString());
-    expect(firstEntry.updated).toBe(new Date(firstArticle.updatedAt).toISOString());
+    expect(firstEntry.updated).toBe(new Date(firstArticle.publishedAt).toISOString());
     expect(firstEntry.id).toBe(`tag:blog.nagutabby.uk,${new Date(firstArticle.publishedAt).toISOString().substring(0, 10)}:/articles/${firstArticle.id}`);
   });
 

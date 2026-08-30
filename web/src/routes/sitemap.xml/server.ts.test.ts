@@ -28,16 +28,14 @@ describe('GET /sitemap.xml', () => {
         body: 'This is article 1 content.',
         title: 'Article One Title',
         image: '/images/article1.jpg',
-        publishedAt: new Date('2023-04-01'),
-        updatedAt: new Date('2023-04-01')
+        publishedAt: new Date('2023-04-01')
       },
       {
         id: 'article2',
         body: 'This is article 2 content.',
         title: 'Article Two Title',
         image: '/images/article2.jpg',
-        publishedAt: new Date('2023-04-02'),
-        updatedAt: new Date('2023-04-02')
+        publishedAt: new Date('2023-04-02')
       }
     ];
 
@@ -78,28 +76,5 @@ describe('GET /sitemap.xml', () => {
 
     expect(xmlObject.urlset.url[1].loc).toBe('https://blog.nagutabby.uk/articles/article2');
     expect(xmlObject.urlset.url[1].lastmod).toBe('2023-04-02T00:00:00.000Z');
-  });
-
-  it('更新日時がない記事の処理を確認', async () => {
-    const mockSetHeaders = vi.fn();
-
-    const mockArticles: Article[] = [
-      {
-        id: 'article3',
-        body: 'No update date.',
-        title: 'Article with no updatedAt',
-        image: '/images/article3.jpg',
-        publishedAt: new Date('2023-04-03'),
-        updatedAt: null as any // 更新日時がnullの場合
-      },
-    ];
-
-    vi.mocked(getAllRawData).mockResolvedValue(mockArticles);
-
-    const response = await GET({ setHeaders: mockSetHeaders });
-    const xmlString = await response.text();
-
-    // '<lastmod>'タグが存在しないことを確認
-    expect(xmlString).not.toContain('<lastmod>');
   });
 });
