@@ -43,9 +43,10 @@ description: 記事(article)・書評(review)・プレゼンスライド(slide)�
 - `web/static/content/templates/{article,review}.md` に古いテンプレートが存在するが、`publishedAt`/`updatedAt`が残っていたり`id`が無かったりして**現行実装と食い違っている**。参照せず、上記の実測frontmatterに従うこと。
 - `web/static/content/templates/slide.html` は上記の古いarticle/reviewテンプレートとは異なり、**現行有効なデザイン仕様**(HTML冒頭のコメントに設計方針が明記されている)。slide作成時は必ずこれをコピー元にし、デザイン(CSS・レイアウト・budoux-ja読み込み)そのものは変更しない。
 - slideは `backend/content` ではなく `web/static/content/slides/<id>.html` に配置する。article/reviewの `YYYY-MM-DD.md` 命名は適用されない。`<id>` は既存の `how-to-speed-up-local-llm-inference-on-pc.pdf` のような、内容を表すkebab-caseスラッグ(日付を含めない)。slideにはfrontmatterという概念が無く、`web/src/routes/slides/+page.server.ts`/`[name]/+page.server.ts` が `web/static/content/slides/*.pdf` を列挙し、拡張子を除いたファイル名をそのままid/URLスラッグとして扱う。このidはslidesディレクトリ内でのみ一意であればよく、articles/reviewsのidと重複してもよい(別URLルートプレフィックスのため)。
+- スライドのレイアウト検証には `web/scripts/validate-slide-layout.mjs` を使う(手順11参照)。`puppeteer-core`でローカルのGoogle Chrome/Chromiumを操作して実際にHTMLを描画し、各`.slide`が1920x1080pxちょうどに収まっているか(`scrollHeight`/`scrollWidth`が`clientHeight`/`clientWidth`を超えていないか)を実測でチェックする。budoux-jaによる実際の改行結果も反映されるため、フォントサイズ変更や画像サイズ変更のたびにこれを実行し、はみ出しが無いことを確認すること。
 - 既知のギャップ(このスキル改修では対応しない):
   1. HTML→PDF変換の自動化ツール(Puppeteer/Playwright等)はこのリポジトリに無い。既存の`web/static/content/slides/*.pdf`にHTMLソースは存在せず、"sources"的なサブフォルダ規約も無い。このスキルはHTML作成までを行い、PDF化はユーザーが別途手動で行う。
-  2. `scripts/validate-content.sh` はarticles/reviewsのMarkdown frontmatter専用で、slideのHTMLを検証するロジックは無い。今回は追加しない(手順11でslideは検証を明示的にスキップする)。
+  2. `scripts/validate-content.sh` はarticles/reviewsのMarkdown frontmatter専用で、slideのHTML構造(必須要素の有無など)を検証するロジックは無い。レイアウト(はみ出し)の検証は上記の`validate-slide-layout.mjs`でカバーするが、それ以外の構造チェックは今回追加しない。
   3. article/reviewにある画像取得スクリプト(手順8/9)に相当するslide用の仕組みは無い。実写真・図表が必要な場合の自動取得手段は無く、無ければSVGアイコン・装飾のみで構成するか、ユーザーに画像ファイルの提供を依頼する(実在しない画像パスをそれらしく埋めない)。`slide.html`の`<img>`はサンプルSVG(data:image/svg+xml、外部ファイル無し)がプレースホルダーとして既に入っているため、実データが無い場合はこのサンプルのまま残してもよい(壊れた画像アイコンにはならない)。
 - 表(`table.simple-table`)のキャプションは`<caption>`で上(`caption-side: top`)、図(`figure`)のキャプションは`<figcaption>`で下(`<img>`直後に書くだけでよい)に配置する。この位置関係は固定で、逆にしない。
 - `figure img`は`object-fit: contain`(`cover`にしない)。配置先(1カラムの横長figureと2カラムの縦長figureなど)でコンテナの縦横比がまちまちなため、`cover`だと画像側の縦横比次第で内容の一部が見切れることがある。`contain`なら常に画像全体が収まる。既存の`<img>`のCSSは変更せずそのまま使い、個別に`style="object-fit: cover"`等で上書きしない。自作のプレースホルダーSVG(data:image/svg+xml)を書くときは、画像全体を覆う背景矩形(`<rect>`でキャンバス全面を塗るなど)を入れない。`contain`で余白ができても透過なのでスライド本体の背景と自然に馴染む(枠線・背景色を持つ「カード」を避ける方針とも一致する)。
@@ -180,7 +181,13 @@ bash .claude/skills/new-content/scripts/validate-content.sh "$DIR/$FILENAME"
 
 `NG` が出た場合はファイルを削除せず、指摘された内容(必須フィールドの欠落、id重複、rating範囲外、image実体の不在など)に沿ってfrontmatterを修正し、`OK` になるまで再実行する。**修正はfrontmatterのみに留め、本文には手を加えない。**
 
-(slide のみ) slide用の自動検証は無い(`validate-content.sh`はarticles/reviewsのMarkdown frontmatter専用)。**この手順はスキップし、検証未実施であることを完了報告で明示する。** 中途半端な簡易チェックをその場で追加しない。
+(slide のみ) レイアウト(1920x1080pxからのはみ出し)を実ブラウザで検証する。frontmatterの構造チェックに相当する自動検証(`validate-content.sh`)は無いため、それは対象外。
+
+```bash
+node web/scripts/validate-slide-layout.mjs "web/static/content/slides/$FILENAME"
+```
+
+`NG`(いずれかのスライドではみ出しあり、または1920x1080ちょうどでない)が出た場合はファイルを削除せず、該当スライドの文章量・画像サイズを調整し(「分量・改行の目安」参照)、`OK` になるまで再実行する。ローカルにGoogle Chrome/Chromiumが無い等の理由でスクリプト自体が実行できない場合は、その旨を完了報告で明示した上でこの手順を省略してよい(中途半端な簡易チェックをその場で追加しない)。
 
 ### 12. 完了報告
 (article/review) 作成したファイルパスと検証結果(`OK`)を伝え、本文はユーザー自身が書くことを伝えて終了する。
@@ -188,7 +195,7 @@ bash .claude/skills/new-content/scripts/validate-content.sh "$DIR/$FILENAME"
 (slide のみ) 作成したファイルパス(`web/static/content/slides/<id>.html`)を伝えたうえで、必ず次を明示する:
 1. 本文(見出し・文章・コード例・参考文献)はClaudeが下書きしたものであり、article/reviewと異なりユーザーの手直し前提であること。特に数値・固有名詞・参考文献の実在性の確認を依頼する。
 2. HTML→PDF変換はこのスキルでは行わない(変換ツール未導入のため)。`/slides`に掲載するには、別途手動でPDF化し同じファイル名(`<id>.pdf`)で`web/static/content/slides/`に配置する必要がある。
-3. 手順11の検証は実施していない。
+3. 手順11のレイアウト検証結果(`OK`、または未実施ならその理由)。frontmatterの構造チェックに相当する自動検証は無いこと。
 
 ## スライド作成時の文章ルール
 
