@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<!--
+  スライドテンプレート
+
+  想定用途:
+  - このHTMLをヘッドレスブラウザ(Puppeteer/Playwright等)でPDF化し、
+    web/static/content/slides/<id>.pdf として配置する(現状このPDF化処理自体は未実装、別途スクリプト化が必要)。
+  - 1スライド = 1つの .slide 要素 = 印刷1ページ = 1920x1080px。
+  - .slide の直下は .cols-1(1カラム)または .cols-2(2カラム)を選ぶ。
+  - 画像は <img> (写真・図表など実ファイルを差し替える用途)と <svg> (アイコン・装飾などコード側で完結する図形)を使い分ける。
+    <img>のsrcは現状すべてサンプルのSVG(data:image/svg+xml、外部ファイル無し)をプレースホルダーとして
+    埋め込んでいる。実際のスライド作成時は実写真・実図表のファイルパスに差し替える。
+  - figure img は object-fit: contain(cover にしない)。理由: 配置先(1カラムの横長figureと
+    2カラムの縦長figureなど)でコンテナの縦横比がまちまちなため、cover だと画像側の縦横比次第で
+    上下・左右が見切れることがある。containなら常に画像全体が収まる。border/backgroundも持たせない
+    (画像自体を囲う枠・地色を作らない方針、これも「カード」を避ける設計方針の一部)。
+    自作のプレースホルダーSVGを描くときは、画像全体を覆う背景矩形(fill="...")を入れない
+    (containで余白が出ても透過なのでスライド本体の背景と自然に馴染む)。
+  - キャプションの位置: 表(table.simple-table)は<caption>を上(caption-side: top)、
+    図(figure)は<figcaption>を下(img直後に記述するだけでよい)に配置する。この位置関係は固定。
+  - 1枚目は表紙(タイトルを含む)、最終ページは参考文献であること。
+  - ここに書かれている見出し・本文・参考文献はすべてプレースホルダーなので、実際のスライド作成時に差し替える。
+  - デザイン方針: 背景は単色(パターン・グラデーションなし)、
+    強調はテキスト・番号・アクセントカラー(--color-accent/--color-accent-2)のみで最小限に装飾する。
+    枠線・背景色・角丸・影で囲う「カード」型のUIは使わない(AI生成コンテンツによくある表現のため)。
+    区切りは罫線(border)のみで行う。
+  - .slide--impact は高橋メソッド(高橋征義氏が考案した、巨大な文字数文字〜1行だけで
+    構成するプレゼン手法)風の強調スライド。図・画像・装飾は入れず、聴衆の注意を引きたい
+    一言や話の転換点にのみ使う。多用すると効果が薄れるため、ここぞという箇所に絞ること。
+  - 日本語の見出し・本文はすべて <budoux-ja> で囲み、文節単位の自然な位置で改行する
+    (BudouX、全ブラウザ対応)。コード例(.code-block)は対象外。
+    本体は vendor/budoux-ja.min.js としてリポジトリ内に配置済み(CDNは使わない、オフラインのPDF化環境でも動作する)。
+    バージョンを上げる場合は https://cdn.jsdelivr.net/npm/budoux@<version>/bundle/budoux-ja.min.js から
+    再取得してこのファイルを置き換える。
+-->
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>スライドタイトルを入力</title>
+<script src="vendor/budoux-ja.min.js"></script>
+<style>
+  :root {
+    --slide-w: 1920px;
+    --slide-h: 1080px;
+    --color-bg: #12161b;
+    --color-bg-cover: #0b0e12;
+    --color-bg-elevated: #1c232b;
+    --color-text: #f3f5f6;
+    --color-text-muted: #aab4bd;
+    --color-accent: #2dd4bf;
+    --color-accent-soft: rgba(45, 212, 191, 0.18);
+    --color-accent-2: #fbbf24;
+    --color-border: rgba(255, 255, 255, 0.12);
+    --font-sans: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic", "Noto Sans JP",
+      -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: #05070a;
+    font-family: var(--font-sans);
+    color: var(--color-text);
+    /* <budoux-ja> で囲めていない箇所のための保険(Chromium系のみ対応、未対応ブラウザは無視されnormalにフォールバックする) */
+    line-break: strict;
+    word-break: auto-phrase;
+  }
+
+  /* 画面プレビュー用: スライドを縦に並べて表示する */
+  .deck {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 48px;
+    padding: 48px 0;
+  }
+
+  .slide {
+    position: relative;
+    width: var(--slide-w);
+    height: var(--slide-h);
+    background: var(--color-bg);
+    overflow: hidden;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+    flex-shrink: 0;
+  }
+
+  .slide-inner {
+    position: relative;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    padding: 96px 120px;
+    z-index: 1;
+  }
+
+  /* 1カラム/2カラム */
+  .cols-1 {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+    min-height: 0;
+  }
+
+  .cols-2 {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 72px;
+    min-height: 0;
+  }
+
+  .col {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    min-height: 0;
+  }
+
+  h1, h2, h3, h4, h5, p, ul, ol { margin: 0; }
+
+  /*
+    見出しのフォントサイズはh1〜h5で一括指定する(個別要素へのインラインstyleでの上書きはしない)。
+    h1は表紙タイトルと高橋メソッド風スライドの文字列の両方で使う最大サイズ。
+  */
+  h1 { font-size: 72px; font-weight: 800; line-height: 1.1; }
+  h2 { font-size: 56px; font-weight: 700; line-height: 1.3; }
+  h3 { font-size: 38px; font-weight: 700; line-height: 1.3; }
+  h4 { font-size: 32px; font-weight: 700; line-height: 1.4; }
+  h5 { font-size: 26px; font-weight: 700; line-height: 1.4; }
+
+  .slide-subtitle {
+    font-size: 34px;
+    font-weight: 400;
+    color: var(--color-text-muted);
+    line-height: 1.6;
+  }
+
+  .lead {
+    font-size: 36px;
+    line-height: 1.7;
+    color: var(--color-text-muted);
+  }
+
+  .cover-meta {
+    font-size: 28px;
+    color: var(--color-text-muted);
+  }
+
+  ul.bullets, ol.bullets {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    font-size: 34px;
+    line-height: 1.6;
+  }
+
+  ul.bullets li, ol.bullets li {
+    position: relative;
+    padding-left: 44px;
+  }
+
+  ul.bullets li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 14px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--color-accent);
+  }
+
+  figure { margin: 0; display: flex; flex-direction: column; gap: 16px; }
+
+  figure img {
+    width: 100%;
+    max-height: 480px;
+    /* object-fit: contain(cover にしない)で、画像側の縦横比がどんな比率でも中身が見切れないようにする */
+    object-fit: contain;
+  }
+
+  figcaption {
+    font-size: 26px;
+    color: var(--color-text-muted);
+  }
+
+  /* 比較・対比: 罫線区切りの2カラム(枠・背景を持つ「カード」にはしない) */
+  .compare {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    min-height: 0;
+  }
+
+  .compare-item {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding: 0 64px;
+  }
+
+  .compare-item:first-child { padding-left: 0; }
+  .compare-item:last-child { padding-right: 0; }
+  .compare-item + .compare-item { border-left: 1px solid var(--color-border); }
+
+  .compare-label {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    color: var(--color-accent);
+    text-transform: uppercase;
+  }
+
+  .compare-item .icon { color: var(--color-accent); }
+  .compare-item p { font-size: 30px; line-height: 1.6; color: var(--color-text-muted); }
+
+  /* 2つ目の選択肢(B)はアクセントカラーを変え、対比であることを色でも表す */
+  .compare-item + .compare-item .compare-label,
+  .compare-item + .compare-item .icon {
+    color: var(--color-accent-2);
+  }
+
+  /* まとめ: 大きなナンバリングを使った罫線区切りの3カラム */
+  .stat-list {
+    flex: 1;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    min-height: 0;
+  }
+
+  .stat-item {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding: 32px 56px 0;
+    border-top: 2px solid var(--color-accent);
+  }
+
+  .stat-item:first-child { padding-left: 0; }
+  .stat-item:last-child { padding-right: 0; }
+  .stat-item + .stat-item { border-left: 1px solid var(--color-border); }
+
+  .stat-number {
+    font-size: 36px;
+    font-weight: 700;
+    color: var(--color-accent);
+    letter-spacing: 0.05em;
+  }
+
+  .stat-item p { font-size: 30px; line-height: 1.6; color: var(--color-text-muted); }
+
+  /* コード例: 罫線(左のアクセント線)のみで区切り、背景色で囲う「カード」にはしない */
+  .code-block {
+    flex: 1;
+    margin: 0;
+    padding: 8px 0 8px 40px;
+    border-left: 3px solid var(--color-accent);
+    overflow: auto;
+    font-family: ui-monospace, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace;
+    font-size: 32px;
+    line-height: 1.7;
+    color: var(--color-text);
+    white-space: pre;
+  }
+
+  .code-keyword { color: var(--color-accent); font-weight: 600; }
+
+  /* 表の例: 背景色・角丸は使わず、横罫線・縦罫線・ヘッダー下線のみで構成する */
+  table.simple-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 32px;
+  }
+
+  /* 表のキャプションは上、図(figcaption)のキャプションは下(既にimg直後の記述順で下になる) */
+  table.simple-table caption {
+    caption-side: top;
+    text-align: left;
+    padding-bottom: 20px;
+    font-size: 26px;
+    color: var(--color-text-muted);
+  }
+
+  table.simple-table th, table.simple-table td {
+    text-align: left;
+    padding: 24px 32px;
+    border-bottom: 1px solid var(--color-border);
+    border-right: 1px solid var(--color-border);
+  }
+
+  table.simple-table th:last-child, table.simple-table td:last-child { border-right: none; }
+
+  table.simple-table th {
+    color: var(--color-accent);
+    font-weight: 700;
+    border-bottom: 2px solid var(--color-accent);
+  }
+
+  /* 1列目(項目名)以外は数値列として右寄せにする */
+  table.simple-table th:not(:first-child), table.simple-table td:not(:first-child) {
+    text-align: right;
+  }
+
+  table.simple-table th:first-child, table.simple-table td:first-child { padding-left: 0; }
+  table.simple-table th:last-child, table.simple-table td:last-child { padding-right: 0; }
+
+  .slide-footer {
+    align-self: stretch;
+    margin-top: auto;
+    padding-top: 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 24px;
+    color: var(--color-text-muted);
+  }
+
+  .page-number::before { content: ""; }
+
+  /* 表紙(1枚目)は本文よりわずかに濃い背景で印象づける(文字色は全体で共通のダークテーマ配色) */
+  .slide--cover {
+    background: var(--color-bg-cover);
+  }
+
+  /*
+    上下左右中央に配置したい内容(表紙・高橋メソッド風スライド)専用のラッパー。
+    .slide-footer とは別の入れ子(flex:1)にすることで、footerのmargin-top:autoに
+    自由空間を奪われず、この中の要素だけが上下左右の中央に来るようにしている。
+  */
+  .cols-1--centered {
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+  }
+
+  /* 高橋メソッド風の強調スライド: 巨大な文字数文字〜1行だけで構成し、図・画像・装飾は使わない */
+  .slide--impact {
+    background: var(--color-bg-cover);
+  }
+
+  /* 参考文献スライドの見た目 */
+  ol.references {
+    list-style: none;
+    counter-reset: ref;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    font-size: 32px;
+    line-height: 1.6;
+  }
+
+  ol.references li {
+    counter-increment: ref;
+    display: flex;
+    gap: 20px;
+  }
+
+  ol.references li::before {
+    content: "[" counter(ref) "]";
+    flex-shrink: 0;
+    font-weight: 700;
+    color: var(--color-accent);
+  }
+
+  ol.references .ref-meta {
+    color: var(--color-text-muted);
+    font-size: 26px;
+  }
+
+  @media print {
+    html, body { background: var(--color-bg); }
+
+    .deck { padding: 0; gap: 0; }
+
+    .slide {
+      box-shadow: none;
+      break-after: page;
+      page-break-after: always;
+    }
+
+    .slide:last-child {
+      break-after: auto;
+      page-break-after: auto;
+    }
+
+    /* 背景色・装飾SVGを印刷/PDF出力に反映させる */
+    * {
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+  }
+
+  @page {
+    size: 1920px 1080px;
+    margin: 0;
+  }
+</style>
+</head>
+<body>
+<div class="deck">
+
+  <!-- 1枚目: 表紙(タイトル必須)。.slide 直下には cols-1/cols-2 を付けず、内側の .slide-inner に付ける -->
+  <section class="slide slide--cover">
+    <div class="slide-inner cols-1">
+      <div class="cols-1 cols-1--centered">
+        <h1><budoux-ja>スライドタイトルを入力</budoux-ja></h1>
+        <p class="slide-subtitle"><budoux-ja>サブタイトルや発表内容の要約をここに記載する</budoux-ja></p>
+        <p class="cover-meta"><budoux-ja>発表者名 ・ 所属 ・ 2026-09-07</budoux-ja></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2枚目: 1カラム(見出し+リード文+画像+箇条書き) -->
+  <section class="slide">
+    <div class="slide-inner cols-1">
+      <h2><budoux-ja>セクション見出しを入力</budoux-ja></h2>
+      <p class="lead"><budoux-ja>このスライドで伝えたい要点を1〜2文で簡潔に述べる</budoux-ja></p>
+      <figure>
+        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 600'%3E%3Ccircle cx='600' cy='160' r='56' fill='%232dd4bf' opacity='0.65'/%3E%3Cpath d='M0 460 L200 300 L340 420 L520 250 L800 460 L800 600 L0 600 Z' fill='%232a323c'/%3E%3Cpath d='M0 460 L200 300 L340 420 L520 250 L800 460' fill='none' stroke='%23aab4bd' stroke-width='6' stroke-linecap='round' stroke-linejoin='round' opacity='0.6'/%3E%3C/svg%3E" alt="内容を説明する画像に差し替える(サンプル画像)">
+        <figcaption><budoux-ja>図表・写真のキャプション</budoux-ja></figcaption>
+      </figure>
+      <ul class="bullets">
+        <li><budoux-ja>要点1: 補足説明</budoux-ja></li>
+        <li><budoux-ja>要点2: 補足説明</budoux-ja></li>
+        <li><budoux-ja>要点3: 補足説明</budoux-ja></li>
+      </ul>
+      <div class="slide-footer">
+        <span class="footnote"><budoux-ja>出典: 必要な場合はここに記載</budoux-ja></span>
+        <span class="page-number">2 / 9</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3枚目: 2カラム(左:画像 / 右:テキスト) -->
+  <section class="slide">
+    <div class="slide-inner">
+      <h2 style="margin-bottom:40px;"><budoux-ja>2カラム構成(画像+テキスト)</budoux-ja></h2>
+      <div class="cols-2">
+        <div class="col">
+          <figure style="flex:1;">
+            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 600'%3E%3Crect x='80' y='250' width='180' height='100' rx='12' fill='none' stroke='%23aab4bd' stroke-width='4'/%3E%3Crect x='360' y='150' width='180' height='100' rx='12' fill='none' stroke='%232dd4bf' stroke-width='4'/%3E%3Crect x='360' y='350' width='180' height='100' rx='12' fill='none' stroke='%23aab4bd' stroke-width='4'/%3E%3Crect x='620' y='250' width='140' height='100' rx='12' fill='none' stroke='%23fbbf24' stroke-width='4'/%3E%3Cpath d='M260 280 L360 220' stroke='%23aab4bd' stroke-width='4' fill='none' marker-end='url(%23arrow)'/%3E%3Cpath d='M260 320 L360 380' stroke='%23aab4bd' stroke-width='4' fill='none' marker-end='url(%23arrow)'/%3E%3Cpath d='M540 210 L620 280' stroke='%23aab4bd' stroke-width='4' fill='none' marker-end='url(%23arrow)'/%3E%3Cpath d='M540 390 L620 320' stroke='%23aab4bd' stroke-width='4' fill='none' marker-end='url(%23arrow)'/%3E%3Cdefs%3E%3Cmarker id='arrow' markerWidth='10' markerHeight='10' refX='8' refY='5' orient='auto'%3E%3Cpath d='M0 0 L10 5 L0 10 Z' fill='%23aab4bd'/%3E%3C/marker%3E%3C/defs%3E%3C/svg%3E" alt="図表・スクリーンショットなどに差し替える(サンプル画像)" style="height:100%; max-height:none;">
+          </figure>
+        </div>
+        <div class="col">
+          <p class="lead"><budoux-ja>画像を先に見せたい場合はこの並びにする</budoux-ja></p>
+          <ul class="bullets">
+            <li><budoux-ja>補足ポイント1</budoux-ja></li>
+            <li><budoux-ja>補足ポイント2</budoux-ja></li>
+            <li><budoux-ja>補足ポイント3</budoux-ja></li>
+          </ul>
+        </div>
+      </div>
+      <div class="slide-footer">
+        <span class="footnote"><budoux-ja>出典: 必要な場合はここに記載</budoux-ja></span>
+        <span class="page-number">3 / 9</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4枚目: 2カラム(比較・対比、SVGアイコン使用) -->
+  <section class="slide">
+    <div class="slide-inner">
+      <h2 style="margin-bottom:40px;"><budoux-ja>比較・対比の見出し</budoux-ja></h2>
+      <div class="compare">
+        <div class="compare-item">
+          <div class="compare-label">
+            <svg class="icon" width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" />
+              <path d="M8 12l2.5 2.5L16 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+            <span><budoux-ja>選択肢A</budoux-ja></span>
+          </div>
+          <h3><budoux-ja>見出しを入力</budoux-ja></h3>
+          <p><budoux-ja>選択肢Aの特徴やメリットの説明をここに記載する</budoux-ja></p>
+        </div>
+        <div class="compare-item">
+          <div class="compare-label">
+            <svg class="icon" width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <rect x="3" y="3" width="18" height="18" rx="4" stroke="currentColor" stroke-width="2" />
+              <path d="M8 8l8 8M16 8l-8 8" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+            </svg>
+            <span><budoux-ja>選択肢B</budoux-ja></span>
+          </div>
+          <h3><budoux-ja>見出しを入力</budoux-ja></h3>
+          <p><budoux-ja>選択肢Bの特徴やメリットの説明をここに記載する</budoux-ja></p>
+        </div>
+      </div>
+      <div class="slide-footer">
+        <span class="footnote"><budoux-ja>出典: 必要な場合はここに記載</budoux-ja></span>
+        <span class="page-number">4 / 9</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5枚目: 高橋メソッド風の強調スライド。図・画像・装飾なし、巨大な文字だけで話の転換点を示す -->
+  <section class="slide slide--impact">
+    <div class="slide-inner cols-1">
+      <div class="cols-1 cols-1--centered">
+        <h1><budoux-ja>ここに一言</budoux-ja></h1>
+      </div>
+      <div class="slide-footer">
+        <span class="footnote"></span>
+        <span class="page-number">5 / 9</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6枚目: 1カラム(コード例)。コードは budoux-ja で囲まない -->
+  <section class="slide">
+    <div class="slide-inner cols-1">
+      <h2><budoux-ja>コード例の見出しを入力</budoux-ja></h2>
+      <p class="lead"><budoux-ja>コードは等幅フォント+左のアクセント線のみで区切り、背景色で囲わない</budoux-ja></p>
+      <pre class="code-block"><code><span class="code-keyword">function</span> summarize(data) {
+  const total = data.reduce((sum, x) => sum + x.value, 0);
+  <span class="code-keyword">return</span> { total, count: data.length };
+}</code></pre>
+      <div class="slide-footer">
+        <span class="footnote"><budoux-ja>出典: 必要な場合はここに記載</budoux-ja></span>
+        <span class="page-number">6 / 9</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7枚目: 1カラム(表の例) -->
+  <section class="slide">
+    <div class="slide-inner cols-1">
+      <h2><budoux-ja>表の例の見出しを入力</budoux-ja></h2>
+      <p class="lead"><budoux-ja>縦罫線・背景色・角丸は使わず、横罫線とヘッダー下線のみで構成する</budoux-ja></p>
+      <table class="simple-table">
+        <caption><budoux-ja>表のキャプション(表の内容を1行で説明する)</budoux-ja></caption>
+        <thead>
+          <tr><th><budoux-ja>項目</budoux-ja></th><th>Before</th><th>After</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><budoux-ja>指標1</budoux-ja></td><td><budoux-ja>数値を入力</budoux-ja></td><td><budoux-ja>数値を入力</budoux-ja></td></tr>
+          <tr><td><budoux-ja>指標2</budoux-ja></td><td><budoux-ja>数値を入力</budoux-ja></td><td><budoux-ja>数値を入力</budoux-ja></td></tr>
+          <tr><td><budoux-ja>指標3</budoux-ja></td><td><budoux-ja>数値を入力</budoux-ja></td><td><budoux-ja>数値を入力</budoux-ja></td></tr>
+        </tbody>
+      </table>
+      <div class="slide-footer">
+        <span class="footnote"><budoux-ja>出典: 必要な場合はここに記載</budoux-ja></span>
+        <span class="page-number">7 / 9</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 8枚目: 1カラム(まとめ、大きなナンバリング3カラム) -->
+  <section class="slide">
+    <div class="slide-inner">
+      <h2 style="margin-bottom:40px;"><budoux-ja>まとめ</budoux-ja></h2>
+      <div class="stat-list">
+        <div class="stat-item">
+          <span class="stat-number">01</span>
+          <h3><budoux-ja>要点1</budoux-ja></h3>
+          <p><budoux-ja>要点1の説明文</budoux-ja></p>
+        </div>
+        <div class="stat-item">
+          <span class="stat-number">02</span>
+          <h3><budoux-ja>要点2</budoux-ja></h3>
+          <p><budoux-ja>要点2の説明文</budoux-ja></p>
+        </div>
+        <div class="stat-item">
+          <span class="stat-number">03</span>
+          <h3><budoux-ja>要点3</budoux-ja></h3>
+          <p><budoux-ja>要点3の説明文</budoux-ja></p>
+        </div>
+      </div>
+      <div class="slide-footer">
+        <span class="footnote"><budoux-ja>出典: 必要な場合はここに記載</budoux-ja></span>
+        <span class="page-number">8 / 9</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 9枚目(最終ページ): 参考文献 -->
+  <section class="slide">
+    <div class="slide-inner cols-1">
+      <h2><budoux-ja>参考文献</budoux-ja></h2>
+      <ol class="references">
+        <li>
+          <div>
+            <budoux-ja>著者名. 「タイトルを入力」. 出版社名, 発行年.</budoux-ja>
+            <div class="ref-meta">https://example.com/reference-1</div>
+          </div>
+        </li>
+        <li>
+          <div>
+            <budoux-ja>著者名. 「タイトルを入力」. 発行元, 発行年.</budoux-ja>
+            <div class="ref-meta">https://example.com/reference-2</div>
+          </div>
+        </li>
+        <li>
+          <div>
+            <budoux-ja>著者名. 「タイトルを入力」. 発行元, 発行年.</budoux-ja>
+            <div class="ref-meta">https://example.com/reference-3</div>
+          </div>
+        </li>
+      </ol>
+      <div class="slide-footer">
+        <span class="footnote"><budoux-ja>出典: 必要な場合はここに記載</budoux-ja></span>
+        <span class="page-number">9 / 9</span>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+  // ページ番号(x / 合計)をスライド枚数の増減に合わせて自動更新する
+  (function () {
+    var slides = document.querySelectorAll('.slide');
+    var total = slides.length;
+    slides.forEach(function (slide, i) {
+      var el = slide.querySelector('.page-number');
+      if (el) el.textContent = (i + 1) + ' / ' + total;
+    });
+  })();
+</script>
+</body>
+</html>
