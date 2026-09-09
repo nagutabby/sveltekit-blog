@@ -22,8 +22,13 @@
   - ここに書かれている見出し・本文・参考文献はすべてプレースホルダーなので、実際のスライド作成時に差し替える。
   - デザイン方針: 背景は単色(パターン・グラデーションなし)、
     強調はテキスト・番号・アクセントカラー(--color-accent/--color-accent-2)のみで最小限に装飾する。
-    枠線・背景色・角丸・影で囲う「カード」型のUIは使わない(AI生成コンテンツによくある表現のため)。
-    区切りは罫線(border)のみで行う。
+    原則として枠線・背景色・角丸・影で囲う「カード」型のUIは使わない(AI生成コンテンツによくある
+    表現のため)。区切りは罫線(border)のみで行うのが基本。
+    例外として、3〜4個の並列項目を一覧化したいスライド(例: 課題の一覧、まとめ)に限り、
+    `.card-grid`/`.card`(+`.card--warn`/`.card--accent`修飾子)のフラットなカードUIを使ってよい。
+    影(box-shadow)は付けない・グラデーションも使わない・1スライド1箇所程度に留める
+    (多用すると単調な「AIスライド感」が強まるため、フロー図・比較・まとめ表など他の表現で
+    済む場合はそちらを優先する)。
   - .slide--impact は高橋メソッド(高橋征義氏が考案した、巨大な文字数文字〜1行だけで
     構成するプレゼン手法)風の強調スライド。図・画像・装飾は入れず、聴衆の注意を引きたい
     一言や話の転換点にのみ使う。多用すると効果が薄れるため、ここぞという箇所に絞ること。
@@ -32,6 +37,35 @@
     本体は vendor/budoux-ja.min.js としてリポジトリ内に配置済み(CDNは使わない、オフラインのPDF化環境でも動作する)。
     バージョンを上げる場合は https://cdn.jsdelivr.net/npm/budoux@<version>/bundle/budoux-ja.min.js から
     再取得してこのファイルを置き換える。
+  - 概念図・フロー図・簡単なチャートは、**HTML/CSS(flexbox)で直接組む**のが第一選択。
+    `.flow-diagram`/`.flow-chain`/`.flow-compare`/`.flow-converge`/`.bar-chart` を使うと、
+    本文(lead/bullets)と全く同じフォント・配色・文字サイズで図が組め、外部画像やJSレンダリングに
+    依存しない(このテンプレート内の各コンポーネントのCSSコメントと使用例スライドを参照)。
+    ノードの色は `.muted`(過去の型・停滞・前提)/`.accent`(経験主義・適応・成功)/
+    `.warn`(壁・警告・違和感)の3トーンで統一する。
+    自作の幾何学図形SVG(「それっぽいが意味の伝わらない図」になりがち)や、外部レンダリング
+    サービスへの依存(文字が小さくなる、配色がテーマと合わない、オフラインで表示されない等の
+    問題が過去に発生した)は避ける。HTML/CSSで表現しきれないほど複雑な図が必要な場合は、
+    図を簡略化するか内容を複数スライドに分割する(外部サービスへのフォールバックは用意しない)。
+    単なる装飾アイコン(人物・鍵・虫眼鏡など、関係性を持たない単一概念)は図自体を入れない
+    選択肢を優先する(分量・改行の目安の項を参照)。
+  - 矢印(`.arrow`/`.step-arrow`/`.statement-arrow`等)には意味的な色を付けない。常にmutedグレーで
+    統一し、色分けが必要な場合はnode/テキスト側の`.accent`/`.warn`で表現する(矢印まで色分けすると
+    煩雑になり、かえって読み取りにくくなった経緯がある)。
+  - 実データのスクリーンショット(Slack・チャットツール・Notion等)を貼る前に、`.chat-thread`
+    (発言と本音のギャップ)や`.sticky-board`(付箋ボードの再現)で要点だけ再構成できないか検討する。
+    実画像は詳細情報がノイズになったり、写り込んだ社内の固有名詞・実名・実データが社外公開前の
+    レビューで指摘され差し替えになりやすい。使う場合も、個人名は必ず加工して不可読にする。
+  - `.card-grid`(カード)や`.compare`(2カラム対比)が単調に感じる場合、`.minimal-list`(罫線区切りの
+    番号リスト)や`.statement-compare`(ビッグ・ステートメント対比)への置き換えも検討する。
+    いずれも「カードを避ける」という基本方針の範囲内の代替案であり、新たな例外を作るものではない。
+  - 日本語フォントはNoto Sans JPを自前で同梱する(推奨)。Hiragino/Yu GothicはOS依存のため、
+    ヘッドレスChromeでのPDF化環境によっては日本語が表示されないリスクがある。完成後にSKILL.mdの
+    「日本語フォントの同梱」の手順でサブセット化し、vendor/に配置する。
+  - 見出し(h2)と本文の間隔は`.slide-inner`の`gap`に一本化されている(`.cols-1`も同じ値)。
+    個別スライドのh2やその直後の要素に`style="margin: ...px 0;"`のようなインライン余白を
+    追加しない(gapと二重に加算され、スライドごとに間隔がずれる不具合の原因になる)。
+    `web/scripts/validate-slide-layout.mjs`がこの間隔の統一性を検証する。
 -->
 <html lang="ja">
 <head>
@@ -40,6 +74,29 @@
 <title>スライドタイトルを入力</title>
 <script src="vendor/budoux-ja.min.js"></script>
 <style>
+  /* Noto Sans JPの自前同梱(推奨)。CDN不使用、オフラインのPDF化環境でも動作させるため。
+     Hiragino(macOS)/Yu Gothic(Windows)はヘッドレスChromeでのPDF化環境(Linux等)に
+     入っていないことがあり、フォールバック任せだと文字化け・トウフ文字のリスクがある。
+     実際のスライド作成時は、完成したHTMLで使われている文字だけをfontToolsでサブセット化し、
+     vendor/NotoSansJP-Regular.woff2 / -Bold.woff2 として配置する
+     (手順はSKILL.mdの「日本語フォントの同梱」を参照)。ファイルが無ければ下記@font-faceは
+     静かに読み込み失敗し--font-sansの次の候補にフォールバックするだけなので、
+     配置前のテンプレート単体プレビューでも問題は起きない。 */
+  @font-face {
+    font-family: "Noto Sans JP";
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url("vendor/NotoSansJP-Regular.woff2") format("woff2");
+  }
+  @font-face {
+    font-family: "Noto Sans JP";
+    font-style: normal;
+    font-weight: 700 900;
+    font-display: swap;
+    src: url("vendor/NotoSansJP-Bold.woff2") format("woff2");
+  }
+
   :root {
     --slide-w: 1920px;
     --slide-h: 1080px;
@@ -51,8 +108,9 @@
     --color-accent: #2dd4bf;
     --color-accent-soft: rgba(45, 212, 191, 0.18);
     --color-accent-2: #fbbf24;
+    --color-accent-2-soft: rgba(251, 191, 36, 0.18);
     --color-border: rgba(255, 255, 255, 0.12);
-    --font-sans: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic", "Noto Sans JP",
+    --font-sans: "Noto Sans JP", "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic",
       -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   }
 
@@ -93,6 +151,8 @@
     height: 100%;
     display: flex;
     flex-direction: column;
+    gap: 56px; /* 見出しと本文の間隔。h2にmargin-bottomを持たせると.cols-1併用時に二重に加算されるため、
+                  間隔はここ(単一のgap)に一本化する。個別スライドでの上書き(インラインstyle)はしない */
     padding: 96px 120px;
     z-index: 1;
   }
@@ -102,7 +162,7 @@
     flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 32px;
+    gap: 56px; /* .slide-innerと同じ値にする(併用時にどちらが勝っても同じ結果になるようにする) */
     min-height: 0;
   }
 
@@ -127,7 +187,7 @@
     見出しのフォントサイズはh1〜h5で一括指定する(個別要素へのインラインstyleでの上書きはしない)。
     h1は表紙タイトルと高橋メソッド風スライドの文字列の両方で使う最大サイズ。
   */
-  h1 { font-size: 72px; font-weight: 800; line-height: 1.1; }
+  h1 { font-size: 72px; font-weight: 800; line-height: 1.3; }
   h2 { font-size: 56px; font-weight: 700; line-height: 1.3; }
   h3 { font-size: 38px; font-weight: 700; line-height: 1.3; }
   h4 { font-size: 32px; font-weight: 700; line-height: 1.4; }
@@ -186,6 +246,206 @@
     /* object-fit: contain(cover にしない)で、画像側の縦横比がどんな比率でも中身が見切れないようにする */
     object-fit: contain;
   }
+
+  /* 図表はHTML/CSSで直接組み、本文と同じフォント・色・サイズを共有する(外部画像・JSレンダリングに依存しない) */
+  .flow-diagram {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    min-height: 0;
+  }
+  .flow-diagram.inline { flex: none; height: 220px; }
+
+  .flow-chain {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 20px;
+    font-size: 46px;
+    font-weight: 800;
+  }
+  .flow-chain .node.muted { color: var(--color-text-muted); }
+  .flow-chain .node.accent { color: var(--color-accent); }
+  .flow-chain .node.warn { color: var(--color-accent-2); }
+  .flow-chain .arrow { font-size: 40px; font-weight: 400; color: var(--color-text-muted); }
+  /* 矢印には意味的な色を付けない。色分けはnode(テキスト)側の.accent/.warnで表現し、
+     矢印(接続線)は常にmutedグレーで統一する(過去に矢印まで色分けして煩雑になった経緯がある) */
+
+  /* 2要素の関係(A→B)を1行で示す。当てはまらない/委ねる? のような短い注釈をcaptionに添える */
+  .flow-relation { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+  .flow-caption { font-size: 24px; color: var(--color-text-muted); }
+
+  /* 「誤解していた向き」vs「気づいた向き」のような2〜3行の対比。罫線区切りのみでカード化しない */
+  .flow-compare { display: flex; flex-direction: column; width: 100%; }
+  .flow-compare-row { display: flex; align-items: center; gap: 48px; padding: 28px 0; }
+  .flow-compare-row + .flow-compare-row { border-top: 1px solid var(--color-border); }
+  .flow-compare-tag { font-size: 26px; font-weight: 700; width: 280px; flex-shrink: 0; }
+  .flow-compare-row.wrong .flow-compare-tag { color: var(--color-accent-2); }
+  .flow-compare-row.right .flow-compare-tag { color: var(--color-accent); }
+  .flow-compare-row .flow-chain { font-size: 48px; justify-content: flex-start; }
+  .flow-compare-row.wrong .node { color: var(--color-text-muted); }
+  .flow-compare-row.right .node { color: var(--color-accent); }
+  /* 矢印には意味的な色を付けない(上記.flow-chain .arrowと同じ理由) */
+
+  /* 複数要素が1つの結論に収束する図(例: 3つの壁→型への依存) */
+  .flow-converge { display: flex; align-items: center; gap: 56px; justify-content: center; }
+  .flow-converge-sources { display: flex; flex-direction: column; gap: 16px; font-size: 34px; font-weight: 700; color: var(--color-accent-2); text-align: right; }
+  .flow-converge-arrow { font-size: 48px; color: var(--color-text-muted); }
+  .flow-converge-target { font-size: 52px; font-weight: 800; color: var(--color-accent-2); }
+
+  /* 棒グラフ。文字サイズは本文(lead/bullets)と同じ基準を使う(小さすぎて読めない状態を避ける) */
+  .bar-chart {
+    flex: 1;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 72px;
+    padding-bottom: 4px;
+    border-bottom: 2px solid var(--color-text-muted);
+  }
+  .bar-chart-col { display: flex; flex-direction: column; align-items: center; gap: 16px; height: 100%; justify-content: flex-end; width: 150px; }
+  .bar-chart-value { font-size: 32px; font-weight: 700; color: var(--color-text); }
+  .bar-chart-bar { width: 100%; background: var(--color-accent); }
+  .bar-chart-bar.warn { background: var(--color-accent-2); }
+  .bar-chart-label { font-size: 26px; color: var(--color-text-muted); margin-top: 8px; }
+
+  /* 見出しは上部に残したまま、後続の要素だけを残り余白の上下左右中央に配置するための入れ子
+     (.slide-footer の margin-top: auto に自由空間を奪われないよう、flex: 1 で先取りする) */
+  .content-center {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 0;
+  }
+
+  /* 例外的に許容するフラットなカードUI(3〜4個の並列項目の一覧のみ、影・グラデーションなし) */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 32px;
+    width: 100%;
+  }
+
+  .card {
+    background: var(--color-bg-elevated);
+    border: 1px solid var(--color-border);
+    border-radius: 16px;
+    padding: 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  /* 左アクセントボーダーのみで種別を示す(背景色を変えたり影を足したりしない) */
+  .card--warn { border-left: 6px solid var(--color-accent-2); }
+  .card--accent { border-left: 6px solid var(--color-accent); }
+
+  .card-header { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 14px;
+    border-radius: 99px;
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+  }
+  .badge--warn { background: var(--color-accent-2-soft); color: var(--color-accent-2); }
+  .badge--accent { background: var(--color-accent-soft); color: var(--color-accent); }
+
+  .card-title { font-size: 32px; font-weight: 700; color: var(--color-text); line-height: 1.3; }
+  .card-body { font-size: 26px; color: var(--color-text-muted); line-height: 1.5; }
+
+  /* =========================================================
+     カード代替案(抽象的なカード+矢印に偏りすぎた/実データのスクリーンショットを
+     貼りたくないときの追加コンポーネント。詳細な使い分けはSKILL.md参照)
+     ========================================================= */
+
+  /* 罫線区切りの番号リスト。3〜4項目の一覧を.card-gridより軽い見た目で並べたいときに使う */
+  .minimal-list { display: flex; flex-direction: column; width: 100%; border-top: 1px solid var(--color-border); }
+  .minimal-item { display: flex; align-items: center; gap: 48px; padding: 32px 24px; border-bottom: 1px solid var(--color-border); }
+  .minimal-num { font-size: 56px; font-weight: 900; font-variant-numeric: tabular-nums; }
+  .minimal-item.warn .minimal-num { color: var(--color-accent-2); }
+  .minimal-item.accent .minimal-num { color: var(--color-accent); }
+  .minimal-content { display: flex; flex-direction: column; gap: 8px; }
+  .minimal-title { font-size: 32px; font-weight: 700; color: var(--color-text); }
+  .minimal-desc { font-size: 26px; color: var(--color-text-muted); }
+
+  /* ビッグ・ステートメント対比。2つの短い主張を罫線+太字で強く対比させたいときに使う(.compareより主張が主役) */
+  .statement-compare { display: flex; align-items: center; justify-content: space-between; width: 100%; gap: 32px; }
+  .statement-box { flex: 1; display: flex; flex-direction: column; gap: 16px; padding-left: 24px; }
+  .statement-box.warn { border-left: 4px solid var(--color-accent-2); }
+  .statement-box.accent { border-left: 4px solid var(--color-accent); }
+  .statement-tag { font-size: 20px; font-weight: 700; letter-spacing: 0.1em; }
+  .statement-box.warn .statement-tag { color: var(--color-accent-2); }
+  .statement-box.accent .statement-tag { color: var(--color-accent); }
+  .statement-text { font-size: 32px; font-weight: 700; line-height: 1.5; color: var(--color-text); }
+  .statement-label { font-size: 24px; color: var(--color-text-muted); }
+  .statement-arrow { font-size: 40px; color: var(--color-text-muted); flex-shrink: 0; }
+
+  /* チャット吹き出し。「心の中で思っていたこと」と「実際の発言・行動」のギャップを見せたいときに使う。
+     .chat-plain(地の文、箱なし)は思考・前提の描写に、.chat-bubble.said(塗りつぶし)は
+     実際の発言・行動の描写に使う分担とする(両方を吹き出し化すると尖った形状同士がぶつかり合い
+     読みにくくなった経緯がある)。実データ(Slack等)のスクリーンショットを貼るより、
+     要点を再構成したこちらの方が個人情報・社内情報のリスクが無く、社外公開前レビューでも
+     指摘を受けにくい。 */
+  .chat-thread { display: flex; flex-direction: column; gap: 32px; width: 100%; }
+  .chat-item { display: flex; flex-direction: column; gap: 10px; max-width: 78%; }
+  .chat-item.thought { align-self: flex-start; align-items: flex-start; }
+  .chat-item.said { align-self: flex-end; align-items: flex-end; }
+  .chat-label { display: block; font-size: 20px; font-weight: 700; letter-spacing: 0.04em; }
+  .chat-item.thought .chat-label { color: var(--color-text-muted); }
+  .chat-item.said .chat-label { color: var(--color-accent-2); }
+  .chat-plain { color: var(--color-text-muted); font-size: 30px; font-weight: 700; line-height: 1.5; }
+  .chat-bubble { position: relative; padding: 24px 32px; font-size: 30px; font-weight: 700; line-height: 1.5; border-radius: 20px; }
+  /* 実際の発言(黄色背景)のみ、塗りつぶし+skewさせた尻尾で吹き出しらしい尖った形状にする。
+     破線アウトラインの吹き出し(.chat-plainは箱を持たないため対象外)を今後追加する場合、
+     尻尾は付けない(尖った形状は塗りつぶしの吹き出しのみの表現とする)。 */
+  .chat-bubble.said {
+    margin-right: 24px;
+    background-color: var(--color-accent-2);
+    color: #2b2013;
+  }
+  .chat-bubble.said::after {
+    content: "";
+    position: absolute;
+    top: 35%;
+    right: 0;
+    border-style: solid;
+    border-width: 0 0 20px 20px;
+    border-color: transparent transparent transparent var(--color-accent-2);
+    translate: 100% calc(-50% - 0.4px);
+    transform: skew(0, -10deg);
+    transform-origin: left;
+  }
+
+  /* 付箋UI。レトロスペクティブ(KPT等)やブレインストーミングの内容を再現したいときに使う。
+     実データのスクリーンショットは、詳細情報がノイズになったり、写り込んだ社内の固有名詞・実名が
+     社外公開前レビューで指摘されやすい。要点だけを抽出しこの付箋UIで表現する方が安全で読みやすい。 */
+  .sticky-board { display: flex; align-items: center; justify-content: center; gap: 64px; width: 100%; flex-wrap: wrap; }
+  .sticky-note {
+    width: 380px;
+    min-height: 220px;
+    padding: 32px 28px;
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 1.45;
+    color: #2b2013;
+    box-shadow: 6px 10px 20px rgba(0, 0, 0, 0.35);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .sticky-note-tag { font-size: 20px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 14px; opacity: 0.6; }
+  .sticky-note.warn { background: #f4c98a; transform: rotate(-3deg); }
+  .sticky-note.accent { background: #a9e0d4; transform: rotate(2deg); }
 
   figcaption {
     font-size: 26px;
@@ -445,7 +705,7 @@
   <!-- 3枚目: 2カラム(左:画像 / 右:テキスト) -->
   <section class="slide">
     <div class="slide-inner">
-      <h2 style="margin-bottom:40px;"><budoux-ja>2カラム構成(画像+テキスト)</budoux-ja></h2>
+      <h2><budoux-ja>2カラム構成(画像+テキスト)</budoux-ja></h2>
       <div class="cols-2">
         <div class="col">
           <figure style="flex:1;">
@@ -471,7 +731,7 @@
   <!-- 4枚目: 2カラム(比較・対比、SVGアイコン使用) -->
   <section class="slide">
     <div class="slide-inner">
-      <h2 style="margin-bottom:40px;"><budoux-ja>比較・対比の見出し</budoux-ja></h2>
+      <h2><budoux-ja>比較・対比の見出し</budoux-ja></h2>
       <div class="compare">
         <div class="compare-item">
           <div class="compare-label">
@@ -550,15 +810,35 @@
       </table>
       <div class="slide-footer">
         <span class="footnote"><budoux-ja>出典: 必要な場合はここに記載</budoux-ja></span>
-        <span class="page-number">7 / 9</span>
+        <span class="page-number">7 / 10</span>
       </div>
     </div>
   </section>
 
-  <!-- 8枚目: 1カラム(まとめ、大きなナンバリング3カラム) -->
+  <!-- 8枚目: 1カラム(HTML/CSSによるフロー図の例)。装飾アイコンではなく関係性のある図でのみ使う -->
+  <section class="slide">
+    <div class="slide-inner cols-1">
+      <h2><budoux-ja>フロー図の例(HTML/CSS)</budoux-ja></h2>
+      <p class="lead"><budoux-ja>関係性・手順・サイクルなど、ノードと矢印で表せる内容にのみ使う</budoux-ja></p>
+      <div class="flow-diagram">
+        <div class="flow-chain">
+          <span class="node accent">観察</span><span class="arrow accent">→</span>
+          <span class="node accent">意思決定</span><span class="arrow accent">→</span>
+          <span class="node accent">検証</span>
+        </div>
+        <span class="flow-caption"><budoux-ja>観察へ戻る</budoux-ja></span>
+      </div>
+      <div class="slide-footer">
+        <span class="footnote"><budoux-ja>出典: 必要な場合はここに記載</budoux-ja></span>
+        <span class="page-number">8 / 10</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 9枚目: 1カラム(まとめ、大きなナンバリング3カラム) -->
   <section class="slide">
     <div class="slide-inner">
-      <h2 style="margin-bottom:40px;"><budoux-ja>まとめ</budoux-ja></h2>
+      <h2><budoux-ja>まとめ</budoux-ja></h2>
       <div class="stat-list">
         <div class="stat-item">
           <span class="stat-number">01</span>
@@ -578,12 +858,154 @@
       </div>
       <div class="slide-footer">
         <span class="footnote"><budoux-ja>出典: 必要な場合はここに記載</budoux-ja></span>
-        <span class="page-number">8 / 9</span>
+        <span class="page-number">9 / 10</span>
       </div>
     </div>
   </section>
 
-  <!-- 9枚目(最終ページ): 参考文献 -->
+  <!-- 10枚目: 1カラム(例外的なフラットカードUI、3〜4個の並列項目の一覧のみ) -->
+  <section class="slide">
+    <div class="slide-inner">
+      <h2><budoux-ja>並列項目の一覧(例外的にカードUIを使う場合)</budoux-ja></h2>
+      <div class="content-center">
+        <div class="card-grid">
+          <div class="card card--accent">
+            <div class="card-header">
+              <span class="badge badge--accent">01</span>
+              <h3 class="card-title"><budoux-ja>項目1</budoux-ja></h3>
+            </div>
+          </div>
+          <div class="card card--accent">
+            <div class="card-header">
+              <span class="badge badge--accent">02</span>
+              <h3 class="card-title"><budoux-ja>項目2</budoux-ja></h3>
+            </div>
+          </div>
+          <div class="card card--accent">
+            <div class="card-header">
+              <span class="badge badge--accent">03</span>
+              <h3 class="card-title"><budoux-ja>項目3</budoux-ja></h3>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="slide-footer">
+        <span class="footnote"><budoux-ja>出典: 必要な場合はここに記載</budoux-ja></span>
+        <span class="page-number">10 / 15</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 11枚目: 1カラム(罫線区切りの番号リスト、.card-gridより軽い代替) -->
+  <section class="slide">
+    <div class="slide-inner cols-1">
+      <h2><budoux-ja>罫線区切りの番号リスト(カードの代替)</budoux-ja></h2>
+      <div class="content-center">
+        <div class="minimal-list">
+          <div class="minimal-item warn">
+            <div class="minimal-num">01</div>
+            <div class="minimal-content">
+              <h3 class="minimal-title"><budoux-ja>項目1</budoux-ja></h3>
+              <p class="minimal-desc"><budoux-ja>項目1の説明文</budoux-ja></p>
+            </div>
+          </div>
+          <div class="minimal-item warn">
+            <div class="minimal-num">02</div>
+            <div class="minimal-content">
+              <h3 class="minimal-title"><budoux-ja>項目2</budoux-ja></h3>
+              <p class="minimal-desc"><budoux-ja>項目2の説明文</budoux-ja></p>
+            </div>
+          </div>
+          <div class="minimal-item warn">
+            <div class="minimal-num">03</div>
+            <div class="minimal-content">
+              <h3 class="minimal-title"><budoux-ja>項目3</budoux-ja></h3>
+              <p class="minimal-desc"><budoux-ja>項目3の説明文</budoux-ja></p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="slide-footer">
+        <span class="footnote"></span>
+        <span class="page-number">11 / 15</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 12枚目: 1カラム(ビッグ・ステートメント対比、.compareより主張を強く見せたい場合) -->
+  <section class="slide">
+    <div class="slide-inner cols-1">
+      <h2><budoux-ja>ビッグ・ステートメント対比</budoux-ja></h2>
+      <p class="lead"><budoux-ja>強く対比させたい2つの短い主張がある場合に使う</budoux-ja></p>
+      <div class="statement-compare">
+        <div class="statement-box warn">
+          <span class="statement-tag"><budoux-ja>これまでの認識</budoux-ja></span>
+          <p class="statement-text"><budoux-ja>短い主張文を入力</budoux-ja></p>
+        </div>
+        <div class="statement-arrow">
+          <svg width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+        </div>
+        <div class="statement-box accent">
+          <span class="statement-tag"><budoux-ja>得られた気づき</budoux-ja></span>
+          <p class="statement-text"><budoux-ja>短い主張文を入力</budoux-ja></p>
+        </div>
+      </div>
+      <div class="slide-footer">
+        <span class="footnote"></span>
+        <span class="page-number">12 / 15</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 13枚目: 1カラム(チャット吹き出し、心の中 vs 実際の発言) -->
+  <section class="slide">
+    <div class="slide-inner cols-1">
+      <h2><budoux-ja>チャット吹き出し(心の中 vs 実際の発言)</budoux-ja></h2>
+      <p class="lead"><budoux-ja>内面と行動のギャップを見せたい場合に使う。実データの再現ではなく要点の再構成にする</budoux-ja></p>
+      <div class="content-center">
+        <div class="chat-thread">
+          <div class="chat-item thought">
+            <span class="chat-label"><budoux-ja>心の中</budoux-ja></span>
+            <p class="chat-plain"><budoux-ja>本当は困っている、と思っていた</budoux-ja></p>
+          </div>
+          <div class="chat-item said">
+            <span class="chat-label"><budoux-ja>実際の発言</budoux-ja></span>
+            <div class="chat-bubble said"><budoux-ja>大丈夫です</budoux-ja></div>
+          </div>
+        </div>
+      </div>
+      <div class="slide-footer">
+        <span class="footnote"></span>
+        <span class="page-number">13 / 15</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 14枚目: 1カラム(付箋UI、実スクリーンショットの代替) -->
+  <section class="slide">
+    <div class="slide-inner cols-1">
+      <h2><budoux-ja>付箋UI(実スクリーンショットの代替)</budoux-ja></h2>
+      <p class="lead"><budoux-ja>レトロスペクティブ等のふりかえりボードを、実データを貼らずに要点だけ再現する</budoux-ja></p>
+      <div class="content-center">
+        <div class="sticky-board">
+          <div class="sticky-note warn">
+            <span class="sticky-note-tag">Problem</span>
+            <budoux-ja>要点を1〜2行で入力</budoux-ja>
+          </div>
+          <div class="sticky-note accent">
+            <span class="sticky-note-tag">Try</span>
+            <budoux-ja>要点を1〜2行で入力</budoux-ja>
+          </div>
+        </div>
+      </div>
+      <div class="slide-footer">
+        <span class="footnote"></span>
+        <span class="page-number">14 / 15</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 15枚目(最終ページ): 参考文献 -->
   <section class="slide">
     <div class="slide-inner cols-1">
       <h2><budoux-ja>参考文献</budoux-ja></h2>
@@ -609,7 +1031,7 @@
       </ol>
       <div class="slide-footer">
         <span class="footnote"><budoux-ja>出典: 必要な場合はここに記載</budoux-ja></span>
-        <span class="page-number">9 / 9</span>
+        <span class="page-number">15 / 15</span>
       </div>
     </div>
   </section>
