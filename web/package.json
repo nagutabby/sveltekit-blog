@@ -51,7 +51,7 @@
     "tslib": "^2.8.1",
     "typescript": "^5.9.3",
     "vite": "^8.2.1",
-    "vitest": "^4.1.10"
+    "vitest": "^4.1.11"
   },
   "type": "module",
   "packageManager": "pnpm@11.21.0"
