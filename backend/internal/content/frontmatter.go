@@ -68,3 +68,18 @@ func int32Field(data map[string]any, key string) int32 {
 		return 0
 	}
 }
+
+// boolField reads a bool frontmatter field, falling back to defaultValue
+// when the key is absent or not a bool (e.g. is_draft, which must fail
+// closed to "draft" rather than accidentally publish malformed content).
+func boolField(data map[string]any, key string, defaultValue bool) bool {
+	v, ok := data[key]
+	if !ok {
+		return defaultValue
+	}
+	b, ok := v.(bool)
+	if !ok {
+		return defaultValue
+	}
+	return b
+}

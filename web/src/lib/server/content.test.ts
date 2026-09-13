@@ -36,7 +36,7 @@ fs.mkdirSync(path.join(contentDir, 'reviews'), { recursive: true });
 
 writeArticle(
   '2025-06-15.md',
-  { id: 'my-article', title: 'タイトル', image: 'images/foo.png' },
+  { id: 'my-article', title: 'タイトル', image: 'images/foo.png', is_draft: false },
   '# 見出し'
 );
 writeReview(
@@ -47,9 +47,20 @@ writeReview(
     description: 'あらすじ',
     jp_e_code: '"1234567890123"',
     image: 'images/foo.jpg',
-    rating: 5
+    rating: 5,
+    is_draft: false
   },
   '## 概要'
+);
+writeArticle(
+  '2025-06-16.md',
+  { id: 'draft-article', title: '下書き', image: 'images/bar.png', is_draft: true },
+  '# 下書き本文'
+);
+writeArticle(
+  '2025-06-17.md',
+  { id: 'missing-is-draft', title: 'is_draft未指定', image: 'images/baz.png' },
+  '# 本文'
 );
 
 afterAll(() => {
@@ -71,6 +82,12 @@ describe('getAllRawData', () => {
         publishedAt: new Date('2025-06-15')
       }
     ]);
+  });
+
+  it('is_draftがtrue、または未指定の記事は一覧から除外する', async () => {
+    const result = await getAllRawData('articles');
+
+    expect(result.map((a) => a.id)).toEqual(['my-article']);
   });
 
   it('レビュー一覧をReview型にマッピングする', async () => {
@@ -109,6 +126,16 @@ describe('getHTMLData', () => {
 
   it('存在しない記事は404を投げる', async () => {
     await expect(getHTMLData('missing', 'articles')).rejects.toMatchObject({ status: 404 });
+  });
+
+  it('is_draftがtrueの記事は404を投げる', async () => {
+    await expect(getHTMLData('draft-article', 'articles')).rejects.toMatchObject({ status: 404 });
+  });
+
+  it('is_draft未指定の記事は404を投げる(デフォルトtrue)', async () => {
+    await expect(getHTMLData('missing-is-draft', 'articles')).rejects.toMatchObject({
+      status: 404
+    });
   });
 
   it('frontmatterが壊れている記事は500を投げる', async () => {

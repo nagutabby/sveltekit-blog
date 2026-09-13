@@ -60,6 +60,12 @@ const readMarkdownFile = (contentType: ContentType, filename: string) => {
   return matter(raw);
 };
 
+// is_draft defaults to true (fail closed) so a post missing the field, or
+// with a malformed value, never publishes by accident. Mirrors
+// backend/internal/content.Loader's boolField(data, "is_draft", true).
+const isDraftEntry = (parsed: ReturnType<typeof matter>): boolean =>
+  typeof parsed.data.is_draft === 'boolean' ? parsed.data.is_draft : true;
+
 const listMarkdownEntries = (contentType: ContentType): MarkdownEntry[] =>
   fs
     .readdirSync(path.join(CONTENT_DIR, contentType))
@@ -69,7 +75,8 @@ const listMarkdownEntries = (contentType: ContentType): MarkdownEntry[] =>
       const publishedAt = parsePublishedAtFromFilename(filename);
       const parsed = readMarkdownFile(contentType, filename);
       return { id: parsed.data.id ?? '', publishedAt, parsed };
-    });
+    })
+    .filter((entry) => !isDraftEntry(entry.parsed));
 
 const findMarkdownEntryById = (contentType: ContentType, id: string): MarkdownEntry => {
   const entry = listMarkdownEntries(contentType).find((e) => e.id === id);

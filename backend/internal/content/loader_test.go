@@ -26,6 +26,7 @@ func newFixtureLoader(t *testing.T) (*Loader, string) {
 id: older-article
 title: 古い記事
 image: images/old.png
+is_draft: false
 ---
 # 古い本文
 `)
@@ -33,6 +34,7 @@ image: images/old.png
 id: newer-article
 title: 新しい記事
 image: images/new.png
+is_draft: false
 ---
 # 新しい本文
 `)
@@ -44,6 +46,7 @@ description: あらすじ
 jp_e_code: "1234567890123"
 image: images/book.jpg
 rating: 5
+is_draft: false
 ---
 ## 概要
 本文です。
@@ -134,6 +137,7 @@ func TestListArticlesResolvesFilenameSuffixCollisions(t *testing.T) {
 id: first-on-that-day
 title: 一件目
 image: images/a.png
+is_draft: false
 ---
 # 一件目本文
 `)
@@ -141,6 +145,7 @@ image: images/a.png
 id: second-on-that-day
 title: 二件目
 image: images/b.png
+is_draft: false
 ---
 # 二件目本文
 `)
@@ -157,6 +162,51 @@ image: images/b.png
 		if a.PublishedAt.Format("2006-01-02") != "2024-05-01" {
 			t.Fatalf("PublishedAt = %v, want 2024-05-01", a.PublishedAt)
 		}
+	}
+}
+
+func TestDraftArticlesAreExcluded(t *testing.T) {
+	dir := t.TempDir()
+
+	writeFixture(t, dir, "articles", "2024-01-01.md", `---
+id: published-article
+title: 公開済み
+image: images/a.png
+is_draft: false
+---
+# 本文
+`)
+	writeFixture(t, dir, "articles", "2024-01-02.md", `---
+id: draft-article
+title: 下書き
+image: images/b.png
+is_draft: true
+---
+# 本文
+`)
+	writeFixture(t, dir, "articles", "2024-01-03.md", `---
+id: missing-is-draft
+title: is_draft未指定
+image: images/c.png
+---
+# 本文
+`)
+
+	loader := NewLoader(os.DirFS(dir))
+
+	articles, err := loader.ListArticles()
+	if err != nil {
+		t.Fatalf("ListArticles returned error: %v", err)
+	}
+	if len(articles) != 1 || articles[0].ID != "published-article" {
+		t.Fatalf("ListArticles = %+v, want only published-article", articles)
+	}
+
+	if _, err := loader.GetArticle("draft-article"); !errors.Is(err, ErrNotFound) {
+		t.Fatalf("GetArticle(draft-article) err = %v, want ErrNotFound", err)
+	}
+	if _, err := loader.GetArticle("missing-is-draft"); !errors.Is(err, ErrNotFound) {
+		t.Fatalf("GetArticle(missing-is-draft) err = %v, want ErrNotFound (is_draft must default to true)", err)
 	}
 }
 

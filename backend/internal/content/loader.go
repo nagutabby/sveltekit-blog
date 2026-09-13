@@ -154,6 +154,11 @@ func (l *Loader) readMarkdownDir(contentType string) ([]markdownEntry, error) {
 		if err != nil {
 			return nil, err
 		}
+		// is_draft defaults to true (fail closed) so a post missing the
+		// field, or with a malformed value, never publishes by accident.
+		if boolField(data, "is_draft", true) {
+			continue
+		}
 		entries = append(entries, markdownEntry{
 			id:          stringField(data, "id"),
 			publishedAt: publishedAt,
