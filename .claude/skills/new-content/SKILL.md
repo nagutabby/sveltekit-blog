@@ -13,7 +13,7 @@ description: 記事(article)・書評(review)・プレゼンスライド(slide)�
 
 引数(`$ARGUMENTS`)に `article`・`review`・`slide` があればその種別を使う。なければユーザーに質問する。
 
-前提ツール(macOS想定): `gh`、`curl`、`rsvg-convert`(`brew install librsvg`)、`cwebp`(`brew install webp`)。slideの本文・図表はClaudeが直接HTMLとして記述する(図表はテンプレート付属のHTML/CSSコンポーネントを使うため追加ツールは不要)。slideのPDF化は`web/scripts/export-slide-pdf.mjs`で行う(手順11.5参照、ローカルのGoogle Chrome/Chromiumが必要)。
+前提ツール(macOS想定): `gh`、`curl`、`rsvg-convert`(`brew install librsvg`)、`cwebp`(`brew install webp`)。slideの本文・図表はClaudeが直接HTMLとして記述する(図表はテンプレート付属のHTML/CSSコンポーネントを使うため追加ツールは不要)。slideのPDF化は`web/scripts/export-slide-pdf.mjs`で行う(手順11.5参照、ローカルのGoogle Chrome/Chromiumが必要)。Ghostscript(`brew install ghostscript`)があれば、生成したPDFの`/MediaBox`を`[0 0 1920 1080]`に補正する(無くてもPDF化自体は可能、詳細は手順11.5参照)。
 
 ## 前提知識(このリポジトリの規約)
 
@@ -208,9 +208,11 @@ node web/scripts/validate-slide-layout.mjs "web/static/content/slides/$FILENAME"
 node web/scripts/export-slide-pdf.mjs "web/static/content/slides/$FILENAME"
 ```
 
-`web/scripts/validate-slide-layout.mjs`と同じくpuppeteer-coreでローカルのGoogle Chrome/Chromiumを操作する。`slide.html`テンプレートの`@page { size: 1920px 1080px; margin: 0 }`をそのまま採用(`preferCSSPageSize: true`)するため、縮小・再エンコードによる画質劣化なしに1920x1080pxのPDFページが得られ、`.slide`ごとに1ページに改ページされる。出力先を省略すると入力と同じディレクトリ・同じベース名で`<id>.pdf`として書き出す。
+`web/scripts/validate-slide-layout.mjs`と同じくpuppeteer-coreでローカルのGoogle Chrome/Chromiumを操作する。`slide.html`テンプレートの`@page { size: 1920px 1080px; margin: 0 }`をそのまま採用(`preferCSSPageSize: true`)するため、縮小・再エンコードによる画質劣化なしに1920x1080px相当のPDFページが得られ、`.slide`ごとに1ページに改ページされる。出力先を省略すると入力と同じディレクトリ・同じベース名で`<id>.pdf`として書き出す。
 
-`NG`(ファイルが無い、`.slide`要素が無い)が出た場合は該当箇所を確認して再実行する。ローカルにGoogle Chrome/Chromiumが無い等の理由でスクリプト自体が実行できない場合は、その旨を完了報告で明示した上でこの手順を省略してよい(手動PDF化の手順をユーザーに伝える)。
+Chromiumの印刷パイプラインはCSSのpx(1/96インチ)をPDFのpt(1/72インチ)に変換する際96→72換算を行うため、Puppeteer単体では生成したPDFの`/MediaBox`が`[0 0 1440 810]`になる(1920x1080ではない。20x11.25インチ相当として正しい値であり画質劣化ではないが、Speaker Deck等`/MediaBox`をそのまま解像度とみなして判定するサービスでは低解像度と警告される)。ローカルにGhostscript(`gs`)があれば、このスクリプトが後処理で`/MediaBox`を`[0 0 1920 1080]`に補正する(`-dPDFFitPage`でページ内容もベクターのまま拡大するため画質は劣化しない)。Ghostscriptが無い場合はこの補正をスキップし、`/MediaBox`が`[0 0 1440 810]`のままである旨をコンソールに出力する。
+
+`NG`(ファイルが無い、`.slide`要素が無い、Ghostscriptでの補正に失敗)が出た場合は該当箇所を確認して再実行する。ローカルにGoogle Chrome/Chromiumが無い等の理由でスクリプト自体が実行できない場合は、その旨を完了報告で明示した上でこの手順を省略してよい(手動PDF化の手順をユーザーに伝える)。
 
 ### 12. 完了報告
 (article/review) 作成したファイルパスと検証結果(`OK`)を伝え、本文はユーザー自身が書くことを伝えて終了する。

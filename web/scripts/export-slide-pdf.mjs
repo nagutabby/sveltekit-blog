@@ -2,18 +2,20 @@
 // puppeteer-core(ローカルのGoogle Chrome/Chromiumを操作、バンドルDLなし)でヘッドレス印刷する。
 // web/static/content/templates/slide.html の @media print / @page { size: 1920px 1080px; margin: 0 }
 // を前提にしており、preferCSSPageSize: true でそのページサイズをそのまま採用するため、
-// 縮小・再エンコードによる画質劣化なしに1920x1080pxのPDFページを生成する
+// 縮小・再エンコードによる画質劣化なしに1920x1080px相当のPDFページを生成する
 // (.slideごとに break-after: page で改ページされ、1スライド=1ページになる)。
 //
-// 注記: 生成されるPDFの/MediaBoxは[0 0 1440 810]になる(1920x1080ではない)。
-// これは画質劣化ではなく、CSSのpx(1/96インチ)とPDFのpt(1/72インチ)の単位換算による
-// 正しい値(1920px×72/96=1440pt、1080px×72/96=810pt、いずれも20x11.25インチ相当)。
-// Chromiumの印刷パイプラインはこの96→72換算を必ず行うため、MediaBoxの数値を
-// そのまま1920x1080にしようとして用紙サイズだけを拡大すると、スライド本体が
-// ページ左上に小さく収まり余白ができる不具合が生じる(zoomやscaleオプションでの
-// 拡大は印刷時のレイアウトに反映されないため補正できない)。数値上1920x1080に
-// 揃えたい場合は、qpdf/pikepdf等の外部ツールでPDFのMediaBoxとページ内容の
-// 変換行列を書き換える後処理が必要(このスクリプトでは行わない)。
+// Chromiumの印刷パイプラインは、CSSのpx(1/96インチ)をPDFのpt(1/72インチ)に変換する際
+// 必ず96→72換算を行うため、Puppeteer単体では/MediaBoxが[0 0 1440 810]になる
+// (1920x1080ではない。1920px×72/96=1440pt、1080px×72/96=810ptで20x11.25インチ相当、
+// 換算として正しい値であり画質劣化ではない)。
+// Speaker Deck等、PDFの/MediaBoxをそのまま解像度とみなして判定するサービスに
+// アップロードする際にこの数値が問題になるため、Ghostscript(gs)で後処理し、
+// /MediaBoxを[0 0 1920 1080]に、ページ内容をそれに合わせて拡大するスケール変換
+// (-dPDFFitPage -dFIXEDMEDIA)を焼き込む。ベクター文字・図形はそのまま拡大されるだけで
+// ラスタライズ・再エンコードは発生しないため画質は劣化しない(確認済み)。
+// ローカルにGhostscriptが無い場合は、この後処理をスキップしてPuppeteer出力
+// (MediaBox 1440x810、内容自体は正しい)をそのまま採用する。
 //
 // 使い方:
 //   node web/scripts/export-slide-pdf.mjs <path/to/slide.html> [path/to/output.pdf]
@@ -22,12 +24,17 @@
 //
 // 前提: ローカルにGoogle Chrome(またはChromium)がインストールされていること。
 //   別の場所にある場合は PUPPETEER_EXECUTABLE_PATH で明示する。
+//   Ghostscript(`brew install ghostscript`)が無くても書き出し自体は可能(注記参照)。
 // レイアウトのはみ出し検証は行わない(web/scripts/validate-slide-layout.mjsの責務)。
 // 事前にそちらでOKになっていることを確認してから実行する。
 
 import puppeteer from 'puppeteer-core';
-import { existsSync } from 'node:fs';
+import { existsSync, renameSync, unlinkSync } from 'node:fs';
 import { resolve, dirname, basename, extname, join } from 'node:path';
+import { spawnSync } from 'node:child_process';
+
+const SLIDE_WIDTH_PX = 1920;
+const SLIDE_HEIGHT_PX = 1080;
 
 function findChromeExecutable() {
   const candidates = [
@@ -40,6 +47,19 @@ function findChromeExecutable() {
     '/usr/bin/chromium-browser',
   ].filter(Boolean);
   return candidates.find((path) => existsSync(path)) ?? null;
+}
+
+function findGhostscriptExecutable() {
+  const candidates = [
+    process.env.GHOSTSCRIPT_EXECUTABLE_PATH,
+    '/opt/homebrew/bin/gs',
+    '/usr/local/bin/gs',
+    '/usr/bin/gs',
+  ].filter(Boolean);
+  const found = candidates.find((path) => existsSync(path));
+  if (found) return found;
+  const probe = spawnSync('gs', ['--version']);
+  return probe.error ? null : 'gs';
 }
 
 async function main() {
@@ -72,10 +92,12 @@ async function main() {
     return;
   }
 
+  const rawOutput = `${absOutput}.raw.pdf`;
+
   const browser = await puppeteer.launch({ executablePath, headless: true });
   try {
     const page = await browser.newPage();
-    await page.setViewport({ width: 1920, height: 1080 });
+    await page.setViewport({ width: SLIDE_WIDTH_PX, height: SLIDE_HEIGHT_PX });
     await page.goto(`file://${absInput}`, { waitUntil: 'load' });
     await page.evaluate(() => document.fonts.ready);
 
@@ -88,12 +110,43 @@ async function main() {
 
     await page.emulateMediaType('print');
     await page.pdf({
-      path: absOutput,
+      path: rawOutput,
       printBackground: true,
       preferCSSPageSize: true,
     });
 
+    const gsPath = findGhostscriptExecutable();
+    if (!gsPath) {
+      renameSync(rawOutput, absOutput);
+      console.log(`OK: ${slideCount}枚のスライドを書き出しました: ${absOutput}`);
+      console.log(
+        'NG: Ghostscriptが見つからないため、/MediaBoxは[0 0 1440 810]のままです' +
+          '(内容自体は正しく1920x1080px相当)。`brew install ghostscript`後に再実行すると' +
+          '/MediaBoxを[0 0 1920 1080]に補正できます。'
+      );
+      return;
+    }
+
+    const gsResult = spawnSync(gsPath, [
+      '-o', absOutput,
+      '-sDEVICE=pdfwrite',
+      `-dDEVICEWIDTHPOINTS=${SLIDE_WIDTH_PX}`,
+      `-dDEVICEHEIGHTPOINTS=${SLIDE_HEIGHT_PX}`,
+      '-dPDFFitPage',
+      '-dFIXEDMEDIA',
+      rawOutput,
+    ]);
+    unlinkSync(rawOutput);
+
+    if (gsResult.status !== 0) {
+      console.error('NG: GhostscriptによるMediaBox補正に失敗しました');
+      console.error(gsResult.stderr?.toString() ?? gsResult.error);
+      process.exitCode = 1;
+      return;
+    }
+
     console.log(`OK: ${slideCount}枚のスライドを書き出しました: ${absOutput}`);
+    console.log(`OK: /MediaBoxを[0 0 ${SLIDE_WIDTH_PX} ${SLIDE_HEIGHT_PX}]に補正しました`);
   } finally {
     await browser.close();
   }
