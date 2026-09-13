@@ -13,7 +13,7 @@ description: 記事(article)・書評(review)・プレゼンスライド(slide)�
 
 引数(`$ARGUMENTS`)に `article`・`review`・`slide` があればその種別を使う。なければユーザーに質問する。
 
-前提ツール(macOS想定): `gh`、`curl`、`rsvg-convert`(`brew install librsvg`)、`cwebp`(`brew install webp`)。slideの本文・図表はClaudeが直接HTMLとして記述する(図表はテンプレート付属のHTML/CSSコンポーネントを使うため追加ツールは不要)。ただしHTML→PDF変換ツールはこのリポジトリに存在しない(既知のギャップ、後述)。
+前提ツール(macOS想定): `gh`、`curl`、`rsvg-convert`(`brew install librsvg`)、`cwebp`(`brew install webp`)。slideの本文・図表はClaudeが直接HTMLとして記述する(図表はテンプレート付属のHTML/CSSコンポーネントを使うため追加ツールは不要)。slideのPDF化は`web/scripts/export-slide-pdf.mjs`で行う(手順11.5参照、ローカルのGoogle Chrome/Chromiumが必要)。
 
 ## 前提知識(このリポジトリの規約)
 
@@ -45,9 +45,8 @@ description: 記事(article)・書評(review)・プレゼンスライド(slide)�
 - slideは `backend/content` ではなく `web/static/content/slides/<id>.html` に配置する。article/reviewの `YYYY-MM-DD.md` 命名は適用されない。`<id>` は既存の `how-to-speed-up-local-llm-inference-on-pc.pdf` のような、内容を表すkebab-caseスラッグ(日付を含めない)。slideにはfrontmatterという概念が無く、`web/src/routes/slides/+page.server.ts`/`[name]/+page.server.ts` が `web/static/content/slides/*.pdf` を列挙し、拡張子を除いたファイル名をそのままid/URLスラッグとして扱う。このidはslidesディレクトリ内でのみ一意であればよく、articles/reviewsのidと重複してもよい(別URLルートプレフィックスのため)。
 - スライドのレイアウト検証には `web/scripts/validate-slide-layout.mjs` を使う(手順11参照)。`puppeteer-core`でローカルのGoogle Chrome/Chromiumを操作して実際にHTMLを描画し、各`.slide`が1920x1080pxちょうどに収まっているか(`scrollHeight`/`scrollWidth`が`clientHeight`/`clientWidth`を超えていないか)を実測でチェックする。budoux-jaによる実際の改行結果も反映されるため、フォントサイズ変更や画像サイズ変更のたびにこれを実行し、はみ出しが無いことを確認すること。図表はHTML/CSSで直接組むため(後述「図表の使用方針」参照)、非同期描画や外部リクエストの完了待ちは不要。
 - 既知のギャップ(このスキル改修では対応しない):
-  1. HTML→PDF変換の自動化ツール(Puppeteer/Playwright等)はこのリポジトリに無い。既存の`web/static/content/slides/*.pdf`にHTMLソースは存在せず、"sources"的なサブフォルダ規約も無い。このスキルはHTML作成までを行い、PDF化はユーザーが別途手動で行う。
-  2. `scripts/validate-content.sh` はarticles/reviewsのMarkdown frontmatter専用で、slideのHTML構造(必須要素の有無など)を検証するロジックは無い。レイアウト(はみ出し)の検証は上記の`validate-slide-layout.mjs`でカバーするが、それ以外の構造チェックは今回追加しない。
-  3. article/reviewにある画像取得スクリプト(手順8/9)に相当するslide用の仕組みは無い。実写真(スクリーンショット等)が必要な場合の自動取得手段は無く、無ければユーザーに画像ファイルの提供を依頼する(実在しない画像パスをそれらしく埋めない)。`slide.html`の`<img>`はサンプルSVG(data:image/svg+xml、外部ファイル無し)がプレースホルダーとして既に入っているため、実データが無い場合はこのサンプルのまま残してもよい(壊れた画像アイコンにはならない)。**関係性・フロー・サイクル・簡単なチャートを表す図は後述「図表の使用方針」のHTML/CSSコンポーネントを使う。単一の概念を表す装飾アイコン(人物・鍵・虫眼鏡など、矢印でつながる関係を持たないもの)は図自体を入れない選択肢を優先する。**
+  1. `scripts/validate-content.sh` はarticles/reviewsのMarkdown frontmatter専用で、slideのHTML構造(必須要素の有無など)を検証するロジックは無い。レイアウト(はみ出し)の検証は上記の`validate-slide-layout.mjs`でカバーするが、それ以外の構造チェックは今回追加しない。
+  2. article/reviewにある画像取得スクリプト(手順8/9)に相当するslide用の仕組みは無い。実写真(スクリーンショット等)が必要な場合の自動取得手段は無く、無ければユーザーに画像ファイルの提供を依頼する(実在しない画像パスをそれらしく埋めない)。`slide.html`の`<img>`はサンプルSVG(data:image/svg+xml、外部ファイル無し)がプレースホルダーとして既に入っているため、実データが無い場合はこのサンプルのまま残してもよい(壊れた画像アイコンにはならない)。**関係性・フロー・サイクル・簡単なチャートを表す図は後述「図表の使用方針」のHTML/CSSコンポーネントを使う。単一の概念を表す装飾アイコン(人物・鍵・虫眼鏡など、矢印でつながる関係を持たないもの)は図自体を入れない選択肢を優先する。**
 - 表(`table.simple-table`)のキャプションは`<caption>`で上(`caption-side: top`)、図(`figure`)のキャプションは`<figcaption>`で下(`<img>`直後に書くだけでよい)に配置する。この位置関係は固定で、逆にしない。
 - `figure img`は`object-fit: contain`(`cover`にしない)。配置先(1カラムの横長figureと2カラムの縦長figureなど)でコンテナの縦横比がまちまちなため、`cover`だと画像側の縦横比次第で内容の一部が見切れることがある。`contain`なら常に画像全体が収まる。既存の`<img>`のCSSは変更せずそのまま使い、個別に`style="object-fit: cover"`等で上書きしない。自作のプレースホルダーSVG(data:image/svg+xml)を書くときは、画像全体を覆う背景矩形(`<rect>`でキャンバス全面を塗るなど)を入れない。`contain`で余白ができても透過なのでスライド本体の背景と自然に馴染む(枠線・背景色を持つ「カード」を避ける方針とも一致する)。
 
@@ -113,6 +112,16 @@ article/reviewと異なり、**slideはスライド本文(見出し・構成・�
    - 参考文献(`ol.references`、最終ページ固定)
 
    1枚目=表紙、最終ページ=参考文献は必ず守り、間の種別は内容に応じて選ぶ(全種別を使う必要はない)。
+   見出し直後の本文配置は用途に応じて次の3クラスを使い分ける(いずれも`gap`は内容ごとに異なるため
+   固定値を持たず、`style="gap:Npx"`で個別に指定してよい。これは`.slide-inner`/`.cols-1`の
+   `gap`とは別階層の単一指定であり、二重加算にはならない):
+   - `.content-center`: 上下左右中央。図解(`.flow-diagram`等)や単一の強調ステートメントなど、
+     画面全体の中心に置きたい場合
+   - `.content-middle`: 上下中央のみ。横は中央寄せせず、本文を左寄せのまま読ませたい場合
+   - `.content-start`: 中央寄せなし(上詰め・左寄せ)。リード文+箇条書きなど、本文を上から
+     順に読ませる既定として使う場合
+   見出しほどではないが目立たせたい1行(自己紹介の名前、締めの一言など)を書きたい場合は
+   `.emphasis-text`を使う。都度インラインstyleでfont-weight/line-heightを書かない。
 3. 後述の「スライド作成時の文章ルール」に従って各スライドの見出し・本文・コード・表・参考文献を作成する。
 4. 完成したHTML全体(`<html>`〜`</html>`)を組み立てる。`<title>`と表紙の`<h1>`をタイトルにする。ページ番号は既存の`<script>`が自動計算するため手を加えない。
 5. 実写真(スクリーンショット等)の`<img>`を使いたい場合、画像ファイルを自動取得する手段はこのスキルには無い(手順8/9の画像取得スクリプトはarticle/review専用)。実データが無ければユーザーに画像ファイルの提供を依頼する。実在しない画像パスをそれらしく埋めない。**単一概念を表す装飾アイコン(人物・鍵など)が欲しい場合、幾何学図形を自作しない。** HTML/CSSのフロー図コンポーネントで表現できる関係性が無いなら、図自体を入れない選択肢を優先する(分量・改行の目安の項を参照)。**Slack・Notion等の実スクリーンショットを使いたい場合、先に「図表の使用方針」内の「実データのスクリーンショットより抽象化した再現を優先する」を検討する。**実データを使う場合は、第三者の実名等が写り込んでいないか確認し、写っていれば加工(モザイク等)をユーザーに確認した上で行う。
@@ -189,15 +198,27 @@ bash .claude/skills/new-content/scripts/validate-content.sh "$DIR/$FILENAME"
 node web/scripts/validate-slide-layout.mjs "web/static/content/slides/$FILENAME"
 ```
 
-`NG`(いずれかのスライドではみ出しあり、1920x1080ちょうどでない、または見出しと本文の間隔がスライドごとに異なる)が出た場合はファイルを削除せず、該当スライドの文章量・画像サイズを調整し(「分量・改行の目安」参照)、`OK` になるまで再実行する。間隔の不統一が出た場合は、h2やその直後の要素に個別の`margin`インラインスタイルを足していないか確認する(`.slide-inner`/`.cols-1`の`gap`と二重に加算されるのが典型的な原因)。ローカルにGoogle Chrome/Chromiumが無い等の理由でスクリプト自体が実行できない場合は、その旨を完了報告で明示した上でこの手順を省略してよい(中途半端な簡易チェックをその場で追加しない)。
+`NG`(いずれかのスライドではみ出しあり、1920x1080ちょうどでない、または見出しと本文の間隔がスライドごとに異なる)が出た場合はファイルを削除せず、該当スライドの文章量・画像サイズを調整し(「分量・改行の目安」参照)、`OK` になるまで再実行する。間隔の不統一が出た場合は、`.slide-inner`/`.cols-1`/`.cols-2`直下の子要素(見出しに限らない)に個別の`margin`インラインスタイルを足していないか確認する(直下の`gap`と二重に加算されるのが典型的な原因)。ローカルにGoogle Chrome/Chromiumが無い等の理由でスクリプト自体が実行できない場合は、その旨を完了報告で明示した上でこの手順を省略してよい(中途半端な簡易チェックをその場で追加しない)。
+
+### 11.5 (slide のみ) PDF化
+
+手順11が`OK`になったスライドHTMLを、1920x1080pxのPDFとして`web/static/content/slides/`に書き出す。`/slides`への掲載にはこのPDFが必要(HTMLのみでは表示されない)。
+
+```bash
+node web/scripts/export-slide-pdf.mjs "web/static/content/slides/$FILENAME"
+```
+
+`web/scripts/validate-slide-layout.mjs`と同じくpuppeteer-coreでローカルのGoogle Chrome/Chromiumを操作する。`slide.html`テンプレートの`@page { size: 1920px 1080px; margin: 0 }`をそのまま採用(`preferCSSPageSize: true`)するため、縮小・再エンコードによる画質劣化なしに1920x1080pxのPDFページが得られ、`.slide`ごとに1ページに改ページされる。出力先を省略すると入力と同じディレクトリ・同じベース名で`<id>.pdf`として書き出す。
+
+`NG`(ファイルが無い、`.slide`要素が無い)が出た場合は該当箇所を確認して再実行する。ローカルにGoogle Chrome/Chromiumが無い等の理由でスクリプト自体が実行できない場合は、その旨を完了報告で明示した上でこの手順を省略してよい(手動PDF化の手順をユーザーに伝える)。
 
 ### 12. 完了報告
 (article/review) 作成したファイルパスと検証結果(`OK`)を伝え、本文はユーザー自身が書くことを伝えて終了する。
 
 (slide のみ) 作成したファイルパス(`web/static/content/slides/<id>.html`)を伝えたうえで、必ず次を明示する:
 1. 本文(見出し・文章・コード例・参考文献)はClaudeが下書きしたものであり、article/reviewと異なりユーザーの手直し前提であること。特に数値・固有名詞・参考文献の実在性の確認を依頼する。
-2. HTML→PDF変換はこのスキルでは行わない(変換ツール未導入のため)。`/slides`に掲載するには、別途手動でPDF化し同じファイル名(`<id>.pdf`)で`web/static/content/slides/`に配置する必要がある。
-3. 手順11のレイアウト検証結果(`OK`、または未実施ならその理由)。frontmatterの構造チェックに相当する自動検証は無いこと。
+2. 手順11のレイアウト検証結果(`OK`、または未実施ならその理由)。frontmatterの構造チェックに相当する自動検証は無いこと。
+3. 手順11.5のPDF化結果。`OK`なら生成した`web/static/content/slides/<id>.pdf`のパスを伝える(`/slides`への掲載にはこのPDFが必要)。未実施(ローカルにChrome/Chromiumが無い等)ならその旨と、`node web/scripts/export-slide-pdf.mjs "web/static/content/slides/<id>.html"`を手元で実行すればPDF化できることを伝える。
 
 ## スライド作成時の文章ルール
 

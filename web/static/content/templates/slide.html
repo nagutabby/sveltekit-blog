@@ -62,8 +62,8 @@
   - 日本語フォントはNoto Sans JPを自前で同梱する(推奨)。Hiragino/Yu GothicはOS依存のため、
     ヘッドレスChromeでのPDF化環境によっては日本語が表示されないリスクがある。完成後にSKILL.mdの
     「日本語フォントの同梱」の手順でサブセット化し、vendor/に配置する。
-  - 見出し(h2)と本文の間隔は`.slide-inner`の`gap`に一本化されている(`.cols-1`も同じ値)。
-    個別スライドのh2やその直後の要素に`style="margin: ...px 0;"`のようなインライン余白を
+  - `.slide-inner`/`.cols-1`/`.cols-2`直下の要素間の間隔は、それぞれの`gap`に一本化されている。
+    見出し(h2)に限らず、直下のどの子要素にも`style="margin: ...px 0;"`のようなインライン余白を
     追加しない(gapと二重に加算され、スライドごとに間隔がずれる不具合の原因になる)。
     `web/scripts/validate-slide-layout.mjs`がこの間隔の統一性を検証する。
 -->
@@ -101,7 +101,6 @@
     --slide-w: 1920px;
     --slide-h: 1080px;
     --color-bg: #12161b;
-    --color-bg-cover: #0b0e12;
     --color-bg-elevated: #1c232b;
     --color-text: #f3f5f6;
     --color-text-muted: #aab4bd;
@@ -151,8 +150,9 @@
     height: 100%;
     display: flex;
     flex-direction: column;
-    gap: 56px; /* 見出しと本文の間隔。h2にmargin-bottomを持たせると.cols-1併用時に二重に加算されるため、
-                  間隔はここ(単一のgap)に一本化する。個別スライドでの上書き(インラインstyle)はしない */
+    gap: 56px; /* 直下の子要素間の間隔。個別の子要素(h2に限らない)にmargin-top/bottomを持たせると
+                  .cols-1併用時に二重に加算されるため、間隔はここ(単一のgap)に一本化する。
+                  個別スライドでの上書き(インラインstyle)はしない */
     padding: 96px 120px;
     z-index: 1;
   }
@@ -170,7 +170,7 @@
     flex: 1;
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 72px;
+    gap: 72px; /* 直下の子要素(.col等)にmargin-top/bottomを追加しない(.slide-inner/.cols-1と同じ理由) */
     min-height: 0;
   }
 
@@ -204,6 +204,15 @@
     font-size: 36px;
     line-height: 1.7;
     color: var(--color-text-muted);
+  }
+
+  /* 見出しほどではないが目立たせたい1行(自己紹介の名前、締めの一言など)に使う。
+     都度インラインstyleでfont-weight/line-heightを書かない */
+  .emphasis-text {
+    font-size: 44px;
+    font-weight: 700;
+    line-height: 1.6;
+    color: var(--color-text);
   }
 
   .cover-meta {
@@ -313,14 +322,41 @@
   .bar-chart-bar.warn { background: var(--color-accent-2); }
   .bar-chart-label { font-size: 26px; color: var(--color-text-muted); margin-top: 8px; }
 
-  /* 見出しは上部に残したまま、後続の要素だけを残り余白の上下左右中央に配置するための入れ子
-     (.slide-footer の margin-top: auto に自由空間を奪われないよう、flex: 1 で先取りする) */
+  /* 見出しは上部に残したまま、後続の要素だけを残り余白に配置するための入れ子
+     (.slide-footer の margin-top: auto に自由空間を奪われないよう、flex: 1 で先取りする)。
+     用途に応じて.content-center/.content-middle/.content-startを使い分ける。
+     いずれもgapは内容ごとに異なるため固定値を持たせず、各スライドでstyle="gap:Npx"を指定する
+     (これは.slide-inner/.cols-1のgapとは別階層の単一指定なので二重加算にはならない) */
+
+  /* 上下左右中央。図解(flow-diagram)や単一の強調ステートメントなど、画面全体の中心に置きたい場合に使う */
   .content-center {
     flex: 1;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
+    min-height: 0;
+  }
+
+  /* 上下中央のみ。横方向は中央寄せせず、本文は左寄せのまま読ませたい場合に使う */
+  .content-middle {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: center;
+    text-align: left;
+    min-height: 0;
+  }
+
+  /* 中央寄せなし(上詰め・左寄せ)。リード文+箇条書きなど、本文を上から順に読ませる既定として使う */
+  .content-start {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+    text-align: left;
     min-height: 0;
   }
 
@@ -588,11 +624,6 @@
 
   .page-number::before { content: ""; }
 
-  /* 表紙(1枚目)は本文よりわずかに濃い背景で印象づける(文字色は全体で共通のダークテーマ配色) */
-  .slide--cover {
-    background: var(--color-bg-cover);
-  }
-
   /*
     上下左右中央に配置したい内容(表紙・高橋メソッド風スライド)専用のラッパー。
     .slide-footer とは別の入れ子(flex:1)にすることで、footerのmargin-top:autoに
@@ -604,10 +635,12 @@
     text-align: center;
   }
 
-  /* 高橋メソッド風の強調スライド: 巨大な文字数文字〜1行だけで構成し、図・画像・装飾は使わない */
-  .slide--impact {
-    background: var(--color-bg-cover);
-  }
+  /*
+    .slide--cover(表紙)/.slide--impact(高橋メソッド風の強調スライド、巨大な文字数〜1行だけで
+    構成し図・画像・装飾は使わない)は背景色を持たない意味的なマーカーで、専用のCSSルールは無い。
+    通常スライドとの見た目の違いは.cols-1--centeredによる中央大文字レイアウトと内容そのもので
+    表現する。
+  */
 
   /* 参考文献スライドの見た目 */
   ol.references {
@@ -1000,12 +1033,45 @@
       </div>
       <div class="slide-footer">
         <span class="footnote"></span>
-        <span class="page-number">14 / 15</span>
+        <span class="page-number">14 / 17</span>
       </div>
     </div>
   </section>
 
-  <!-- 15枚目(最終ページ): 参考文献 -->
+  <!-- 15枚目: 1カラム(本文を上下中央のみ・横は左寄せで配置したい場合、.content-middle) -->
+  <section class="slide">
+    <div class="slide-inner cols-1">
+      <h2><budoux-ja>本文を上下中央のみに配置したい場合(.content-middle)</budoux-ja></h2>
+      <div class="content-middle" style="gap:24px;">
+        <p class="lead"><budoux-ja>横方向は中央寄せせず、本文は左寄せのまま読ませたい場合に使う</budoux-ja></p>
+        <ul class="bullets">
+          <li><budoux-ja>要点1: 補足説明</budoux-ja></li>
+          <li><budoux-ja>要点2: 補足説明</budoux-ja></li>
+        </ul>
+      </div>
+      <div class="slide-footer">
+        <span class="footnote"></span>
+        <span class="page-number">15 / 17</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 16枚目: 1カラム(中央寄せせず上詰め・左寄せで配置したい場合、.content-start + 強調テキスト) -->
+  <section class="slide">
+    <div class="slide-inner cols-1">
+      <h2><budoux-ja>本文を中央寄せせず上から読ませたい場合(.content-start)</budoux-ja></h2>
+      <div class="content-start" style="gap:24px;">
+        <p class="emphasis-text"><budoux-ja>見出しほどではないが目立たせたい1行(氏名・締めの一言など)</budoux-ja></p>
+        <p class="lead"><budoux-ja>リード文+箇条書きなど、本文を上から順に読ませる既定として使う</budoux-ja></p>
+      </div>
+      <div class="slide-footer">
+        <span class="footnote"></span>
+        <span class="page-number">16 / 17</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 17枚目(最終ページ): 参考文献 -->
   <section class="slide">
     <div class="slide-inner cols-1">
       <h2><budoux-ja>参考文献</budoux-ja></h2>
@@ -1031,7 +1097,7 @@
       </ol>
       <div class="slide-footer">
         <span class="footnote"><budoux-ja>出典: 必要な場合はここに記載</budoux-ja></span>
-        <span class="page-number">15 / 15</span>
+        <span class="page-number">17 / 17</span>
       </div>
     </div>
   </section>
