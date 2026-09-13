@@ -18,12 +18,13 @@ description: 記事(article)・書評(review)・プレゼンスライド(slide)�
 ## 前提知識(このリポジトリの規約)
 
 - ファイル名は `YYYY-MM-DD.md`(当日の日付、ISO 8601)。同日に複数作る場合は `YYYY-MM-DD-N.md`(Nは2から始まる連番)にする。既存ファイルへの**上書きは行わない**。
-- article の frontmatter は3フィールドのみ:
+- article の frontmatter は4フィールドのみ:
   ```yaml
   ---
   id: kebab-case-english-words
   title: 日本語タイトル
   image: images/Microsoft-Fluentui-Emoji-Flat-<Name>.512.png
+  is_draft: true
   ---
   ```
 - review の frontmatter:
@@ -35,9 +36,11 @@ description: 記事(article)・書評(review)・プレゼンスライド(slide)�
   jp_e_code: "電子版コード(電子版が存在しない書籍は空文字でよい)"
   image: images/<id>.jpg
   rating: 1〜5の整数
+  is_draft: true
   ---
   ```
   `jp_e_code` は [books.or.jp](https://www.books.or.jp/)(日本書籍出版協会 出版書誌データベース)で書籍タイトル・出版社から検索できる電子版(JP-e)コードで、`.claude/skills/new-content/scripts/lookup-jp-e-code.sh` で自動取得する。
+  `is_draft` は下書き(非公開)かどうかを表すbool。`true`なら非公開、`false`なら公開。新規作成時は本文が空でユーザーがまだ書いていないため、常に`true`で作成する(ユーザーが本文を書き終えて公開したくなったら、自分で`false`に変更する)。
 - `id` は英単語をハイフンで繋いだkebab-caseで、`articles/`・`reviews/`全体で一意でなければならない(URLスラッグとして使われる)。
 - `image` が指す画像は、`web/src/lib/utils.ts` の `getWebpPath` により拡張子を `.webp` に置き換えたパスのみが実際に `<img src>` として配信される(`Card.svelte`/`Header.svelte`)。**元画像(png/jpg)と同名の`.webp`が無いと画像が表示されない。** 画像取得スクリプトは両方を生成する。
 - `web/static/content/templates/{article,review}.md` に古いテンプレートが存在するが、`publishedAt`/`updatedAt`が残っていたり`id`が無かったりして**現行実装と食い違っている**。参照せず、上記の実測frontmatterに従うこと。
@@ -179,7 +182,7 @@ bash .claude/skills/new-content/scripts/fetch-review-cover.sh "<書籍タイト�
 
 ### 10. ファイル作成
 手順7で決めたパス(`$DIR/$FILENAME`、slideは `web/static/content/slides/$FILENAME`)を新規作成する。
-- article/review: 確定したfrontmatterのみを書き込む。本文は空にする。review の定型見出し(`## 概要` / `## 感想`)もファイルには書かず、口頭で目安として伝えるだけにする。
+- article/review: 確定したfrontmatterのみを書き込む。本文は空にする。review の定型見出し(`## 概要` / `## 感想`)もファイルには書かず、口頭で目安として伝えるだけにする。`is_draft`は常に`true`で書く(手順2でユーザーに確認する必要はない)。
 - slide: 手順6で作成したHTML全体を書き込む。
 
 ### 11. 検証
@@ -215,7 +218,7 @@ Chromiumの印刷パイプラインはCSSのpx(1/96インチ)をPDFのpt(1/72イ
 `NG`(ファイルが無い、`.slide`要素が無い、Ghostscriptでの補正に失敗)が出た場合は該当箇所を確認して再実行する。ローカルにGoogle Chrome/Chromiumが無い等の理由でスクリプト自体が実行できない場合は、その旨を完了報告で明示した上でこの手順を省略してよい(手動PDF化の手順をユーザーに伝える)。
 
 ### 12. 完了報告
-(article/review) 作成したファイルパスと検証結果(`OK`)を伝え、本文はユーザー自身が書くことを伝えて終了する。
+(article/review) 作成したファイルパスと検証結果(`OK`)を伝え、本文はユーザー自身が書くことを伝えて終了する。`is_draft: true`で作成しているため、公開したくなったら`false`に変更する必要があることも伝える。
 
 (slide のみ) 作成したファイルパス(`web/static/content/slides/<id>.html`)を伝えたうえで、必ず次を明示する:
 1. 本文(見出し・文章・コード例・参考文献)はClaudeが下書きしたものであり、article/reviewと異なりユーザーの手直し前提であること。特に数値・固有名詞・参考文献の実在性の確認を依頼する。

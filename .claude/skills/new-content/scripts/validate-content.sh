@@ -80,14 +80,14 @@ get_field() {
 # present_only_fields: キー自体は必須だが、値が空でもよいフィールド(jp_e_codeは書誌コード未取得時に空を許容)
 case "$TYPE" in
   articles)
-    required_fields="id title image"
+    required_fields="id title image is_draft"
     present_only_fields=""
-    allowed_fields="id title image"
+    allowed_fields="id title image is_draft"
     ;;
   reviews)
-    required_fields="id title description image rating"
+    required_fields="id title description image rating is_draft"
     present_only_fields="jp_e_code"
-    allowed_fields="id title description jp_e_code image rating"
+    allowed_fields="id title description jp_e_code image rating is_draft"
     ;;
   *)
     required_fields=""
@@ -142,6 +142,14 @@ if [ "$TYPE" = "reviews" ]; then
   rating=$(get_field rating)
   if [ -n "$rating" ] && [[ ! "$rating" =~ ^[1-5]$ ]]; then
     fail "rating は1〜5の整数にしてください(実際: '$rating')"
+  fi
+fi
+
+# 6.5. is_draft(true/falseのみ)
+if [ -n "$TYPE" ]; then
+  is_draft=$(get_field is_draft)
+  if [ -n "$is_draft" ] && [[ ! "$is_draft" =~ ^(true|false)$ ]]; then
+    fail "is_draft は true か false にしてください(実際: '$is_draft')"
   fi
 fi
 
