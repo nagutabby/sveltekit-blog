@@ -140,3 +140,105 @@ func TestQueryErrorResponse(t *testing.T) {
 		t.Fatalf("err = %v, want an error mentioning %q", err, "syntax error")
 	}
 }
+
+func followerRow(following bool) map[string]any {
+	return map[string]any{
+		"id": float64(7), "actorId": "https://example.com/alice",
+		"inbox": "https://example.com/inbox", "publicKeyPem": "PEM",
+		"following": following, "createdAt": "created", "updatedAt": "updated",
+	}
+}
+
+func relayRow() map[string]any {
+	return map[string]any{
+		"id": float64(8), "actorId": "https://relay.example/actor",
+		"inbox": "https://relay.example/inbox", "connected": true,
+		"lastAcceptedAt": "accepted", "createdAt": "created", "updatedAt": "updated",
+	}
+}
+
+func TestFollowerQueries(t *testing.T) {
+	client := newTestClient(t, func(w http.ResponseWriter, statement string, params []any) {
+		switch {
+		case strings.Contains(statement, "count(*)"):
+			writeD1Result(w, []map[string]any{{"count": float64(2)}})
+		case strings.Contains(statement, "INSERT INTO \"Follower\""):
+			if len(params) != 5 || params[0] != "https://example.com/alice" || params[2] != "PEM" {
+				t.Errorf("upsert params = %#v", params)
+			}
+			writeD1Result(w, []map[string]any{followerRow(true)})
+		case strings.Contains(statement, "SELECT \"actorId\""):
+			if len(params) != 2 || params[0] != float64(10) || params[1] != float64(5) {
+				t.Errorf("list params = %#v", params)
+			}
+			writeD1Result(w, []map[string]any{{"actorId": "alice"}, {"actorId": "bob"}})
+		case strings.Contains(statement, "UPDATE \"Follower\""):
+			if len(params) != 4 || params[3] != "https://example.com/alice" {
+				t.Errorf("unfollow params = %#v", params)
+			}
+			writeD1Result(w, []map[string]any{followerRow(false)})
+		default:
+			t.Errorf("unexpected SQL: %s", statement)
+		}
+	})
+
+	count, err := client.CountActiveFollowers(context.Background())
+	if err != nil || count != 2 {
+		t.Fatalf("CountActiveFollowers = %d, %v", count, err)
+	}
+	follower, err := client.UpsertFollower(context.Background(), db.UpsertFollowerParams{
+		ActorId: "https://example.com/alice", Inbox: "https://example.com/inbox",
+		PublicKeyPem: "PEM", CreatedAt: "created", UpdatedAt: "updated",
+	})
+	if err != nil || follower.ID != 7 || !follower.Following {
+		t.Fatalf("UpsertFollower = %+v, %v", follower, err)
+	}
+	ids, err := client.ListActiveFollowerActorIDs(context.Background(), db.ListActiveFollowerActorIDsParams{Limit: 10, Offset: 5})
+	if err != nil || len(ids) != 2 || ids[0] != "alice" || ids[1] != "bob" {
+		t.Fatalf("ListActiveFollowerActorIDs = %v, %v", ids, err)
+	}
+	follower, err = client.UnfollowByActorID(context.Background(), db.UnfollowByActorIDParams{
+		ActorId: "https://example.com/alice", Inbox: "https://example.com/inbox",
+		PublicKeyPem: "PEM", UpdatedAt: "updated",
+	})
+	if err != nil || follower.Following {
+		t.Fatalf("UnfollowByActorID = %+v, %v", follower, err)
+	}
+}
+
+func TestRelayQueries(t *testing.T) {
+	client := newTestClient(t, func(w http.ResponseWriter, statement string, params []any) {
+		if !strings.Contains(statement, `FROM "RelayConnection"`) {
+			t.Errorf("unexpected SQL: %s", statement)
+		}
+		writeD1Result(w, []map[string]any{relayRow()})
+	})
+
+	relay, err := client.GetRelayConnectionByActorID(context.Background(), "https://relay.example/actor")
+	if err != nil || relay.ID != 8 || !relay.Connected || relay.LastAcceptedAt.String != "accepted" {
+		t.Fatalf("GetRelayConnectionByActorID = %+v, %v", relay, err)
+	}
+	relays, err := client.ListRelayConnections(context.Background())
+	if err != nil || len(relays) != 1 || relays[0].ActorId != relay.ActorId {
+		t.Fatalf("ListRelayConnections = %+v, %v", relays, err)
+	}
+}
+
+func TestD1QueryFailureAndMissingRow(t *testing.T) {
+	client := newTestClient(t, func(w http.ResponseWriter, statement string, params []any) {
+		writeD1Result(w, nil)
+	})
+	_, err := client.UnfollowByActorID(context.Background(), db.UnfollowByActorIDParams{})
+	if err != sql.ErrNoRows {
+		t.Fatalf("UnfollowByActorID error = %v, want sql.ErrNoRows", err)
+	}
+
+	badClient := newTestClient(t, func(w http.ResponseWriter, statement string, params []any) {
+		w.WriteHeader(http.StatusBadGateway)
+		_, _ = w.Write([]byte("not JSON"))
+	})
+	_, err = badClient.Exec(context.Background(), "SELECT 1", nil)
+	if err == nil || !strings.Contains(err.Error(), "decode response") {
+		t.Fatalf("Exec error = %v, want decode failure", err)
+	}
+}

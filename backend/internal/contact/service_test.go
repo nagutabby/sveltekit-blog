@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"connectrpc.com/connect"
@@ -74,6 +75,34 @@ func TestSubmitContactSuccess(t *testing.T) {
 	}
 	if capturedBody["subject"] != "お問い合わせを受け付けました" {
 		t.Fatalf("subject = %v", capturedBody["subject"])
+	}
+}
+
+func TestSubmitContactEscapesHTMLInEmail(t *testing.T) {
+	var htmlBody string
+	svc := newTestService(t, func(w http.ResponseWriter, r *http.Request) {
+		var payload struct {
+			HTML string `json:"html"`
+		}
+		if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+			t.Errorf("decode mail payload: %v", err)
+		}
+		htmlBody = payload.HTML
+		w.WriteHeader(http.StatusOK)
+	})
+
+	_, err := submit(t, svc, &contactv1.SubmitContactRequest{
+		Name: `<script>alert("x")</script>`, Email: "test@example.com",
+		Text: `A & B <img src=x onerror=alert(1)>`,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if strings.Contains(htmlBody, "<script>") || strings.Contains(htmlBody, "<img src=x") {
+		t.Fatalf("unescaped user HTML in email: %s", htmlBody)
+	}
+	if !strings.Contains(htmlBody, `&lt;script&gt;`) || !strings.Contains(htmlBody, `A &amp; B &lt;img`) {
+		t.Fatalf("escaped user content missing from email: %s", htmlBody)
 	}
 }
 

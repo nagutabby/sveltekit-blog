@@ -1,4 +1,4 @@
-import { describe, it, expect, afterAll } from 'vitest';
+import { describe, it, expect, afterAll, vi } from 'vitest';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -8,6 +8,7 @@ import path from 'node:path';
 // import below runs (a top-level `beforeAll` would run too late).
 const contentDir = fs.mkdtempSync(path.join(os.tmpdir(), 'content-test-'));
 process.env.CONTENT_DIR = contentDir;
+vi.mock('$app/environment', () => ({ dev: false }));
 
 const writeArticle = (
   filename: string,
@@ -109,6 +110,16 @@ describe('getAllRawData', () => {
 });
 
 describe('getAllHTMLData', () => {
+  it('キャッシュされた生データを変更せず、検索用のMarkdownを保持する', async () => {
+    const raw = await getAllRawData('articles');
+    const originalBody = raw[0].body;
+
+    const html = await getAllHTMLData('articles');
+
+    expect(html[0].body).toContain('<h1');
+    expect((await getAllRawData('articles'))[0].body).toBe(originalBody);
+  });
+
   it('bodyをMarkdownからHTMLへ変換する', async () => {
     const [result] = await getAllHTMLData('articles');
 

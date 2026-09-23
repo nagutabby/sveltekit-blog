@@ -7,14 +7,21 @@ import markedKatex from 'marked-katex-extension';
 
 const renderer = new Renderer();
 
+const escapeAttribute = (value: string) => value
+  .replaceAll('&', '&amp;')
+  .replaceAll('"', '&quot;')
+  .replaceAll("'", '&#39;')
+  .replaceAll('<', '&lt;')
+  .replaceAll('>', '&gt;');
+
 renderer.image = ({ href, title, text }) => {
   if (href && href.startsWith('images/')) {
     href = `/content/articles/images/${href.substring(7)}`;
   }
 
-  const titleAttr = title ? ` title="${title}"` : '';
+  const titleAttr = title ? ` title="${escapeAttribute(title)}"` : '';
 
-  return `<img src="${getWebpPath(href)}" alt="${text}"${titleAttr}>`;
+  return `<img src="${escapeAttribute(getWebpPath(href))}" alt="${escapeAttribute(text)}"${titleAttr}>`;
 };
 
 marked.use({ renderer });

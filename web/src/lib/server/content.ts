@@ -128,13 +128,12 @@ export const getAllRawData = dev ? getAllRawDataImpl : memoize(getAllRawDataImpl
 
 export const getAllHTMLData = async (type: ContentType) => {
   const allData = await getAllRawData(type);
-  await Promise.all(
-    allData.map(async (data) => {
-      data.body = await convertMarkdownToHtml(data.body);
-    })
+  return Promise.all(
+    allData.map(async (data) => ({
+      ...data,
+      body: await convertMarkdownToHtml(data.body)
+    }))
   );
-
-  return allData;
 };
 
 export const getHTMLData = async (id: string, type: ContentType): Promise<Article | Review> => {

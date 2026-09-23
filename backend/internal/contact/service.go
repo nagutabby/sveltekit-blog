@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"html"
 	"net/http"
 	"regexp"
 
@@ -78,7 +79,7 @@ func (s *Service) SubmitContact(
 		Subject: "お問い合わせを受け付けました",
 		HTML: fmt.Sprintf(
 			`<!DOCTYPE HTML><html><p>お問い合わせ内容は以下の通りです。</p><ul><li>氏名: %s</li><li>メールアドレス: %s</li><li>本文: %s</li></ul><p>返信まで数日かかる場合がございます。予めご了承ください。</p></html>`,
-			msg.GetName(), msg.GetEmail(), msg.GetText(),
+			html.EscapeString(msg.GetName()), html.EscapeString(msg.GetEmail()), html.EscapeString(msg.GetText()),
 		),
 	}
 

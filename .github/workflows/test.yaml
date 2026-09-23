@@ -1,6 +1,7 @@
 name: テスト
 on:
   push:
+  pull_request:
 
 jobs:
   test-web:
@@ -26,6 +27,12 @@ jobs:
 
       - name: テストを実行
         run: pnpm test
+
+      - name: 型とSvelteの診断
+        run: pnpm check
+
+      - name: 静的サイトをビルド
+        run: pnpm build
 
   test-backend:
     runs-on: ubuntu-latest
