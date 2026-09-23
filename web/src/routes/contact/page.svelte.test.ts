@@ -10,21 +10,17 @@ vi.mock('$lib/client/backendClient', () => ({
   createBackendClient: () => ({ submitContact })
 }));
 
+vi.mock('$lib/components/Header.svelte', () => ({
+  default: vi.fn().mockImplementation((props) => ({ props }))
+}));
+
+vi.mock('$lib/components/OpenGraph.svelte', () => ({
+  default: vi.fn().mockImplementation((props) => ({ props }))
+}));
+
 describe('お問い合わせフォーム', () => {
   beforeEach(() => {
     vi.resetAllMocks();
-
-    vi.mock('$lib/components/Header.svelte', () => ({
-      default: vi.fn().mockImplementation((props) => {
-        return { props };
-      })
-    }));
-
-    vi.mock('$lib/components/OpenGraph.svelte', () => ({
-      default: vi.fn().mockImplementation((props) => {
-        return { props };
-      })
-    }));
   });
 
   const fillForm = () => {

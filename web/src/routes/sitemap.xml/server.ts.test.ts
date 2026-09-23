@@ -4,12 +4,15 @@ import { getAllRawData } from '$lib/server/content.js';
 import { XMLParser } from 'fast-xml-parser';
 import type { Article } from '$lib/types/blog';
 
+vi.mock('$lib/server/content.js', () => ({
+  getAllRawData: vi.fn(),
+}));
+
+const callGet = (setHeaders: ReturnType<typeof vi.fn>) =>
+  GET({ setHeaders } as unknown as Parameters<typeof GET>[0]);
+
 beforeEach(() => {
   vi.resetAllMocks();
-
-  vi.mock('$lib/server/content.js', () => ({
-    getAllRawData: vi.fn(),
-  }));
 });
 
 // 各テスト後にモックをクリア
@@ -51,7 +54,7 @@ describe('GET /sitemap.xml', () => {
     });
 
     // GET関数を呼び出し
-    const response = await GET({ setHeaders: mockSetHeaders });
+    const response = await callGet(mockSetHeaders);
 
     expect(mockSetHeaders).toHaveBeenCalledWith({
       'Content-Type': 'application/xml'

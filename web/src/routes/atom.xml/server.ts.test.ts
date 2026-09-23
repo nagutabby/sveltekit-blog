@@ -17,6 +17,9 @@ vi.mock('$lib/server/content', () => {
   };
 });
 
+const callGet = (setHeaders: ReturnType<typeof vi.fn>) =>
+  GET({ setHeaders } as unknown as Parameters<typeof GET>[0]);
+
 describe('/atom.xml endpoint', () => {
   // テスト用のダミー記事データ
   const mockArticles = [
@@ -62,7 +65,7 @@ describe('/atom.xml endpoint', () => {
   it('Content-Typeヘッダーが正しい', async () => {
     const mockSetHeaders = vi.fn();
 
-    await GET({ setHeaders: mockSetHeaders });
+    await callGet(mockSetHeaders);
 
     expect(mockSetHeaders).toHaveBeenCalledWith({
       'Content-Type': 'application/xml'
@@ -72,7 +75,7 @@ describe('/atom.xml endpoint', () => {
   it('有効なAtomフィードを返す', async () => {
     const mockSetHeaders = vi.fn();
 
-    const response = await GET({ setHeaders: mockSetHeaders });
+    const response = await callGet(mockSetHeaders);
     const xmlContent = await response.text();
 
     // XMLが解析可能かチェック
@@ -82,7 +85,7 @@ describe('/atom.xml endpoint', () => {
   it('フィードのメタデータが正しい', async () => {
     const mockSetHeaders = vi.fn();
 
-    const response = await GET({ setHeaders: mockSetHeaders });
+    const response = await callGet(mockSetHeaders);
     const xmlContent = await response.text();
     const parsedXml = parser.parse(xmlContent);
 
@@ -107,7 +110,7 @@ describe('/atom.xml endpoint', () => {
   it('最新の更新日時が正しく設定される', async () => {
     const mockSetHeaders = vi.fn();
 
-    const response = await GET({ setHeaders: mockSetHeaders });
+    const response = await callGet(mockSetHeaders);
     const xmlContent = await response.text();
     const parsedXml = parser.parse(xmlContent);
 
@@ -119,7 +122,7 @@ describe('/atom.xml endpoint', () => {
   it('すべての記事エントリが含まれている', async () => {
     const mockSetHeaders = vi.fn();
 
-    const response = await GET({ setHeaders: mockSetHeaders });
+    const response = await callGet(mockSetHeaders);
     const xmlContent = await response.text();
     const parsedXml = parser.parse(xmlContent);
 
@@ -130,7 +133,7 @@ describe('/atom.xml endpoint', () => {
   it('記事エントリのフォーマットが正しい', async () => {
     const mockSetHeaders = vi.fn();
 
-    const response = await GET({ setHeaders: mockSetHeaders });
+    const response = await callGet(mockSetHeaders);
     const xmlContent = await response.text();
     const parsedXml = parser.parse(xmlContent);
 
@@ -152,7 +155,7 @@ describe('/atom.xml endpoint', () => {
 
     const mockSetHeaders = vi.fn();
 
-    const response = await GET({ setHeaders: mockSetHeaders });
+    const response = await callGet(mockSetHeaders);
     const xmlContent = await response.text();
     const parsedXml = parser.parse(xmlContent);
 
@@ -170,7 +173,7 @@ describe('/atom.xml endpoint', () => {
   it('generateDescriptionFromTextが各記事に対して呼び出される', async () => {
     const mockSetHeaders = vi.fn();
 
-    await GET({ setHeaders: mockSetHeaders });
+    await callGet(mockSetHeaders);
 
     // generateDescriptionFromTextが各記事の本文で呼び出されたことを確認
     expect(generateDescriptionFromText).toHaveBeenCalledTimes(2);

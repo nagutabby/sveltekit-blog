@@ -51,7 +51,7 @@ describe('スライド一覧', () => {
     vi.mocked(fs.existsSync).mockReturnValue(true);
 
     // readdirSyncのモック実装 - PDFファイル名のリストを返す
-    vi.mocked(fs.readdirSync).mockReturnValue(['slide1.pdf', 'slide2.pdf', 'presentation.pdf'] as unknown as fs.Dirent[]);
+    vi.mocked(fs.readdirSync).mockReturnValue(['slide1.pdf', 'slide2.pdf', 'presentation.pdf'] as unknown as ReturnType<typeof fs.readdirSync>);
 
     const result = await load({} as any);
 
@@ -104,7 +104,7 @@ describe('スライド一覧', () => {
     vi.mocked(fs.existsSync).mockReturnValue(true);
 
     // readdirSyncのモック実装 - 様々な拡張子のファイル名を含むリストを返す
-    vi.mocked(fs.readdirSync).mockReturnValue(['slide1.pdf', 'image.jpg', 'document.txt', 'slide2.pdf'] as unknown as fs.Dirent[]);
+    vi.mocked(fs.readdirSync).mockReturnValue(['slide1.pdf', 'image.jpg', 'document.txt', 'slide2.pdf'] as unknown as ReturnType<typeof fs.readdirSync>);
 
     const result: any = await load({} as any);
 
