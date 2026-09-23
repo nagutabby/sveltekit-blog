@@ -1,6 +1,6 @@
 ---
 name: new-content
-description: 記事(article)・書評(review)・プレゼンスライド(slide)の新規ファイルを作成する。article/reviewはbackend/content配下にMarkdownを作成し、タイトル・id・画像(articleはfluentui-emoji、reviewはbooks.or.jpの書影とjp_e_code)を対話的に確定してfrontmatterのみを書き込む(本文はユーザーが書くため生成しない)。slideはweb/static/content/slides配下にHTMLを作成し、スライド本文(見出し・構成・文章)はClaudeが下書きする(article/reviewとは逆の責務)。「記事を書きたい」「書評を追加したい」「スライドを作りたい」などで使う。
+description: このブログの記事、書評、プレゼンスライドの新規作成に使う。記事と書評はfrontmatterのみ、スライドはHTML本文まで作成する。
 ---
 
 # 記事/書評/スライド作成
@@ -9,11 +9,11 @@ description: 記事(article)・書評(review)・プレゼンスライド(slide)�
 
 **article/review: 本文(記事・書評の中身)は絶対に書かない。frontmatterと空の本文だけを書き込み、続きはユーザーに書かせる。**
 
-**slide: これとは責務が逆。スライド本文(見出し・構成・文章)はClaudeが下書きする。** 「スライド作成時の文章ルール」(後述)が存在するのは、slideに限り書く主体がClaude自身だから。各手順の `(〜のみ)` 表記でどちらの規則が効いているか必ず確認すること。上記の「本文は書かない」原則はslideには適用されない。
+**slide: これとは責務が逆。スライド本文(見出し・構成・文章)はCodexが下書きする。** 「スライド作成時の文章ルール」(後述)が存在するのは、slideに限り書く主体がCodex自身だから。各手順の `(〜のみ)` 表記でどちらの規則が効いているか必ず確認すること。上記の「本文は書かない」原則はslideには適用されない。
 
-引数(`$ARGUMENTS`)に `article`・`review`・`slide` があればその種別を使う。なければユーザーに質問する。
+ユーザーの依頼に `article`・`review`・`slide` の種別があればそれを使う。種別が分からなければユーザーに質問する。
 
-前提ツール(macOS想定): `gh`、`curl`、`rsvg-convert`(`brew install librsvg`)、`cwebp`(`brew install webp`)。slideの本文・図表はClaudeが直接HTMLとして記述する(図表はテンプレート付属のHTML/CSSコンポーネントを使うため追加ツールは不要)。slideのPDF化は`web/scripts/export-slide-pdf.mjs`で行う(手順11.5参照、ローカルのGoogle Chrome/Chromiumが必要)。Ghostscript(`brew install ghostscript`)があれば、生成したPDFの`/MediaBox`を`[0 0 1920 1080]`に補正する(無くてもPDF化自体は可能、詳細は手順11.5参照)。
+前提ツール(macOS想定): `gh`、`curl`、`rsvg-convert`(`brew install librsvg`)、`cwebp`(`brew install webp`)。slideの本文・図表はCodexが直接HTMLとして記述する(図表はテンプレート付属のHTML/CSSコンポーネントを使うため追加ツールは不要)。slideのPDF化は`web/scripts/export-slide-pdf.mjs`で行う(手順11.5参照、ローカルのGoogle Chrome/Chromiumが必要)。Ghostscript(`brew install ghostscript`)があれば、生成したPDFの`/MediaBox`を`[0 0 1920 1080]`に補正する(無くてもPDF化自体は可能、詳細は手順11.5参照)。
 
 ## 前提知識(このリポジトリの規約)
 
@@ -39,7 +39,7 @@ description: 記事(article)・書評(review)・プレゼンスライド(slide)�
   is_draft: true
   ---
   ```
-  `jp_e_code` は [books.or.jp](https://www.books.or.jp/)(日本書籍出版協会 出版書誌データベース)で書籍タイトル・出版社から検索できる電子版(JP-e)コードで、`.claude/skills/new-content/scripts/lookup-jp-e-code.sh` で自動取得する。
+  `jp_e_code` は [books.or.jp](https://www.books.or.jp/)(日本書籍出版協会 出版書誌データベース)で書籍タイトル・出版社から検索できる電子版(JP-e)コードで、`.agents/skills/new-content/scripts/lookup-jp-e-code.sh` で自動取得する。
   `is_draft` は下書き(非公開)かどうかを表すbool。`true`なら非公開、`false`なら公開。新規作成時は本文が空でユーザーがまだ書いていないため、常に`true`で作成する(ユーザーが本文を書き終えて公開したくなったら、自分で`false`に変更する)。
 - `id` は英単語をハイフンで繋いだkebab-caseで、`articles/`・`reviews/`全体で一意でなければならない(URLスラッグとして使われる)。
 - `image` が指す画像は、`web/src/lib/utils.ts` の `getWebpPath` により拡張子を `.webp` に置き換えたパスのみが実際に `<img src>` として配信される(`Card.svelte`/`Header.svelte`)。**元画像(png/jpg)と同名の`.webp`が無いと画像が表示されない。** 画像取得スクリプトは両方を生成する。
@@ -56,12 +56,12 @@ description: 記事(article)・書評(review)・プレゼンスライド(slide)�
 ## 手順
 
 ### 1. 種別の確認
-引数で `article`/`review`/`slide` が指定されていなければ AskUserQuestion で聞く(選択肢: 記事/書評/スライド)。
+依頼から `article`/`review`/`slide` を判断できなければ、記事/書評/スライドのどれを作るか質問する。
 
 ### 2. 内容のヒアリング
 - article: 「何について書きたいか」を自由記述で質問する。
 - review: 書籍の**タイトル**と**出版社**(jp_e_code検索に必須)、および感想の方向性(任意)を質問する。
-- slide: **テーマ・発表タイトル案**、**想定聴衆**(社内LT/社外、技術レベル)、**伝えたい要点**(自由記述、複数可)、スライドに使いたい**具体的な数値・コード例・比較対象**、実在する**参考文献**(あれば)を質問する。articleと異なりClaudeが本文を書くため、事実関係(数値・固有名詞・コードの前提)はここで確認し、不明な点を後で推測で埋めない。
+- slide: **テーマ・発表タイトル案**、**想定聴衆**(社内LT/社外、技術レベル)、**伝えたい要点**(自由記述、複数可)、スライドに使いたい**具体的な数値・コード例・比較対象**、実在する**参考文献**(あれば)を質問する。articleと異なりCodexが本文を書くため、事実関係(数値・固有名詞・コードの前提)はここで確認し、不明な点を後で推測で埋めない。
 
 回答を待つ。
 
@@ -82,7 +82,7 @@ ls web/static/content/slides/ | sed -E 's/\.[^.]+$//' | sort -u
 手順2で得た書籍タイトル・出版社で検索する。
 
 ```bash
-bash .claude/skills/new-content/scripts/lookup-jp-e-code.sh "<書籍タイトル>" "<出版社>"
+bash .agents/skills/new-content/scripts/lookup-jp-e-code.sh "<書籍タイトル>" "<出版社>"
 ```
 
 標準出力に20桁のコードが出れば、それをjp_e_codeの提案値にする。`NOT_FOUND`(終了コード1)の場合は電子版が存在しないとみなし、jp_e_codeは空文字で提案する(検索を再試行したり、値を捏造したりしない)。
@@ -94,12 +94,12 @@ bash .claude/skills/new-content/scripts/lookup-jp-e-code.sh "<書籍タイトル
 - review の場合のみ、手順4で得たjp_e_code(または空文字)を提示する。
 - slide の場合、絵文字・jp_e_codeの提案は不要(slideにfrontmatterという概念は無い)。
 
-AskUserQuestion でこれらをまとめて提示し、承認を求める。修正依頼があれば直るまで再提案する。
+これらをまとめて提示し、ユーザーに確認する。修正依頼があれば反映して再提案する。
 - (article/review) この提案はあくまでタイトル・id・画像・jp_e_codeであり、本文には一切触れない。
 - (slide) この提案はタイトル・idのみであり、スライドの構成・本文は次の手順6で別途下書きする。
 
 ### 6. (slide のみ) スライドの構成決定・本文ドラフト作成
-article/reviewと異なり、**slideはスライド本文(見出し・構成・文章)をClaudeが下書きする**(冒頭の「本文は書かない」原則はslideには適用されない)。
+article/reviewと異なり、**slideはスライド本文(見出し・構成・文章)をCodexが下書きする**(冒頭の「本文は書かない」原則はslideには適用されない)。
 
 1. `web/static/content/templates/slide.html` を読み、コピー元にする(デザイン・CSS・budoux-ja読み込みは変更しない)。
 2. 手順2のヒアリング内容から、スライド全体の構成を組み立てる。使えるスライド種別:
@@ -162,7 +162,7 @@ slideは日付ではなく手順5で確定したid(kebab-caseスラッグ)をそ
 承認された絵文字名(例 "White Flag")について実行する。
 
 ```bash
-bash .claude/skills/new-content/scripts/fetch-emoji-image.sh "White Flag"
+bash .agents/skills/new-content/scripts/fetch-emoji-image.sh "White Flag"
 ```
 
 成功すると `web/static/content/articles/images/` に512x512 PNG(fluentui-emojiの2D(Flat)版SVGをラスタライズしたもの)と同名`.webp`を作成し、標準出力に `images/Microsoft-Fluentui-Emoji-Flat-White-Flag.512.png` のような相対パスを返す。これをそのままfrontmatterの `image:` に書く。fluentui-emoji側のフォルダ名は "White flag" のように先頭のみ大文字のsentence caseだが、スクリプト内で大文字小文字を無視して検索するため入力の表記は問わない。
@@ -173,7 +173,7 @@ bash .claude/skills/new-content/scripts/fetch-emoji-image.sh "White Flag"
 手順2で得た書籍タイトル・出版社と、確定したidで実行する。
 
 ```bash
-bash .claude/skills/new-content/scripts/fetch-review-cover.sh "<書籍タイトル>" "<出版社>" "<id>"
+bash .agents/skills/new-content/scripts/fetch-review-cover.sh "<書籍タイトル>" "<出版社>" "<id>"
 ```
 
 成功すると `web/static/content/reviews/images/<id>.jpg` と同名`.webp`を作成し、標準出力に `images/<id>.jpg` を返す。これをそのままfrontmatterの `image:` に書く。
@@ -190,7 +190,7 @@ bash .claude/skills/new-content/scripts/fetch-review-cover.sh "<書籍タイト�
 作成したファイルに対して検証スクリプトを実行し、ファイル名とfrontmatterの構造が規約通りであることを確認する。
 
 ```bash
-bash .claude/skills/new-content/scripts/validate-content.sh "$DIR/$FILENAME"
+bash .agents/skills/new-content/scripts/validate-content.sh "$DIR/$FILENAME"
 ```
 
 `NG` が出た場合はファイルを削除せず、指摘された内容(必須フィールドの欠落、id重複、rating範囲外、image実体の不在など)に沿ってfrontmatterを修正し、`OK` になるまで再実行する。**修正はfrontmatterのみに留め、本文には手を加えない。**
@@ -221,7 +221,7 @@ Chromiumの印刷パイプラインはCSSのpx(1/96インチ)をPDFのpt(1/72イ
 (article/review) 作成したファイルパスと検証結果(`OK`)を伝え、本文はユーザー自身が書くことを伝えて終了する。`is_draft: true`で作成しているため、公開したくなったら`false`に変更する必要があることも伝える。
 
 (slide のみ) 作成したファイルパス(`web/static/content/slides/<id>.html`)を伝えたうえで、必ず次を明示する:
-1. 本文(見出し・文章・コード例・参考文献)はClaudeが下書きしたものであり、article/reviewと異なりユーザーの手直し前提であること。特に数値・固有名詞・参考文献の実在性の確認を依頼する。
+1. 本文(見出し・文章・コード例・参考文献)はCodexが下書きしたものであり、article/reviewと異なりユーザーの手直し前提であること。特に数値・固有名詞・参考文献の実在性の確認を依頼する。
 2. 手順11のレイアウト検証結果(`OK`、または未実施ならその理由)。frontmatterの構造チェックに相当する自動検証は無いこと。
 3. 手順11.5のPDF化結果。`OK`なら生成した`web/static/content/slides/<id>.pdf`のパスを伝える(`/slides`への掲載にはこのPDFが必要)。未実施(ローカルにChrome/Chromiumが無い等)ならその旨と、`node web/scripts/export-slide-pdf.mjs "web/static/content/slides/<id>.html"`を手元で実行すればPDF化できることを伝える。
 
