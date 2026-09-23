@@ -33,6 +33,6 @@ description: このブログの記事を新規作成するときに使う。タ�
 3. 当日の未使用ファイル名を決める。確定した絵文字名で `bash .agents/skills/new-article/scripts/fetch-emoji-image.sh "White Flag"` を実行する（引数は実際の名前に置き換える）。このスクリプトは512pxのPNGとWebPを生成し、`image` に使う相対パスを出力する。`NOT_FOUND` なら別の絵文字を提案する。
 4. 確定したfrontmatterのみを新規Markdownファイルに書く。`image` にはスクリプトの出力をそのまま使う。
 5. `bash .agents/skills/new-article/scripts/validate-content.sh "<作成したファイル>"` を実行し、`OK` になるまでfrontmatterを修正する。本文には手を加えない。
-6. ファイルパスと検証結果を報告し、本文はユーザーが書くこと、公開時に `is_draft` を `false` にすることを伝える。
+6. ファイルパスと検証結果を報告し、本文はユーザーが書くこと、公開時に `is_draft` を `false` にすることを伝える。ユーザーが本文を書いた後、AI slopのように見えるか点検を依頼した場合は [check-ai-slop](../check-ai-slop/SKILL.md) を使う。
 
 画像取得には `gh`、`curl`、`rsvg-convert`、`cwebp` を使う（macOS想定）。取得できない画像パスを捏造しない。

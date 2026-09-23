@@ -38,6 +38,6 @@ description: このブログの書評を新規作成するときに使う。書�
 4. 当日の未使用ファイル名を決め、`bash .agents/skills/new-review/scripts/fetch-review-cover.sh "<書籍タイトル>" "<出版社>" "<id>"` を実行する。成功時はJPGとWebPが作られ、`image` に使う相対パスが出力される。
 5. frontmatterのみを新規Markdownファイルに書く。書影が `NOT_FOUND` なら `image: images/<id>.jpg` とし、ユーザーに `web/static/content/reviews/images/<id>.jpg` と同名の `.webp` の配置を依頼する。
 6. `bash .agents/skills/new-review/scripts/validate-content.sh "<作成したファイル>"` を実行する。書影以外の指摘はfrontmatterを修正して再検証する。書影が未配置なら検証が `NG` になることを正直に報告する。本文には手を加えない。
-7. ファイルパスと検証結果を報告し、本文はユーザーが書くこと、公開時に `is_draft` を `false` にすることを伝える。
+7. ファイルパスと検証結果を報告し、本文はユーザーが書くこと、公開時に `is_draft` を `false` にすることを伝える。ユーザーが本文を書いた後、AI slopのように見えるか点検を依頼した場合は [check-ai-slop](../check-ai-slop/SKILL.md) を使う。
 
 書誌検索・画像取得には `curl` と `cwebp` を使う（macOS想定）。取得できない書誌情報や画像を捏造しない。

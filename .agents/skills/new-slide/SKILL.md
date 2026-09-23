@@ -29,6 +29,6 @@ description: このブログのプレゼンスライドを新規作成すると�
 4. 完成したHTML全体を `<id>.html` として新規保存する。
 5. `node web/scripts/validate-slide-layout.mjs "web/static/content/slides/<id>.html"` を実行する。1920×1080pxからのはみ出しと見出し・本文間隔の不統一があれば、文章量・画像サイズ・配置を直して再実行する。Chrome/Chromiumが無く実行できなければ、その理由を完了報告に記す。
 6. レイアウトが `OK` なら `node web/scripts/export-slide-pdf.mjs "web/static/content/slides/<id>.html"` を実行する。ローカルにGhostscriptがあれば、スクリプトがPDFの `/MediaBox` を `[0 0 1920 1080]` に補正する。Chrome/Chromiumが無くPDF化できなければ、手元での実行コマンドを伝える。
-7. HTMLとPDFのパス、レイアウト検証とPDF化の結果を報告する。本文はCodexの下書きなので、数値・固有名詞・参考文献の確認をユーザーに依頼する。
+7. HTMLとPDFのパス、レイアウト検証とPDF化の結果を報告する。本文はCodexの下書きなので、数値・固有名詞・参考文献の確認をユーザーに依頼する。ユーザーが自分で完成させたスライドについてAI slopのように見えるか点検を依頼した場合は [check-ai-slop](../check-ai-slop/SKILL.md) を使う。
 
 スライドHTMLの構造を検証する専用スクリプトはない。`validate-content.sh` は記事・書評のfrontmatter専用であり、スライドには使わない。
