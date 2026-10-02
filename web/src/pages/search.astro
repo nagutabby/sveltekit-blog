@@ -1,0 +1,32 @@
+---
+import SiteLayout from '../layouts/SiteLayout.astro';
+import SiteHeader from '../components/SiteHeader.astro';
+import Timeline from '$lib/components/Timeline.svelte';
+import SearchResults from '../components/SearchResults.svelte';
+import { getAllRawData } from '$lib/server/content';
+import { convertMarkdownToHtml } from '$lib/markdown';
+import type { SearchableArticle } from '$lib/types/search';
+import type { Article } from '$lib/types/blog';
+
+const rawArticles = await getAllRawData('articles') as Article[];
+const articles: SearchableArticle[] = await Promise.all(rawArticles.map(async (article) => ({
+  ...article,
+  rawBody: article.body,
+  body: await convertMarkdownToHtml(article.body)
+})));
+const image = '/images/Microsoft-Fluentui-Emoji-3d-Cat-3d.1024.png';
+const title = '記事を検索';
+const description = '記事を検索できます';
+---
+
+<SiteLayout {title} {description} {image}>
+  <SiteHeader {title} {image} />
+  <main class="container px-3 md:px-10 py-10 mx-auto">
+    <div class="flex flex-col md:flex-row items-start md:relative gap-10 md:gap-0">
+      <SearchResults {articles} />
+      <div class="w-full md:w-[33%] md:absolute md:top-0 md:bottom-0 md:right-0">
+        <Timeline client:visible />
+      </div>
+    </div>
+  </main>
+</SiteLayout>

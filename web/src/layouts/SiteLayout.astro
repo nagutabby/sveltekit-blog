@@ -1,0 +1,71 @@
+---
+import { ClientRouter } from 'astro:transitions';
+import Footer from '$lib/components/Footer.svelte';
+import { generateDescriptionFromText, getWebpPath } from '$lib/utils';
+import '../lib/assets/stylesheets/app.css';
+
+type Props = {
+  title?: string;
+  description?: string;
+  image?: string;
+  type?: 'website' | 'article';
+};
+
+const {
+  title = 'nagutabbyの考え事',
+  description = '学んだことをまとめるブログ',
+  image = '/images/Microsoft-Fluentui-Emoji-3d-Cat-3d.1024.png',
+  type = 'website'
+} = Astro.props;
+const siteTitle = 'nagutabbyの考え事';
+const pageTitle = title === siteTitle ? siteTitle : `${title} - ${siteTitle}`;
+const summary = generateDescriptionFromText(description) || '学んだことをまとめるブログ';
+const pathname = Astro.url.pathname.replace(/\.html$/, '').replace(/\/$/, '') || '/';
+const canonical = new URL(pathname, Astro.site).href;
+const imageUrl = /^https?:\/\//.test(image) ? image : new URL(image, Astro.site).href;
+---
+
+<!doctype html>
+<html lang="ja" data-theme="dracula">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <link rel="alternate" type="application/rss+xml" title={siteTitle} href="/atom.xml" />
+    <link rel="icon" href="/images/Microsoft-Fluentui-Emoji-3d-Cat-3d.32.png" />
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="apple-touch-icon" href="/images/Microsoft-Fluentui-Emoji-3d-Cat-3d.180.png" />
+    <link rel="preload" as="image" href={getWebpPath(image)} fetchpriority="high" />
+    <link rel="canonical" href={canonical} />
+    <meta name="description" content={summary} />
+    <meta name="theme-color" content="black" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:site_name" content={siteTitle} />
+    <meta property="og:locale" content="ja_JP" />
+    <meta property="og:type" content={type} />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={summary} />
+    <meta property="og:image" content={imageUrl} />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content={pageTitle} />
+    <meta name="twitter:image" content={imageUrl} />
+    <title>{pageTitle}</title>
+    <ClientRouter />
+    <slot name="head" />
+  </head>
+  <body class="bg-base-300">
+    <slot />
+    <Footer />
+    <script>
+      if (import.meta.env.PROD && 'serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/service-worker.js').catch((error) => {
+            console.error('Service worker registration failed:', error);
+          });
+        });
+      }
+    </script>
+  </body>
+</html>

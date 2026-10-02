@@ -1,6 +1,5 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import { browser } from "$app/environment";
 
   let isError = $state(false);
   let shareText = $state("");
@@ -41,9 +40,7 @@
 
   onMount(() => {
     shareText = `${encodeURIComponent(document.title)}${encodeURIComponent("\n")}${encodeURIComponent(location.href)}`;
-    if (browser) {
-      currentUrl = window.location.href;
-    }
+    currentUrl = window.location.href;
 
     const mastodonInstanceNameField = document.getElementById(
       "mastodon-instance-name",

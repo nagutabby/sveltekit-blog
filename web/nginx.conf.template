@@ -8,8 +8,7 @@ server {
 
     index index.html;
 
-    # adapter-staticは/foo/page/[page]のようなクリーンURLをfoo.htmlとして
-    # 出力するため、拡張子なしアクセスをfoo.htmlへ解決する。
+    # AstroはクリーンURLの各ページを.htmlとして出力する。
     location / {
         try_files $uri $uri.html $uri/index.html =404;
     }

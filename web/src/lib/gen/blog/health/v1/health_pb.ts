@@ -44,7 +44,7 @@ export const CheckResponseSchema: GenMessage<CheckResponse> = /*@__PURE__*/
 
 /**
  * HealthService is used to smoke-test the Connect RPC pipeline between
- * web (SvelteKit) and backend (Go). Domain services (Contact, Content,
+ * web (Astro + Svelte) and backend (Go). Domain services (Contact, Content,
  * FederationAdmin) are added in later PRs.
  *
  * @generated from service blog.health.v1.HealthService
@@ -60,4 +60,3 @@ export const HealthService: GenService<{
   },
 }> = /*@__PURE__*/
   serviceDesc(file_blog_health_v1_health, 0);
-

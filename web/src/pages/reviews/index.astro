@@ -1,0 +1,19 @@
+---
+import SiteLayout from '../../layouts/SiteLayout.astro';
+import SiteHeader from '../../components/SiteHeader.astro';
+import ContentListing from '../../components/ContentListing.astro';
+import { getAllHTMLData } from '$lib/server/content';
+import { paginate } from '$lib/server/pagination';
+import type { Review } from '$lib/types/blog';
+
+const allReviews = await getAllHTMLData('reviews') as Review[];
+const { items, currentPage, totalPages } = paginate(allReviews, 1, 10);
+const image = '/images/Microsoft-Fluentui-Emoji-3d-Open-Book-3d.1024.png';
+const title = '本のレビュー';
+const description = '本を読んだ感想を掲載しています';
+---
+
+<SiteLayout {title} {description} {image}>
+  <SiteHeader {title} {image} />
+  <ContentListing items={items} urlPrefix="reviews" {currentPage} {totalPages} />
+</SiteLayout>

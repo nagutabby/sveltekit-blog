@@ -1,7 +1,5 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import { browser } from "$app/environment";
-  import OpenGraph from "$lib/components/OpenGraph.svelte";
 
   let canvas = $state<HTMLCanvasElement>();
   let pdfDoc = $state<any>(null);
@@ -23,14 +21,12 @@
   const QUALITY_SCALE = 2;
 
   async function loadPdfLibrary() {
-    if (browser) {
-      const pdfjs = await import("pdfjs-dist");
+    const pdfjs = await import("pdfjs-dist");
 
-      const workerModule = await import("pdfjs-dist/build/pdf.worker.mjs?url");
-      pdfjs.GlobalWorkerOptions.workerSrc = workerModule.default;
+    const workerModule = await import("pdfjs-dist/build/pdf.worker.mjs?url");
+    pdfjs.GlobalWorkerOptions.workerSrc = workerModule.default;
 
-      await loadPDF(pdfjs);
-    }
+    await loadPDF(pdfjs);
   }
 
   async function cancelCurrentRender() {
@@ -121,20 +117,15 @@
   onMount(() => {
     loadPdfLibrary();
 
-    if (browser) {
-      isFullscreenSupported = !!document.documentElement.requestFullscreen;
+    isFullscreenSupported = !!document.documentElement.requestFullscreen;
 
-      window.addEventListener("keydown", handleKeyDown);
-      document.addEventListener("fullscreenchange", handleFullscreenChange);
+    window.addEventListener("keydown", handleKeyDown);
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
 
-      return () => {
-        window.removeEventListener("keydown", handleKeyDown);
-        document.removeEventListener(
-          "fullscreenchange",
-          handleFullscreenChange,
-        );
-      };
-    }
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      document.removeEventListener("fullscreenchange", handleFullscreenChange);
+    };
   });
 
   function handleKeyDown(event: KeyboardEvent) {
@@ -159,8 +150,6 @@
     }
   }
 </script>
-
-<OpenGraph {title} body={description} {url} />
 
 <div
   class="container flex flex-col items-center justify-center gap-y-8 px-3 lg:px-12 py-5"

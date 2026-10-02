@@ -1,0 +1,47 @@
+---
+import SiteLayout from '../../layouts/SiteLayout.astro';
+import SiteHeader from '../../components/SiteHeader.astro';
+import Date from '$lib/components/Date.svelte';
+import ShareButton from '$lib/components/ShareButton.svelte';
+import StarRating from '$lib/components/StarRating.svelte';
+import BookInfo from '$lib/components/BookInfo.svelte';
+import { getAllRawData, getHTMLData } from '$lib/server/content';
+import type { Review } from '$lib/types/blog';
+
+export async function getStaticPaths() {
+  const reviews = await getAllRawData('reviews') as Review[];
+  return reviews.map((review) => ({ params: { name: review.id } }));
+}
+
+const review = await getHTMLData(Astro.params.name!, 'reviews') as Review;
+const image = review.image;
+---
+
+<SiteLayout title={review.title} description={review.body} {image} type="article">
+  <SiteHeader id={review.id} title={review.title} {image} />
+  <main class="container px-3 md:px-10 py-10 mx-auto">
+    <div class="flex lg:flex-row items-start justify-between flex-col-reverse">
+      <div class="flex flex-wrap gap-5 justify-center w-full lg:w-[63%]" id="content">
+        <article class="prose max-w-full">
+          <div class="flex flex-col gap-y-4">
+            <Date publishedAt={review.publishedAt} />
+            <div class="flex items-center gap-2">
+              <StarRating rating={review.rating} />
+              <span class="font-bold text-lg">{review.rating}/5</span>
+            </div>
+            <div><Fragment set:html={review.body} /></div>
+            <BookInfo title={review.title} description={review.description} jpECode={review.jp_e_code} />
+          </div>
+        </article>
+      </div>
+      <aside class="w-full lg:w-[33%] prose lg:top-0 lg:sticky py-5">
+        <nav class="toc" aria-label="目次"></nav>
+        <hr />
+        <ShareButton client:load />
+      </aside>
+    </div>
+  </main>
+  <script>
+    import '../../scripts/enhance-article';
+  </script>
+</SiteLayout>

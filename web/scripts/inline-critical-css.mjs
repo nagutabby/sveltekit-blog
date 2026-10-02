@@ -2,11 +2,11 @@ import Beasties from 'beasties';
 import { readFile, writeFile } from 'node:fs/promises';
 import { glob } from 'tinyglobby';
 
-const files = await glob('build/**/*.html');
+const files = await glob('dist/**/*.html');
 
 await Promise.all(files.map(async (file) => {
   const beasties = new Beasties({
-    path: 'build',
+    path: 'dist',
     preload: 'media',
     pruneSource: false,
     mergeStylesheets: true,

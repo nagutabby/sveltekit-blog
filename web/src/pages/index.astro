@@ -1,0 +1,19 @@
+---
+import SiteLayout from '../layouts/SiteLayout.astro';
+import SiteHeader from '../components/SiteHeader.astro';
+import ContentListing from '../components/ContentListing.astro';
+import { getAllHTMLData } from '$lib/server/content';
+import { paginate } from '$lib/server/pagination';
+import type { Article } from '$lib/types/blog';
+
+const allArticles = await getAllHTMLData('articles') as Article[];
+const { items, currentPage, totalPages } = paginate(allArticles, 1, 10);
+const image = '/images/Microsoft-Fluentui-Emoji-3d-Cat-3d.1024.png';
+const title = 'nagutabbyの考え事';
+const description = '学んだことをまとめるブログ';
+---
+
+<SiteLayout {title} {description} {image}>
+  <SiteHeader {title} {image} />
+  <ContentListing items={items} urlPrefix="articles" {currentPage} {totalPages} />
+</SiteLayout>

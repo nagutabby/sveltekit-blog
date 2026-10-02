@@ -1,0 +1,30 @@
+---
+import SiteLayout from '../../layouts/SiteLayout.astro';
+import SiteHeader from '../../components/SiteHeader.astro';
+import ContentListing from '../../components/ContentListing.astro';
+import { getAllHTMLData } from '$lib/server/content';
+import { paginate, totalPagesFor } from '$lib/server/pagination';
+import type { Article } from '$lib/types/blog';
+
+export async function getStaticPaths() {
+  const perPage = 10;
+  const articles = await getAllHTMLData('articles') as Article[];
+  const totalPages = totalPagesFor(articles.length, perPage);
+  return Array.from({ length: Math.max(totalPages - 1, 0) }, (_, index) => ({
+    params: { page: String(index + 2) },
+    props: { articles }
+  }));
+}
+
+const pageNumber = Number(Astro.params.page);
+const articles = Astro.props.articles as Article[];
+const { items, currentPage, totalPages } = paginate(articles, pageNumber, 10);
+const image = '/images/Microsoft-Fluentui-Emoji-3d-Cat-3d.1024.png';
+const title = 'nagutabbyの考え事';
+const description = '学んだことをまとめるブログ';
+---
+
+<SiteLayout {title} {description} {image}>
+  <SiteHeader {title} {image} />
+  <ContentListing items={items} urlPrefix="articles" {currentPage} {totalPages} />
+</SiteLayout>

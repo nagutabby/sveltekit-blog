@@ -1,0 +1,30 @@
+---
+import SiteLayout from '../../../layouts/SiteLayout.astro';
+import SiteHeader from '../../../components/SiteHeader.astro';
+import ContentListing from '../../../components/ContentListing.astro';
+import { getAllHTMLData } from '$lib/server/content';
+import { paginate, totalPagesFor } from '$lib/server/pagination';
+import type { Review } from '$lib/types/blog';
+
+export async function getStaticPaths() {
+  const perPage = 10;
+  const reviews = await getAllHTMLData('reviews') as Review[];
+  const totalPages = totalPagesFor(reviews.length, perPage);
+  return Array.from({ length: Math.max(totalPages - 1, 0) }, (_, index) => ({
+    params: { page: String(index + 2) },
+    props: { reviews }
+  }));
+}
+
+const pageNumber = Number(Astro.params.page);
+const reviews = Astro.props.reviews as Review[];
+const { items, currentPage, totalPages } = paginate(reviews, pageNumber, 10);
+const image = '/images/Microsoft-Fluentui-Emoji-3d-Open-Book-3d.1024.png';
+const title = '本のレビュー';
+const description = '本を読んだ感想を掲載しています';
+---
+
+<SiteLayout {title} {description} {image}>
+  <SiteHeader {title} {image} />
+  <ContentListing items={items} urlPrefix="reviews" {currentPage} {totalPages} />
+</SiteLayout>

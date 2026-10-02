@@ -1,18 +1,16 @@
 import { convertMarkdownToHtml } from '$lib/markdown';
-import { error } from '@sveltejs/kit';
 import matter from 'gray-matter';
 import fs from 'node:fs';
 import path from 'node:path';
 import type { Article, Review } from '$lib/types/blog';
 import memoize from 'lodash.memoize';
-import { dev } from '$app/environment';
 
 type ContentType = 'articles' | 'reviews';
 
 // Markdown+frontmatter source, shared with the Go backend's
 // internal/content.Loader (which reads the same files for ActivityPub
 // federation). Overridable via CONTENT_DIR for parity with the Go side;
-// otherwise resolved relative to process.cwd(), which vite/SvelteKit set
+// otherwise resolved relative to process.cwd(), which Astro and pnpm set
 // to the web/ project root for dev, build, and preview alike. Deliberately
 // NOT resolved from import.meta.url: Vite bundles this module into a
 // server chunk at build time, at an unrelated path/depth, so a path
@@ -20,6 +18,13 @@ type ContentType = 'articles' | 'reviews';
 const CONTENT_DIR = process.env.CONTENT_DIR ?? path.resolve(process.cwd(), '../backend/content');
 
 class ContentNotFoundError extends Error {}
+
+export class ContentError extends Error {
+  constructor(public status: number, message: string, options?: ErrorOptions) {
+    super(message, options);
+    this.name = 'ContentError';
+  }
+}
 
 // Mirrors backend/internal/content.transformImagePath: a frontmatter
 // image path like "images/foo.png" is rewritten to the URL web's static
@@ -45,7 +50,7 @@ const parsePublishedAtFromFilename = (filename: string): Date => {
   if (!match) {
     throw new Error(`filename "${filename}" is not in YYYY-MM-DD[-N].md format`);
   }
-  return new Date(match[1]);
+  return new Date(match[1]!);
 };
 
 type MarkdownEntry = {
@@ -119,12 +124,12 @@ const listReviews = (): Review[] =>
 const getAllRawDataImpl = async (type: ContentType): Promise<(Article | Review)[]> => {
   try {
     return type === 'articles' ? listArticles() : listReviews();
-  } catch {
-    throw error(500, 'コンテンツの取得に失敗しました');
+  } catch (cause) {
+    throw new ContentError(500, 'コンテンツの取得に失敗しました', { cause });
   }
 };
 
-export const getAllRawData = dev ? getAllRawDataImpl : memoize(getAllRawDataImpl);
+export const getAllRawData = memoize(getAllRawDataImpl);
 
 export const getAllHTMLData = async (type: ContentType) => {
   const allData = await getAllRawData(type);
@@ -149,8 +154,9 @@ export const getHTMLData = async (id: string, type: ContentType): Promise<Articl
     return review;
   } catch (err) {
     if (err instanceof ContentNotFoundError) {
-      throw error(404, `記事が見つかりません: ${id}`);
+      throw new ContentError(404, `記事が見つかりません: ${id}`);
     }
-    throw error(500, 'コンテンツの取得に失敗しました');
+    if (err instanceof ContentError) throw err;
+    throw new ContentError(500, 'コンテンツの取得に失敗しました', { cause: err });
   }
 };

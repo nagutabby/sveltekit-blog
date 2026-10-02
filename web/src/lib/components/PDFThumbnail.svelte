@@ -1,6 +1,5 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import { browser } from "$app/environment";
 
   const { url }: { url: string } = $props();
   let canvas = $state<HTMLCanvasElement>();
@@ -8,7 +7,7 @@
   let error = $state<string | null>(null);
 
   onMount(async () => {
-    if (canvas && browser) {
+    if (canvas) {
       try {
         const pdfjs = await import("pdfjs-dist");
         const workerModule = await import(

@@ -1,0 +1,32 @@
+---
+import Card from '$lib/components/Card.svelte';
+import Pagination from '$lib/components/Pagination.svelte';
+import Timeline from '$lib/components/Timeline.svelte';
+
+type Item = { id: string; image: string; title: string };
+type Props = {
+  items: Item[];
+  urlPrefix: 'articles' | 'reviews';
+  currentPage: number;
+  totalPages: number;
+};
+const { items, urlPrefix, currentPage, totalPages } = Astro.props;
+const hrefFor = (pageNumber: number) => {
+  if (urlPrefix === 'articles') return pageNumber === 1 ? '/' : `/page/${pageNumber}`;
+  return pageNumber === 1 ? '/reviews' : `/reviews/page/${pageNumber}`;
+};
+---
+
+<main class="container px-3 md:px-10 py-10 mx-auto">
+  <div class="flex flex-col lg:flex-row items-start lg:relative gap-10 lg:gap-0">
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 w-full lg:w-[63%] h-fit">
+      {items.map((item) => (
+        <Card id={item.id} url={`${urlPrefix}/${item.id}`} image={item.image} title={item.title} />
+      ))}
+    </div>
+    <div class="w-full lg:w-[33%] lg:absolute lg:top-0 lg:bottom-0 lg:right-0">
+      <Timeline client:visible />
+    </div>
+  </div>
+  <Pagination {totalPages} {currentPage} {hrefFor} />
+</main>

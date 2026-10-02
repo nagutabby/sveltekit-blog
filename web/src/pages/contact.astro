@@ -1,0 +1,16 @@
+---
+import SiteLayout from '../layouts/SiteLayout.astro';
+import SiteHeader from '../components/SiteHeader.astro';
+import ContactForm from '$lib/components/ContactForm.svelte';
+
+const image = '/images/Microsoft-Fluentui-Emoji-3d-Cat-3d.1024.png';
+const title = 'お問い合わせ';
+const description = 'お気軽にお問い合わせください';
+---
+
+<SiteLayout {title} {description} {image}>
+  <SiteHeader {title} {image} />
+  <main class="container px-3 lg:px-12 py-10 mx-auto">
+    <ContactForm client:load />
+  </main>
+</SiteLayout>

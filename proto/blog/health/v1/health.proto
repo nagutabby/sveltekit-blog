@@ -11,7 +11,7 @@ message CheckResponse {
 }
 
 // HealthService is used to smoke-test the Connect RPC pipeline between
-// web (SvelteKit) and backend (Go). Domain services (Contact, Content,
+// web (Astro + Svelte) and backend (Go). Domain services (Contact, Content,
 // FederationAdmin) are added in later PRs.
 service HealthService {
   rpc Check(CheckRequest) returns (CheckResponse) {}

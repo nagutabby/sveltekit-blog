@@ -1,6 +1,6 @@
 # proto
 
-`web`(SvelteKit)と`backend`(Go)間のConnect RPC通信に使うProtocol Buffers定義です。
+`web`(Astro + Svelte)と`backend`(Go)間のConnect RPC通信に使うProtocol Buffers定義です。
 
 `buf generate`（ルートの`make generate`）で以下を生成する。
 

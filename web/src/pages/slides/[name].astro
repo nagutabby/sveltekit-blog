@@ -1,0 +1,19 @@
+---
+import SiteLayout from '../../layouts/SiteLayout.astro';
+import PDFViewer from '$lib/components/PDFViewer.svelte';
+import { getSlide, getSlides } from '$lib/server/slides';
+
+export function getStaticPaths() {
+  return getSlides().map((slide) => ({ params: { name: slide.id } }));
+}
+const slide = getSlide(Astro.params.name!);
+const title = slide.id;
+const description = `スライド「${slide.id}」を閲覧できます`;
+const image = '/images/Microsoft-Fluentui-Emoji-3d-Package-3d.1024.png';
+---
+
+<SiteLayout {title} {description} {image}>
+  <main class="container px-3 lg:px-12 py-10 mx-auto">
+    <PDFViewer url={slide.url} client:load />
+  </main>
+</SiteLayout>

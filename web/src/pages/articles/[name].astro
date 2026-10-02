@@ -1,0 +1,49 @@
+---
+import 'katex/dist/katex.min.css';
+import SiteLayout from '../../layouts/SiteLayout.astro';
+import SiteHeader from '../../components/SiteHeader.astro';
+import Date from '$lib/components/Date.svelte';
+import ShareButton from '$lib/components/ShareButton.svelte';
+import { getAllRawData, getHTMLData } from '$lib/server/content';
+import type { Article } from '$lib/types/blog';
+
+export async function getStaticPaths() {
+  const articles = await getAllRawData('articles') as Article[];
+  return articles.map((article) => ({ params: { name: article.id } }));
+}
+
+const article = await getHTMLData(Astro.params.name!, 'articles') as Article;
+const image = article.image;
+---
+
+<SiteLayout title={article.title} description={article.body} {image} type="article">
+  <SiteHeader id={article.id} title={article.title} {image} />
+  <main class="container px-3 md:px-10 py-10 mx-auto">
+    <div class="flex lg:flex-row items-start justify-between flex-col-reverse">
+      <div class="flex flex-wrap gap-5 justify-center w-full lg:w-[63%]" id="content">
+        <article class="prose max-w-full">
+          <div class="my-3"><Date publishedAt={article.publishedAt} /></div>
+          <Fragment set:html={article.body} />
+        </article>
+      </div>
+      <aside class="w-full lg:w-[33%] prose lg:top-0 lg:sticky py-5">
+        <nav class="toc" aria-label="目次"></nav>
+        <hr />
+        <ShareButton client:load />
+      </aside>
+    </div>
+  </main>
+  <script>
+    import '../../scripts/enhance-article';
+  </script>
+</SiteLayout>
+
+<style is:global>
+  pre { position: relative !important; padding: 0.5rem; }
+  .copy-button {
+    position: absolute; top: 0.5rem; right: 0.5rem; height: inherit;
+    background: rgb(0 0 0 / 40%); border: 0; border-radius: 0.25rem;
+    cursor: pointer; opacity: 0; transition: opacity 0.2s;
+  }
+  .code-wrapper:hover .copy-button { opacity: 1; }
+</style>
