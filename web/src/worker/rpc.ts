@@ -128,7 +128,7 @@ const federationAdminRoutes = new Hono<{ Bindings: WorkerEnv }>()
         const signature = await signActivity(activityBase, context.env.ACTOR_PRIVATE_KEY_PEM || '');
         const activity = { ...activityBase, signature };
         const body = JSON.stringify(activity);
-        const relays = await listRelayConnections(context.env.DB);
+        const relays = (await listRelayConnections(context.env.DB)).filter((relay) => relay.connected);
         for (const relay of relays) {
           try {
             const headers = await signHTTPRequest(
