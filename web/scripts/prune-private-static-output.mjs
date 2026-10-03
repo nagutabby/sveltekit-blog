@@ -6,6 +6,7 @@ const outputDirectory = path.resolve(path.dirname(fileURLToPath(import.meta.url)
 const privateNames = new Set(['.obsidian', '.DS_Store']);
 let removed = 0;
 
+/** @param {string} directory */
 async function prune(directory) {
   for (const entry of await readdir(directory, { withFileTypes: true })) {
     const entryPath = path.join(directory, entry.name);
