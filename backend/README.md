@@ -1,82 +1,66 @@
-# backend
+# Backend API
 
-Goバックエンド（Connect RPC + sqlc）です。
+Backend APIはHonoのCloudflare Worker（`web/src/worker/`）で動作します。このディレクトリには記事・書評のMarkdownと、Cloudflare D1のマイグレーションを置いています。
 
-## 構成
+## API
 
-- `cmd/server`: エントリーポイント。`BACKEND_ADDR`(既定`:8080`)でHTTPサーバを起動する。
-- `internal/server`: トップレベルのHTTPハンドラ。`/healthz`と各Connect RPCサービスをマウントする。
-- `internal/health`: `blog.health.v1.HealthService`の実装。web↔backend間のConnect RPC配線を検証するための最小サービス。
-- `internal/contact`: `blog.contact.v1.ContactService`の実装。お問い合わせフォームの入力検証とMailtrap呼び出し。
-- `internal/content`: `Loader`が記事/レビューのMarkdown+frontmatterを`fs.FS`経由で読み込む(`internal/federation`/`internal/federationadmin`が直接使う)。既定では`content/`(下記`content`パッケージ)を`go:embed`したFSを使う。`CONTENT_DIR`を設定するとローカル開発用に任意のOSディレクトリ(`os.DirFS`)へ差し替えられる。スライドはfrontmatterを持たない静的PDFのため対象外(webに残す)。かつて存在した`blog.content.v1.ContentService`(Connect RPC)は撤去済み: Astroのビルド時コンテンツ取得は`web/src/lib/server/content.ts`が`content/`を直接読むように変更されており、ネットワーク越しに呼ぶ必要がなくなったため。ファイル名は公開日を表すISO 8601のdate onlyフォーマット(`YYYY-MM-DD.md`、同日複数件は`YYYY-MM-DD-2.md`のように連番サフィックス)で、記事/レビューの識別子はfrontmatterの`id`フィールドが担う。
-- `content/`: 記事/レビューのMarkdownソース(コミット対象)。画像等の静的アセットは`web/static/content/**/images`に残る。`content/embed.go`が`//go:embed articles reviews`でバイナリに埋め込む: Vercelの`@vercel/go`ビルダーはGoソース以外の任意ファイルを関数の実行時ファイルシステムに含めないため、`os.ReadFile`の相対パス読み込みは本番で静かに失敗する(実際に本番で発生し、`internal/content/realcontent_test.go`をこのFS経由に切り替えて検知できるようにした)。`db/migrations.go`と同じ理由・同じ手法。
-- `internal/federation`: ActivityPub連携の公開HTTPエンドポイント(`webfinger`, `actor`, `actor/followers`, `actor/following`, `actor/inbox`, `actor/outbox`, `api/articles/{name}`)。外部のMastodon/リレーサーバーはJSON-LD/HTTPしか話せないため、Connect RPCではなくプレーンな`net/http`ハンドラとして実装する。HTTP Signature(`signRequest.ts`相当)の署名・検証、Follower/RelayConnectionのDB更新(sqlc経由)、リモートactorのfetch、署名済みAcceptの送達を行う。`actor/followers`・`actor/following`・`actor/outbox`は`?page=N`でOrderedCollectionPage(実際のフォロワーactorId/フォロー中のリレー/記事のCreate活動)を返す。ActivityStreams JSON応答(`actor`・`actor/followers`・`actor/following`・`actor/outbox`・`api/articles/{name}`)は`Accept`ヘッダに応じて`application/activity+json`(既定)と`application/ld+json; profile="https://www.w3.org/ns/activitystreams"`をネゴシエーションし、どちらも受け付けられないAcceptには406を返す。
-- `internal/federationadmin`: `blog.federationadmin.v1.FederationAdminService`の実装(内部専用のConnect RPC)。記事のCreate/Update/Delete Activityを組み立て、LD-Signature(`signActivity`相当、RFC 8785のJSON Canonicalizationで署名)を付けて、DB上の全リレーへHTTP Signature付きで配送する。公開のActivityPub HTTPエンドポイントではないため`internal/federation`とは別パッケージ。**公開トリガーの仕組みはこのリポジトリの外にある想定**(元のSvelteKit実装の`/api/activitypub/sender`も認証なしの手動/外部トリガー呼び出しだったため、そのまま踏襲している)。呼び出し例は本ファイル末尾を参照。
-- `gen/`: `proto/`から`buf generate`で生成したコード(コミット対象)。
-- `db/migrations`: [goose](https://github.com/pressly/goose)のSQLマイグレーション(SQLite方言。本番はCloudflare D1)。`db/migrations.go`で`embed`し、goose CLIとGoテストの両方から使う。
-- `db/queries`, `sqlc.yaml`, `internal/db`: [sqlc](https://sqlc.dev/)によるDBアクセス層(`engine: sqlite`, `internal/db`は生成コード)。`db/queries`内の`--`コメントはASCII文字のみにすること(sqlcのSQLiteパーサーがマルチバイト文字を含むコメントで列位置を誤認識してパースエラーになる既知の問題があるため)。
-- `internal/db/d1`: 本番でCloudflare D1のHTTP query APIを叩く`db.Querier`実装。ローカル開発・テストではこれを使わず、`internal/db`が生成する`database/sql`実装に`modernc.org/sqlite`(pure Go、cgo/Docker不要)で直接繋ぐ。
-- `internal/db/integration_test.go`: 一時ファイルの実SQLiteに対してgoose migrateしてからsqlcクエリを検証する統合テスト(Docker不要)。
-- `internal/content/realcontent_test.go`: `content/`配下の実データを実際に読み込み、frontmatterが壊れていないかを検証する回帰テスト。
-- `internal/server/federation_integration_test.go`: 一時ファイルの実SQLite + 実HTTPサーバー + 偽のリモートMastodon actorを使い、Followの受信→DB反映→署名付きAcceptの送達までを検証する統合テスト(Docker不要)。
+- ActivityPub: `/.well-known/webfinger`、`/.well-known/nodeinfo`、`/nodeinfo/2.0`、`/nodeinfo/2.1`、`/actor`以下、および`/api/articles/{id}`
+- お問い合わせ: `POST /rpc/contact/submit`。JSONで`name`、`email`、`text`、`imRobot`を受け取り、入力エラーは`{ "errors": { ... } }`で返します。
+- 記事公開通知: `POST /rpc/federation-admin/publish-article-activity`。`Authorization: Bearer <FEDERATION_ADMIN_TOKEN>`が必要です。
 
-## 環境変数
-
-`SITE_BASE_URL`(既定`https://blog.nagutabby.uk`), `ACTOR_PUBLIC_KEY_PEM`/`ACTOR_PRIVATE_KEY_PEM`(改行は`\n`エスケープ可), `FEDERATION_ADMIN_TOKEN`(`FederationAdminService`を保護する共有シークレット。未設定だと同サービスは常に401を返す)。詳細は`.env.example`を参照。
-
-DBは`CLOUDFLARE_ACCOUNT_ID`/`CLOUDFLARE_D1_DATABASE_ID`/`CLOUDFLARE_D1_API_TOKEN`が3つとも設定されていればCloudflare D1(HTTP query API経由)に接続する。1つでも欠けていれば`SQLITE_PATH`(既定`backend.db`)のローカルSQLiteファイルにフォールバックする。
-
-## 開発
+記事通知のリクエスト例:
 
 ```sh
-go build ./...
-go vet ./...
-go test ./...
-```
-
-Protoからのコード生成はリポジトリルートの`make generate`を使う（`web`のnode_modulesにある`protoc-gen-es`をPATHに載せて`buf generate`を実行する）。
-
-DBスキーマを変更したら`sqlc generate`でクエリコードを再生成する。
-
-ローカルDBはDocker不要。`make db-migrate`(ルートの`Makefile`)で`backend.db`にgooseマイグレーションを適用してから`go run ./cmd/server`すればよい。ファイルパスを変えたい場合は`SQLITE_PATH`で上書きする。
-
-## 記事公開時にFederation通知を送る
-
-`FederationAdminService.PublishArticleActivity`はConnectのJSON+HTTPフォールバックでも呼べるため、`curl`で直接叩ける。`FEDERATION_ADMIN_TOKEN`環境変数と同じ値を`Authorization: Bearer`で渡す必要がある(未設定・不一致の場合は401)。**このトークンによる保護はPRで新規に追加したもの。このリポジトリ外にある既存の呼び出し元(記事公開フローのトリガー)にも同時に`Authorization`ヘッダーを追加すること。**
-
-```sh
-curl -X POST http://localhost:8080/blog.federationadmin.v1.FederationAdminService/PublishArticleActivity \
-  -H "Content-Type: application/json" \
+curl -X POST https://blog.nagutabby.uk/rpc/federation-admin/publish-article-activity \
+  -H 'Content-Type: application/json' \
   -H "Authorization: Bearer $FEDERATION_ADMIN_TOKEN" \
-  -d '{"articleId": "goodbye-microcms", "changeType": "CHANGE_TYPE_CREATE"}'
+  -d '{"articleId":"goodbye-microcms","changeType":"create"}'
 ```
 
-`changeType`は`CHANGE_TYPE_CREATE` / `CHANGE_TYPE_UPDATE` / `CHANGE_TYPE_DELETE`。
+`changeType`には`create`、`update`、`delete`を指定します。記事公開フローの外部呼び出し元はこのURLとJSON形式へ切り替え、`FEDERATION_ADMIN_TOKEN`をBearer認証で送る必要があります。旧Connect RPC URLは提供しません。
 
-## デプロイ
+## ローカル開発
 
-`web`(Astro static output)と`backend`(Go)は1つのVercelプロジェクト内の別サービスとしてデプロイする。ルートの[`vercel.json`](../vercel.json)の`services`で両サービスを定義し、`rewrites`でパスに応じて振り分ける(`/actor*`, `/.well-known/webfinger`, `/.well-known/nodeinfo`, `/nodeinfo/*`, `/api/articles/*`, `/blog.contact.v1.ContactService/*`, `/blog.federationadmin.v1.FederationAdminService/*`は`backend`へ、それ以外は`web`へ)。
-
-Vercelダッシュボードで環境変数を設定する(`backend`サービス向け): `SITE_BASE_URL`, `ACTOR_PUBLIC_KEY_PEM`/`ACTOR_PRIVATE_KEY_PEM`, `EMAIL_API_TOKEN`, `FROM_ADDRESS`, `BCC_ADDRESS`, `FEDERATION_ADMIN_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`/`CLOUDFLARE_D1_DATABASE_ID`/`CLOUDFLARE_D1_API_TOKEN`。`PORT`はVercelのGo runtimeが自動で注入する。
-
-### 本番DB(Cloudflare D1)のセットアップ
-
-`wrangler`コマンドは`backend/wrangler.jsonc`(`d1_databases`バインディングと`migrations_dir: "db/migrations"`を定義)を使うため、**このディレクトリ(`backend/`)で実行する**。このファイルはD1の作成・マイグレーション適用専用で、backend自体はVercel Functions(Go runtime)で動かすためWorkerとしてdeployすることはない。
+`web/.env.example`を参考に`web/.env`を用意し、フロントエンドの開発サーバーからローカルWorkerへプロキシします。Worker用Secretsは`backend/.dev.vars.example`を`backend/.dev.vars`へコピーして設定します。`.dev.vars`はGit管理対象外です。
 
 ```sh
-cd backend
-wrangler d1 create sveltekit-blog-db  # 出力されたdatabase_idをwrangler.jsoncに設定する
-wrangler d1 migrations apply sveltekit-blog-db --remote  # db/migrationsを適用
+pnpm --dir web install
+pnpm --dir web run dev:worker
 ```
 
-既存のNeon(PostgreSQL)から実データを移行する場合は`cmd/migrate-to-d1`を使う。デフォルトはdry-run(何が移行されるかを表示するだけ)なので、内容を確認してから`-apply`を付けて実行する。
+Workerは`http://localhost:8787`で起動します。ローカルD1にスキーマを適用するには、リポジトリルートで次を実行します。
 
 ```sh
-SOURCE_DATABASE_URL="<Neonの接続文字列>" \
-CLOUDFLARE_ACCOUNT_ID="<CloudflareアカウントID>" \
-CLOUDFLARE_D1_DATABASE_ID="<D1データベースID>" \
-CLOUDFLARE_D1_API_TOKEN="<D1書き込み権限を持つAPIトークン>" \
-go run ./cmd/migrate-to-d1 -apply
+make db-migrate
 ```
 
-`actorId`をキーにした冪等なupsertなので、何度実行しても安全。本番のbackendの環境変数を`CLOUDFLARE_ACCOUNT_ID`/`CLOUDFLARE_D1_DATABASE_ID`/`CLOUDFLARE_D1_API_TOKEN`に切り替えるタイミングと合わせて実行すること。移行が完了し切り戻しの必要がなくなったら`cmd/migrate-to-d1`は削除してよい(このコマンドは一度限りの用途で、以後は使われない)。
+Astroの開発サーバーは別ターミナルで`pnpm --dir web run dev`を実行します。
+
+## D1マイグレーション
+
+SQLマイグレーションは`db/migrations/`にあります。ローカル適用は`make db-migrate`、既存の本番D1への適用は次のコマンドを使います。
+
+```sh
+pnpm --dir web exec wrangler d1 migrations apply sveltekit-blog-db --remote --config ../backend/wrangler.jsonc
+```
+
+本番マイグレーション適用はD1のスキーマを変更します。デプロイ作業前に適用対象を確認してください。
+
+ゾーンとDNSレコードの確認にはCloudflare CLIを使います。既存レコードを確認してから、ブログ用ホスト名だけを変更してください。
+
+```sh
+cloudflare zones list --name nagutabby.uk
+cloudflare dns records list --zone nagutabby.uk
+```
+
+## Secretsとデプロイ
+
+Wrangler設定では次のSecretsを必須にしています。値を`wrangler.jsonc`やソースへ書かず、CloudflareダッシュボードまたはWrangler Secretsから登録してください。
+
+- `ACTOR_PUBLIC_KEY_PEM`、`ACTOR_PRIVATE_KEY_PEM`
+- `FEDERATION_ADMIN_TOKEN`
+- `EMAIL_API_TOKEN`、`FROM_ADDRESS`、`BCC_ADDRESS`
+
+本番への自動デプロイはGitHub Actionsから行います。リポジトリに`CLOUDFLARE_API_TOKEN` Secretと`CLOUDFLARE_ACCOUNT_ID` Actions Variableを登録してください。`main`へのpushで、型確認・テスト・ビルドがすべて成功した後にWorkerと静的アセットをデプロイします。Pull Requestではデプロイしません。
+
+ローカルから手動でデプロイする場合は`pnpm --dir web run deploy`を使います。記事通知APIのリクエスト例とBearer認証は、上記のAPI節を参照してください。

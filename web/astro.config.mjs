@@ -8,7 +8,7 @@ import { fileURLToPath } from 'node:url';
 const root = path.dirname(fileURLToPath(import.meta.url));
 const env = loadEnv(process.env.NODE_ENV === 'production' ? 'production' : 'development', root, '');
 const contactServiceProxy = {
-  target: env.BACKEND_URL ?? 'http://localhost:8080',
+  target: env.BACKEND_URL ?? 'http://localhost:8787',
   changeOrigin: true
 };
 
@@ -31,12 +31,12 @@ export default defineConfig({
     },
     server: {
       proxy: {
-        '/blog.contact.v1.ContactService': contactServiceProxy
+        '/rpc': contactServiceProxy
       }
     },
     preview: {
       proxy: {
-        '/blog.contact.v1.ContactService': contactServiceProxy
+        '/rpc': contactServiceProxy
       }
     }
   }

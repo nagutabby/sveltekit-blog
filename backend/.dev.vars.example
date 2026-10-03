@@ -1,0 +1,7 @@
+# Copy to backend/.dev.vars and fill in local development secrets.
+ACTOR_PUBLIC_KEY_PEM=
+ACTOR_PRIVATE_KEY_PEM=
+FEDERATION_ADMIN_TOKEN=
+EMAIL_API_TOKEN=
+FROM_ADDRESS=
+BCC_ADDRESS=

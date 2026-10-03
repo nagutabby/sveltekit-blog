@@ -1,12 +1,12 @@
 {
   "$schema": "../web/node_modules/wrangler/config-schema.json",
-  "name": "sveltekit-blog",
+  "name": "sveltekit-blog-preview",
   "main": "../web/src/worker/index.ts",
   "compatibility_date": "2026-10-03",
-  "compatibility_flags": ["nodejs_compat"],
-  "routes": [
-    { "pattern": "blog.nagutabby.uk", "custom_domain": true }
+  "compatibility_flags": [
+    "nodejs_compat"
   ],
+  "routes": [],
   "vars": {
     "SITE_BASE_URL": "https://blog.nagutabby.uk"
   },
@@ -45,5 +45,6 @@
       "database_id": "2b4db5b8-4d5a-43ee-b79d-3037f87cec89",
       "migrations_dir": "db/migrations"
     }
-  ]
+  ],
+  "workers_dev": true
 }

@@ -1,7 +1,11 @@
-name: テスト
+name: CI/CD
 on:
   push:
   pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
   test-web:
@@ -23,7 +27,10 @@ jobs:
           version: 11.21.0
 
       - name: 依存関係をインストール
-        run: pnpm install
+        run: pnpm install --frozen-lockfile
+
+      - name: Worker設定の型を確認
+        run: pnpm run worker:types:check
 
       - name: テストを実行
         run: pnpm test
@@ -34,24 +41,42 @@ jobs:
       - name: 静的サイトをビルド
         run: pnpm build
 
-  test-backend:
+      - name: Workerバンドルを検証
+        run: pnpm exec wrangler deploy --dry-run --config ../backend/wrangler.jsonc
+
+  deploy-production:
+    if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main'
+    needs: test-web
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    concurrency:
+      group: cloudflare-production
+      cancel-in-progress: false
     defaults:
       run:
-        working-directory: backend
+        working-directory: web
     steps:
       - uses: actions/checkout@v7
 
-      - name: Goを準備
-        uses: actions/setup-go@v6
+      - name: Node.jsを準備
+        uses: actions/setup-node@v7
         with:
-          go-version-file: backend/go.mod
+          node-version: 24.19.0
 
-      - name: ビルド
-        run: go build ./...
+      - name: pnpmを準備
+        uses: pnpm/action-setup@v6
+        with:
+          version: 11.21.0
 
-      - name: vet
-        run: go vet ./...
+      - name: 依存関係をインストール
+        run: pnpm install --frozen-lockfile
 
-      - name: テストを実行
-        run: go test ./...
+      - name: 静的サイトをビルド
+        run: pnpm build
+
+      - name: Cloudflare Workerをデプロイ
+        run: pnpm exec wrangler deploy --config ../backend/wrangler.jsonc
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}

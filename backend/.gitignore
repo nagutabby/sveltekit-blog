@@ -1,2 +1,4 @@
 /bin
 /.wrangler
+.dev.vars*
+!.dev.vars.example

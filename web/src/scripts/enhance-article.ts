@@ -23,10 +23,10 @@ async function enhanceArticle() {
       link.href = `#${heading.id}`;
       link.className = 'link !link-secondary';
       link.textContent = heading.textContent ?? '';
-      item.append(link);
-      list.append(item);
+      item.appendChild(link);
+      list.appendChild(item);
     }
-    toc.append(list);
+    toc.appendChild(list);
 
     let activeLink: HTMLAnchorElement | null = null;
     const observer = new IntersectionObserver((entries) => {
@@ -66,7 +66,7 @@ async function enhanceArticle() {
     const wrapper = document.createElement('div');
     wrapper.className = 'code-wrapper';
     pre.parentElement?.insertBefore(wrapper, pre);
-    wrapper.append(pre);
+    wrapper.appendChild(pre);
     const button = document.createElement('button');
     button.type = 'button';
     button.className = 'copy-button';
@@ -77,7 +77,7 @@ async function enhanceArticle() {
       button.textContent = '✓';
       window.setTimeout(() => { button.textContent = '⧉'; }, 3000);
     });
-    wrapper.append(button);
+    wrapper.appendChild(button);
   }
 }
 

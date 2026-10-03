@@ -1,8 +1,7 @@
 <script lang="ts">
   import { createBackendClient } from "$lib/client/backendClient";
-  import { ContactService } from "$lib/gen/blog/contact/v1/contact_pb";
 
-  const contactClient = createBackendClient(ContactService);
+  const contactClient = createBackendClient();
 
   let isLoading = $state(false);
   let errors = $state<Record<string, string> | null>(null);

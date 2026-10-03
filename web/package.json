@@ -4,19 +4,21 @@
   "private": true,
   "scripts": {
     "dev": "astro dev",
-    "build": "astro build && node scripts/optimize-static-images.mjs && node scripts/inline-critical-css.mjs && node scripts/generate-service-worker.mjs",
+    "content:generate": "node scripts/generate-worker-content.mjs",
+    "dev:worker": "node scripts/generate-worker-content.mjs && wrangler dev --config ../backend/wrangler.jsonc",
+    "worker:types": "wrangler types --config ../backend/wrangler.jsonc src/worker/worker-configuration.d.ts",
+    "worker:types:check": "wrangler types src/worker/worker-configuration.d.ts --config ../backend/wrangler.jsonc --check",
+    "build": "node scripts/generate-worker-content.mjs && astro build && node scripts/prune-private-static-output.mjs && node scripts/optimize-static-images.mjs && node scripts/inline-critical-css.mjs && node scripts/generate-service-worker.mjs",
     "preview": "astro preview",
-    "check": "astro check",
-    "test:unit": "vitest run",
-    "test": "vitest run"
+    "check": "node scripts/generate-worker-content.mjs && astro check",
+    "deploy": "pnpm run build && wrangler deploy --config ../backend/wrangler.jsonc",
+    "test:unit": "node scripts/generate-worker-content.mjs && vitest run",
+    "test": "node scripts/generate-worker-content.mjs && vitest run"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.10",
     "@astrojs/svelte": "^9.0.1",
-    "@bufbuild/protobuf": "^2.15.0",
-    "@bufbuild/protoc-gen-es": "^2.15.0",
-    "@connectrpc/connect": "^2.2.0",
-    "@connectrpc/connect-web": "^2.2.0",
+    "@cloudflare/workers-types": "^5.20261001.1",
     "@idotj/mastodon-embed-timeline": "^4.8.2",
     "@sveltejs/vite-plugin-svelte": "^7.3.0",
     "@tailwindcss/typography": "^0.5.20",
@@ -49,8 +51,15 @@
     "tslib": "^2.8.1",
     "typescript": "^6.0.3",
     "vite": "^8.3.0",
-    "vitest": "^5.0.1"
+    "vitest": "^5.0.1",
+    "wrangler": "^4.145.0"
   },
   "type": "module",
-  "packageManager": "pnpm@11.21.0"
+  "packageManager": "pnpm@11.21.0",
+  "dependencies": {
+    "@hono/zod-validator": "^0.9.1",
+    "canonicalize": "^5.1.0",
+    "hono": "^4.13.12",
+    "zod": "^4.6.5"
+  }
 }

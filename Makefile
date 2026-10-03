@@ -1,7 +1,3 @@
-.PHONY: generate
-generate:
-	cd proto && PATH="$$PWD/../web/node_modules/.bin:$$PATH" buf generate
-
 .PHONY: db-migrate
 db-migrate:
-	cd backend && goose -dir db/migrations sqlite3 $${SQLITE_PATH:-backend.db} up
+	pnpm --dir web exec wrangler d1 migrations apply sveltekit-blog-db --local --config ../backend/wrangler.jsonc

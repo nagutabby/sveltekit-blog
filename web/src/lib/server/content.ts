@@ -7,10 +7,9 @@ import memoize from 'lodash.memoize';
 
 type ContentType = 'articles' | 'reviews';
 
-// Markdown+frontmatter source, shared with the Go backend's
-// internal/content.Loader (which reads the same files for ActivityPub
-// federation). Overridable via CONTENT_DIR for parity with the Go side;
-// otherwise resolved relative to process.cwd(), which Astro and pnpm set
+// Markdown+frontmatter source shared by Astro and the Worker metadata
+// generator. Overridable via CONTENT_DIR; otherwise resolved relative to
+// process.cwd(), which Astro and pnpm set
 // to the web/ project root for dev, build, and preview alike. Deliberately
 // NOT resolved from import.meta.url: Vite bundles this module into a
 // server chunk at build time, at an unrelated path/depth, so a path
@@ -26,8 +25,7 @@ export class ContentError extends Error {
   }
 }
 
-// Mirrors backend/internal/content.transformImagePath: a frontmatter
-// image path like "images/foo.png" is rewritten to the URL web's static
+// A frontmatter image path like "images/foo.png" is rewritten to the URL web's static
 // file server exposes it at.
 const transformImagePath = (imagePath: string | undefined, contentType: ContentType): string => {
   if (imagePath?.startsWith('images/')) {
@@ -36,9 +34,8 @@ const transformImagePath = (imagePath: string | undefined, contentType: ContentT
   return imagePath ?? '';
 };
 
-// filenameDatePattern mirrors backend/internal/content.Loader's
-// filenameDatePattern: articles/reviews are named by their publish date
-// (YYYY-MM-DD.md), with an optional "-N" suffix to disambiguate multiple
+// Articles and reviews are named by their publish date (YYYY-MM-DD.md),
+// with an optional "-N" suffix to disambiguate multiple
 // posts published on the same date.
 const filenameDatePattern = /^(\d{4}-\d{2}-\d{2})(-\d+)?\.md$/;
 
@@ -66,8 +63,7 @@ const readMarkdownFile = (contentType: ContentType, filename: string) => {
 };
 
 // is_draft defaults to true (fail closed) so a post missing the field, or
-// with a malformed value, never publishes by accident. Mirrors
-// backend/internal/content.Loader's boolField(data, "is_draft", true).
+// with a malformed value, never publishes by accident.
 const isDraftEntry = (parsed: ReturnType<typeof matter>): boolean =>
   typeof parsed.data.is_draft === 'boolean' ? parsed.data.is_draft : true;
 
@@ -110,8 +106,7 @@ const toReview = (entry: MarkdownEntry): Review => ({
   publishedAt: entry.publishedAt
 });
 
-// Newest first, matching backend/internal/content.Loader's
-// sort.SliceStable(... PublishedAt.After ...).
+// Newest first, keeping same-date entries in their filename order.
 const byPublishedAtDescending = <T extends { publishedAt: Date }>(a: T, b: T) =>
   b.publishedAt.getTime() - a.publishedAt.getTime();
 
